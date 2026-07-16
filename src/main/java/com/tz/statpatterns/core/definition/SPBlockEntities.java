@@ -6,15 +6,11 @@ import appeng.blockentity.ServerTickingBlockEntity;
 import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.DeferredBlockEntityType;
 import com.google.common.base.Preconditions;
-import com.tz.statpatterns.ProbabilityPatternMod;
-import com.tz.statpatterns.blockentity.crafting.ProbabilityPatternProviderBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import appeng.block.AEBaseEntityBlock;
@@ -38,8 +34,6 @@ import static com.tz.statpatterns.ProbabilityPatternMod.MOD_ID;
 public final class SPBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> DR = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     private static final List<DeferredBlockEntityType<?>> BLOCK_ENTITY_TYPES = new ArrayList<>();
-
-    public static final DeferredBlockEntityType<ProbabilityPatternProviderBlockEntity> PROBABILITY_PATTERN_PROVIDER_BLOCKENTITY = create("probability_pattern_provider", ProbabilityPatternProviderBlockEntity.class, ProbabilityPatternProviderBlockEntity::new, SPBlocks.PROBABILITY_PATTERN_PROVIDER_BLOCK);
 
     @SuppressWarnings("unchecked")
     @SafeVarargs

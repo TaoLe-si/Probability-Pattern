@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import com.tz.statpatterns.api.ids.Components;
+import com.tz.statpatterns.core.definition.SPMenus;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -17,7 +18,6 @@ import appeng.helpers.IPatternTerminalMenuHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.parts.encoding.EncodingMode;
 
-import com.tz.statpatterns.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
 
 public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
@@ -36,7 +36,6 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         super(menuType, containerId, playerInventory, host, true);
         this.patternHost = Objects.requireNonNull(host, "host");
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
-        // ✅ 移除 targetBatch 相关注册
     }
 
     public double getProbability() {
@@ -93,15 +92,13 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
 
         var sparseOutputs = new ArrayList<GenericStack>(outputsInv.size());
         for (int i = 0; i < outputsInv.size(); i++) {
-            // ✅ 直接读取原始输出，不再乘以 targetBatch 批量倍率
             sparseOutputs.add(outputsInv.getStack(i));
         }
         if (sparseOutputs.isEmpty() || sparseOutputs.get(0) == null) {
             return;
         }
 
-        // ✅ targetBatch 使用固定值=1，仅做数据标记，不做真实批量缩放
-        var encodedPattern = StatisticalPatternDetails.encode(sparseInputs, sparseOutputs, probability, 0.05, 1);
+        var encodedPattern = StatisticalPatternDetails.encode(sparseInputs, sparseOutputs, probability, 0.05);
         var encodedInv = logic.getEncodedPatternInv();
         var blankInv = logic.getBlankPatternInv();
         var existingEncoded = encodedInv.getStackInSlot(0);

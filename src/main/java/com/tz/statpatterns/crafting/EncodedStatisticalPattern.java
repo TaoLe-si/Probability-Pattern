@@ -17,8 +17,7 @@ public record EncodedStatisticalPattern(
         GenericStack output,
         double successProbability,
         double alpha,
-        int smallSampleLimit,
-        long targetBatch) {
+        int smallSampleLimit) {
     public EncodedStatisticalPattern {
         inputsPerAttempt = Collections.unmodifiableList(inputsPerAttempt);
         if (inputsPerAttempt.isEmpty()) {
@@ -39,24 +38,19 @@ public record EncodedStatisticalPattern(
         if (smallSampleLimit < 1) {
             throw new IllegalArgumentException("Small sample limit must be positive.");
         }
-        if (targetBatch < 1) {
-            throw new IllegalArgumentException("Target batch must be positive.");
-        }
     }
 
     public static final Codec<EncodedStatisticalPattern> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            GenericStack.FAULT_TOLERANT_LIST_CODEC.fieldOf("inputsPerAttempt")
-                    .forGetter(EncodedStatisticalPattern::inputsPerAttempt),
-            GenericStack.CODEC.fieldOf("output")
-                    .forGetter(EncodedStatisticalPattern::output),
-            Codec.DOUBLE.fieldOf("successProbability")
-                    .forGetter(EncodedStatisticalPattern::successProbability),
-            Codec.DOUBLE.optionalFieldOf("alpha", 0.05)
-                    .forGetter(EncodedStatisticalPattern::alpha),
-            Codec.INT.optionalFieldOf("smallSampleLimit", 30)
-                    .forGetter(EncodedStatisticalPattern::smallSampleLimit),
-            Codec.LONG.optionalFieldOf("targetBatch", 1000L)
-                    .forGetter(EncodedStatisticalPattern::targetBatch))
+                    GenericStack.FAULT_TOLERANT_LIST_CODEC.fieldOf("inputsPerAttempt")
+                            .forGetter(EncodedStatisticalPattern::inputsPerAttempt),
+                    GenericStack.CODEC.fieldOf("output")
+                            .forGetter(EncodedStatisticalPattern::output),
+                    Codec.DOUBLE.fieldOf("successProbability")
+                            .forGetter(EncodedStatisticalPattern::successProbability),
+                    Codec.DOUBLE.optionalFieldOf("alpha", 0.05)
+                            .forGetter(EncodedStatisticalPattern::alpha),
+                    Codec.INT.optionalFieldOf("smallSampleLimit", 30)
+                            .forGetter(EncodedStatisticalPattern::smallSampleLimit))
             .apply(builder, EncodedStatisticalPattern::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, EncodedStatisticalPattern> STREAM_CODEC = StreamCodec
@@ -71,7 +65,5 @@ public record EncodedStatisticalPattern(
                     EncodedStatisticalPattern::alpha,
                     ByteBufCodecs.VAR_INT,
                     EncodedStatisticalPattern::smallSampleLimit,
-                    ByteBufCodecs.VAR_LONG,
-                    EncodedStatisticalPattern::targetBatch,
                     EncodedStatisticalPattern::new);
 }

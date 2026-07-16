@@ -2,26 +2,18 @@ package com.tz.statpatterns.core.definition;
 
 import appeng.block.AEBaseBlock;
 import appeng.block.AEBaseBlockItem;
-import appeng.core.definitions.AEItems;
 import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.ItemDefinition;
 import com.google.common.base.Preconditions;
-import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.SPCreativeTabs;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import com.tz.statpatterns.block.ProbabilityPatternProviderBlock;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -30,8 +22,6 @@ import static com.tz.statpatterns.api.ids.BlockIds.PROBABILITY_PATTERN_PROVIDER;
 
 public final class SPBlocks {
     public static final DeferredRegister.Blocks DR = DeferredRegister.createBlocks(MOD_ID);
-    public static final BlockDefinition<ProbabilityPatternProviderBlock> PROBABILITY_PATTERN_PROVIDER_BLOCK = block("probability_pattern_provider", PROBABILITY_PATTERN_PROVIDER, () -> new ProbabilityPatternProviderBlock());
-
 
     private SPBlocks() {
         // Prevent instantiation
