@@ -105,6 +105,8 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
             hasInput |= stack != null;
         }
         if (!hasInput) {
+            super.encode();
+            broadcastChanges();
             return;
         }
 
@@ -113,6 +115,8 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
             sparseOutputs.add(outputsInv.getStack(i));
         }
         if (sparseOutputs.isEmpty() || sparseOutputs.get(0) == null) {
+            super.encode();
+            broadcastChanges();
             return;
         }
 

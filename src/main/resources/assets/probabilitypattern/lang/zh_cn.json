@@ -1,15 +1,16 @@
 {
-  "item.probabilitypattern.probability_pattern": "概率样板",
-  "item.probabilitypattern.probability_pattern_terminal": "概率样板编码终端（概率）",
-  "block.probabilitypattern.probability_pattern_terminal": "概率样板编码终端（概率）",
-  "itemGroup.probabilitypattern": "AE2 概率样板",
-  "container.probabilitypattern.probability_pattern_terminal": "概率样板编码终端",
+  "item.probabilitypattern.probability_pattern": "处理样板（概率）",
+  "item.probabilitypattern.probability_pattern_terminal": "ME概率样板编码终端",
+  "block.probabilitypattern.probability_pattern_terminal": "ME概率样板编码终端",
+  "item.probabilitypattern.probability_pattern_handheld_terminal": "无线概率样板编码终端",
+  "itemGroup.probabilitypattern": "应用能源2-概率样板",
+  "container.probabilitypattern.probability_pattern_terminal": "概率样板编码",
   "container.probabilitypattern.inputs": "每次尝试输入",
   "container.probabilitypattern.output": "目标产物",
   "container.probabilitypattern.pattern": "样板",
-  "container.probabilitypattern.encode": "编码",
+  "container.probabilitypattern.encode": "编写样板",
   "container.probabilitypattern.plan": "计划",
-  "container.probabilitypattern.invalid": "输入无效",
+  "container.probabilitypattern.invalid": "无效输入",
   "container.probabilitypattern.target": "N",
   "container.probabilitypattern.probability": "p",
   "container.probabilitypattern.alpha": "a",
@@ -23,5 +24,3 @@
   "probabilitypattern.tooltip.distribution": "检验分布",
   "probabilitypattern.tooltip.failure_probability": "少产风险"
 }
-
-

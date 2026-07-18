@@ -1,19 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " P ",
-    "CTC",
-    " R "
+    "PT"
   ],
   "key": {
-    "C": {
-      "item": "minecraft:comparator"
-    },
     "P": {
-      "item": "probabilitypattern:probability_pattern"
-    },
-    "R": {
-      "item": "minecraft:redstone"
+      "item": "ae2:calculation_processor"
     },
     "T": {
       "item": "ae2:pattern_encoding_terminal"

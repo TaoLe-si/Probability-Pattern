@@ -31,6 +31,7 @@ import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
+import com.tz.statpatterns.item.ProbabilityPatternTerminalItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -47,6 +48,7 @@ public final class SPItems {
             p.stacksTo(64),
             StatisticalPatternDetails::decode,
             StatisticalPatternDetails::getInvalidPatternTooltip));
+    public static final ItemDefinition<ProbabilityPatternTerminalItem> PROBABILITY_PATTERN_HANDHELD_TERMINAL = item("Probability Pattern Handheld Terminal", ItemIds.PROBABILITY_PATTERN_HANDHELD_TERMINAL, ProbabilityPatternTerminalItem::new);
 
     private SPItems() {
     }
