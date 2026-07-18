@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import appeng.api.crafting.PatternDetailsHelper;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPItems;
 import com.tz.statpatterns.math.ProbabilitySizing;
@@ -53,8 +54,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         this(definition, encoded, null);
     }
 
-    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded,
-                                      @Nullable Long requestedOutputAmount) {
+    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount) {
         this.definition = Objects.requireNonNull(definition, "definition");
         this.encoded = Objects.requireNonNull(encoded, "encoded");
         this.requestedOutputAmount = requestedOutputAmount;
@@ -89,8 +89,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     }
 
     public static ItemStack encode(List<GenericStack> sparseInputs, List<GenericStack> sparseOutputs, double successProbability, double alpha) {
-        var output = sparseOutputs.stream().filter(Objects::nonNull).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("At least one output is required."));
+        var output = sparseOutputs.stream().filter(Objects::nonNull).findFirst().orElseThrow(() -> new IllegalArgumentException("At least one output is required."));
         var compactInputs = sparseInputs.stream().filter(Objects::nonNull).toList();
         if (compactInputs.isEmpty()) {
             throw new IllegalArgumentException("At least one input is required.");
@@ -102,13 +101,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         return stack;
     }
 
-    public static ItemStack encode(List<GenericStack> inputsPerAttempt, GenericStack output,
-                                   double successProbability, double alpha) {
-        return encode(new ArrayList<>(inputsPerAttempt), List.of(output), successProbability, alpha);
-    }
-
-    public static PatternDetailsTooltip getInvalidPatternTooltip(ItemStack stack, Level level,
-                                                                 @Nullable Exception cause, TooltipFlag flags) {
+    public static PatternDetailsTooltip getInvalidPatternTooltip(ItemStack stack, Level level, @Nullable Exception cause, TooltipFlag flags) {
         var tooltip = new PatternDetailsTooltip(PatternDetailsTooltip.OUTPUT_TEXT_PRODUCES);
         var encoded = stack.get(Components.ENCODED_STATISTICAL_PATTERN);
         if (encoded != null) {

@@ -29,7 +29,6 @@ public final class ProbabilityPatternMod {
         Components.DR.register(modEventBus);
         SPItems.DR.register(modEventBus);
         SPMenus.register(modEventBus);
-        PatternDetailsHelper.registerDecoder(ProbabilityPatternDecoder.INSTANCE);
 
         SPCreativeTabs.CREATIVE_TABS.register(modEventBus);
     }

@@ -1,8 +1,6 @@
 package com.tz.statpatterns.crafting;
 
-import appeng.api.crafting.EncodedPatternDecoder;
-import appeng.api.crafting.IPatternDetails;
-import appeng.api.crafting.InvalidPatternTooltipStrategy;
+import appeng.api.crafting.*;
 import appeng.api.stacks.AEItemKey;
 import appeng.crafting.pattern.EncodedPatternItem;
 import com.tz.statpatterns.api.ids.Components;
@@ -19,10 +17,10 @@ import java.util.List;
  */
 public class ProbabilityPatternItem extends EncodedPatternItem<StatisticalPatternDetails> {
 
-    public ProbabilityPatternItem(Properties properties,
-                                  EncodedPatternDecoder<StatisticalPatternDetails> decoder,
-                                  @Nullable InvalidPatternTooltipStrategy invalidPatternTooltip) {
+    public ProbabilityPatternItem(Properties properties, EncodedPatternDecoder<StatisticalPatternDetails> decoder, @Nullable InvalidPatternTooltipStrategy invalidPatternTooltip) {
         super(properties, decoder, invalidPatternTooltip);
+        PatternDetailsHelper.registerDecoder(ProbabilityPatternDecoder.INSTANCE);
+        PatternDetailsHelper.encodedPatternItemBuilder(decoder);
     }
 
     @Override
