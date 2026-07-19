@@ -45,9 +45,6 @@ public class PCraftingTreeProcess {
         }
     }
 
-    /**
-     * @see CraftingTreeNode#notRecursive
-     */
     boolean notRecursive(IPatternDetails details) {
         return this.parent == null || this.parent.notRecursive(details);
     }
