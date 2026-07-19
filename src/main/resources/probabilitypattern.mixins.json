@@ -4,7 +4,7 @@
     "package": "com.tz.statpatterns.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "CraftingTreeNodeMixin",
+        "CraftingServiceMixin",
         "RestrictedInputSlotMixin"
     ],
     "injectors": {
