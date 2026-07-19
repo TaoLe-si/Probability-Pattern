@@ -39,7 +39,7 @@ public final class SPMenus {
             MENUS.register("probability_pattern_terminal",
                     () -> MenuTypeBuilder
                             .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
-                                    ProbabilityPatternTerminalMenu::new,
+                                            ProbabilityPatternTerminalMenu::new,
                                     IPatternTerminalMenuHost.class)
                             .build(ProbabilityPatternMod.id("probability_pattern_terminal")));
 

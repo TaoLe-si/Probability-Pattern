@@ -18,6 +18,7 @@
  */
 package com.tz.statpatterns.client;
 
+import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.tz.statpatterns.core.definition.SPMenus;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -36,13 +37,13 @@ public final class ProbabilityPatternClient {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.<ProbabilityPatternTerminalMenu, ProbabilityPatternTerminalScreen>register(
+        event.<ProbabilityPatternTerminalMenu, ProbabilityPatternTerminalScreen<ProbabilityPatternTerminalMenu>>register(
                 SPMenus.PROBABILITY_PATTERN_TERMINAL.get(),
-                (menu, playerInventory, title) -> new ProbabilityPatternTerminalScreen(
+                (menu, playerInventory, title) -> new ProbabilityPatternTerminalScreen<ProbabilityPatternTerminalMenu>(
                         menu,
                         playerInventory,
                         title,
-                        StyleManager.loadStyleDoc("/screens/terminals/pattern_encoding_terminal.json")));
+                        StyleManager.loadStyleDoc("/screens/terminals/probability_pattern_encoding_terminal.json")));
     }
 }
 

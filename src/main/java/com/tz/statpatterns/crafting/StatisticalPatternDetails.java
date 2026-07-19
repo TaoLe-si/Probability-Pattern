@@ -88,7 +88,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         return new StatisticalPatternDetails(what, encoded);
     }
 
-    public static ItemStack encode(List<GenericStack> sparseInputs, List<GenericStack> sparseOutputs, double successProbability, double alpha) {
+    public static ItemStack encode(List<GenericStack> sparseInputs, List<GenericStack> sparseOutputs, double successProbability, double alpha, boolean alpha95) {
         var output = sparseOutputs.stream().filter(Objects::nonNull).findFirst().orElseThrow(() -> new IllegalArgumentException("At least one output is required."));
         var compactInputs = sparseInputs.stream().filter(Objects::nonNull).toList();
         if (compactInputs.isEmpty()) {
@@ -97,7 +97,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
 
         var stack = new ItemStack(SPItems.PROBABILITY_PATTERN.get());
         stack.set(AEComponents.ENCODED_PROCESSING_PATTERN, new EncodedProcessingPattern(sparseInputs, sparseOutputs));
-        stack.set(Components.ENCODED_STATISTICAL_PATTERN, new EncodedStatisticalPattern(compactInputs, output, successProbability, alpha, 30));
+        stack.set(Components.ENCODED_STATISTICAL_PATTERN, new EncodedStatisticalPattern(compactInputs, output, successProbability, alpha, 30, alpha95));
         return stack;
     }
 
@@ -156,9 +156,8 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         }
         tooltip.addOutput(encoded.output());
         if (encoded.successProbability() < 1.0) {
-            tooltip.addProperty(
-                    Component.translatable("probabilitypattern.tooltip.success_probability"),
-                    Component.literal("%.0f%%".formatted(encoded.successProbability() * 100.0)));
+            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.success_probability"), Component.literal("%.0f%%".formatted(encoded.successProbability() * 100.0)));
+            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.isalpha95"), Component.literal("%.0f%%".formatted(encoded.isAlpha95() ? 95.0 : 99.0)));
         }
         return tooltip;
     }
@@ -166,11 +165,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     public ProbabilitySizingResult sizing() {
         var targetOutput = requestedOutputAmount != null ? requestedOutputAmount : encoded.output().amount();
         var successes = Math.max(1, ceilDiv(targetOutput, encoded.output().amount()));
-        return ProbabilitySizing.planAttempts(
-                successes,
-                encoded.successProbability(),
-                encoded.alpha(),
-                encoded.smallSampleLimit());
+        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
     }
 
     public double successProbability() {

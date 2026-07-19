@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import appeng.client.gui.me.items.PatternEncodingTermScreen;
+import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
 import com.tz.statpatterns.core.definition.SPMenus;
@@ -213,11 +215,19 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
         }
     }
 
+    // ========== 修复后的 Handler ==========
+    @SuppressWarnings("rawtypes")
     private static final class PatternTerminalGhostHandler
             implements IGhostIngredientHandler<ProbabilityPatternTerminalScreen> {
         @Override
-        public <I> List<Target<I>> getTargetsTyped(ProbabilityPatternTerminalScreen screen,
-                                                   ITypedIngredient<I> ingredient, boolean doStart) {
+        public <I> List<Target<I>> getTargetsTyped(
+                ProbabilityPatternTerminalScreen screen,
+                ITypedIngredient<I> ingredient,
+                boolean doStart
+        ) {
+            // 内部强转为带泛型版本调用DropTargets
+            ProbabilityPatternTerminalScreen<?> customScreen = (ProbabilityPatternTerminalScreen<?>) screen;
+
             var itemStack = ingredient.getItemStack().orElse(ItemStack.EMPTY);
             if (itemStack.isEmpty()) {
                 return List.of();
@@ -229,7 +239,7 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
             }
 
             var targets = new ArrayList<Target<I>>();
-            for (var dropTarget : DropTargets.getTargets(screen)) {
+            for (var dropTarget : DropTargets.getTargets(customScreen)) {
                 if (dropTarget.canDrop(genericStack)) {
                     targets.add(new Target<>() {
                         @Override

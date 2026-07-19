@@ -35,7 +35,8 @@ public record EncodedStatisticalPattern(
         GenericStack output,
         double successProbability,
         double alpha,
-        int smallSampleLimit) {
+        int smallSampleLimit,
+        boolean isAlpha95) {
     public EncodedStatisticalPattern {
         inputsPerAttempt = Collections.unmodifiableList(inputsPerAttempt);
         if (inputsPerAttempt.isEmpty()) {
@@ -56,6 +57,7 @@ public record EncodedStatisticalPattern(
         if (smallSampleLimit < 1) {
             throw new IllegalArgumentException("Small sample limit must be positive.");
         }
+
     }
 
     public static final Codec<EncodedStatisticalPattern> CODEC = RecordCodecBuilder.create(builder -> builder.group(
@@ -68,7 +70,9 @@ public record EncodedStatisticalPattern(
                     Codec.DOUBLE.optionalFieldOf("alpha", 0.05)
                             .forGetter(EncodedStatisticalPattern::alpha),
                     Codec.INT.optionalFieldOf("smallSampleLimit", 30)
-                            .forGetter(EncodedStatisticalPattern::smallSampleLimit))
+                            .forGetter(EncodedStatisticalPattern::smallSampleLimit),
+                    Codec.BOOL.optionalFieldOf("isAlpha95", true)
+                            .forGetter(EncodedStatisticalPattern::isAlpha95))
             .apply(builder, EncodedStatisticalPattern::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, EncodedStatisticalPattern> STREAM_CODEC = StreamCodec
@@ -83,5 +87,7 @@ public record EncodedStatisticalPattern(
                     EncodedStatisticalPattern::alpha,
                     ByteBufCodecs.VAR_INT,
                     EncodedStatisticalPattern::smallSampleLimit,
+                    ByteBufCodecs.BOOL,
+                    EncodedStatisticalPattern::isAlpha95,
                     EncodedStatisticalPattern::new);
 }

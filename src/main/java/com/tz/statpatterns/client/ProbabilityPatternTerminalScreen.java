@@ -18,8 +18,15 @@
  */
 package com.tz.statpatterns.client;
 
+import appeng.api.config.Setting;
+import appeng.api.config.YesNo;
+import appeng.client.gui.Icon;
+import appeng.client.gui.me.common.MEStorageScreen;
+import appeng.client.gui.widgets.*;
+import appeng.core.localization.GuiText;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+import com.tz.statpatterns.api.config.Settings;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -28,33 +35,27 @@ import appeng.client.gui.style.ScreenStyle;
 
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
 
-public class ProbabilityPatternTerminalScreen extends PatternEncodingTermScreen<ProbabilityPatternTerminalMenu> {
-    private static final int PROBABILITY_FIELD_WIDTH = 58;
+import java.util.List;
+
+public class ProbabilityPatternTerminalScreen<P extends PatternEncodingTermMenu> extends PatternEncodingTermScreen<ProbabilityPatternTerminalMenu> {
+    private static final int PROBABILITY_FIELD_WIDTH = 40;
     private static final int FIELD_HEIGHT = 14;
-    private static final int TITLE_TO_PROBABILITY_GAP = 16;
+    private static final int TITLE_TO_PROBABILITY_GAP = 10;
     private static final int LABEL_TO_FIELD_GAP = 4;
     private static final int INVENTORY_TITLE_GAP = 12;
 
     private final Inventory playerInventory;
-    private EditBox probabilityField;
+    private final AETextField probabilityField;
+    private final AECheckbox alpha95;
 
-    public ProbabilityPatternTerminalScreen(ProbabilityPatternTerminalMenu menu, Inventory playerInventory,
-            Component title, ScreenStyle style) {
+    public ProbabilityPatternTerminalScreen(ProbabilityPatternTerminalMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
         this.playerInventory = playerInventory;
-    }
-
-    @Override
-    public void init() {
-        super.init();
-
-        probabilityField = new EditBox(font,
-                probabilityFieldX(),
-                fieldY(),
-                PROBABILITY_FIELD_WIDTH,
-                FIELD_HEIGHT,
-                Component.translatable("gui.probabilitypattern.probability"));
+        this.probabilityField = widgets.addTextField("probability");
+        probabilityField.setHeight(FIELD_HEIGHT);
+        probabilityField.setWidth(PROBABILITY_FIELD_WIDTH);
         probabilityField.setMaxLength(8);
+        probabilityField.setMessage(Component.translatable("gui.probabilitypattern.probability"));
         probabilityField.setValue(formatProbability(menu.getProbability()));
         probabilityField.setResponder(value -> {
             var parsed = parseProbability(value);
@@ -62,27 +63,38 @@ public class ProbabilityPatternTerminalScreen extends PatternEncodingTermScreen<
                 menu.setProbability(parsed);
             }
         });
-        addRenderableWidget(probabilityField);
+        probabilityField.setX(probabilityFieldX());
+        probabilityField.setY(fieldY());
+
+        this.alpha95 = widgets.addCheckbox("alpha", Component.translatable("gui.probabilitypattern.alpha95"), this::save);
+        this.alpha95.setWidth(100);
+
+        updateState();
+    }
+
+    private void updateState() {
+        alpha95.setSelected(getMenu().isAlpha95());
+    }
+
+    private void save() {
+        getMenu().setAlpha95(alpha95.isSelected());
+        updateState();
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        if (probabilityField != null) {
-            probabilityField.setX(probabilityFieldX());
-            probabilityField.setY(fieldY());
-        }
-
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         var probabilityLabel = Component.translatable("gui.probabilitypattern.probability");
-        guiGraphics.drawString(font, probabilityLabel, probabilityLabelX(), labelY(), 0x404040, false);
+        guiGraphics.drawString(font, probabilityLabel, probabilityLabelX(), labelY() + 1, 0x404040, false);
+
         probabilityField.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     @Override
     public void containerTick() {
         super.containerTick();
-        if (probabilityField != null && !probabilityField.isFocused()) {
+        if (!probabilityField.isFocused()) {
             var current = formatProbability(menu.getProbability());
             if (!current.equals(probabilityField.getValue())) {
                 probabilityField.setValue(current);
@@ -91,7 +103,7 @@ public class ProbabilityPatternTerminalScreen extends PatternEncodingTermScreen<
     }
 
     private int probabilityLabelX() {
-        return leftPos + playerInventoryLeftX() + font.width(playerInventoryTitle) + TITLE_TO_PROBABILITY_GAP;
+        return leftPos + playerInventoryLeftX() + font.width(playerInventoryTitle) + TITLE_TO_PROBABILITY_GAP - 8;
     }
 
     private int probabilityFieldX() {

@@ -22,5 +22,7 @@
   "probabilitypattern.tooltip.alpha": "Significance Level",
   "probabilitypattern.tooltip.trials": "Planned Attempts",
   "probabilitypattern.tooltip.distribution": "Test Distribution",
-  "probabilitypattern.tooltip.failure_probability": "Underproduction Risk"
+  "probabilitypattern.tooltip.failure_probability": "Underproduction Risk",
+  "gui.probabilitypattern.alpha95": "95%",
+  "probabilitypattern.tooltip.isalpha95": "置信度区间"
 }

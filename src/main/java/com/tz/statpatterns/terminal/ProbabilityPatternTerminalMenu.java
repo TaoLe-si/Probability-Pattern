@@ -21,6 +21,7 @@ package com.tz.statpatterns.terminal;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import appeng.menu.implementations.MenuTypeBuilder;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
@@ -40,24 +41,29 @@ import appeng.parts.encoding.EncodingMode;
 
 public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private static final String ACTION_SET_PROBABILITY = "setProbability";
+    private static final String ACTION_SET_ALPHA95 = "setAlpha95";
 
     private double probability = 0.8;
+    private boolean alpha95 = true;
     private final IPatternTerminalMenuHost patternHost;
 
-    public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory,
-            @Nullable IPatternTerminalMenuHost host) {
+    public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
     }
 
-    public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory,
-            @Nullable IPatternTerminalMenuHost host) {
+    public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         super(menuType, containerId, playerInventory, host, true);
         this.patternHost = Objects.requireNonNull(host, "host");
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
+        registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
     }
 
     public double getProbability() {
         return probability;
+    }
+
+    public boolean isAlpha95() {
+        return alpha95;
     }
 
     public void setProbability(double probability) {
@@ -65,6 +71,15 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         if (isClientSide()) {
             sendClientAction(ACTION_SET_PROBABILITY, this.probability);
         }
+    }
+    public void setAlpha95(boolean value) {
+        this.alpha95 = value;
+        // 客户端点击时发送同步包到服务端
+        if (isClientSide()) {
+            sendClientAction(ACTION_SET_ALPHA95, value);
+        }
+        // 同步所有打开此Menu的客户端界面
+        broadcastChanges();
     }
 
     @Override
@@ -120,7 +135,8 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
             return;
         }
 
-        var encodedPattern = StatisticalPatternDetails.encode(sparseInputs, sparseOutputs, probability, 0.05);
+        var encodedPattern = StatisticalPatternDetails.encode(sparseInputs, sparseOutputs, probability, isAlpha95() ? 0.05 : 0.01, isAlpha95());
+
         var encodedInv = logic.getEncodedPatternInv();
         var blankInv = logic.getBlankPatternInv();
         var existingEncoded = encodedInv.getStackInSlot(0);
