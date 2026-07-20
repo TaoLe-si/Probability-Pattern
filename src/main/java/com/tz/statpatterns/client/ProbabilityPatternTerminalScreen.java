@@ -18,14 +18,8 @@
  */
 package com.tz.statpatterns.client;
 
-import appeng.api.config.Setting;
-import appeng.api.config.YesNo;
-import appeng.client.gui.Icon;
-import appeng.client.gui.me.common.MEStorageScreen;
 import appeng.client.gui.widgets.*;
-import appeng.core.localization.GuiText;
 import appeng.menu.me.items.PatternEncodingTermMenu;
-import com.tz.statpatterns.api.config.Settings;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,8 +28,6 @@ import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.client.gui.style.ScreenStyle;
 
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
-
-import java.util.List;
 
 public class ProbabilityPatternTerminalScreen<P extends PatternEncodingTermMenu> extends PatternEncodingTermScreen<ProbabilityPatternTerminalMenu> {
     private static final int PROBABILITY_FIELD_WIDTH = 40;
