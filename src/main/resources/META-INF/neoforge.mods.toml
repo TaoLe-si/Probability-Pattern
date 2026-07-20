@@ -8,9 +8,17 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="Tao, ZincG"
 description='''
-AE2  概率样板供应器
-AE2 addon that adds statistical processing patterns for probabilistic production chains.
+A Minecraft mod that extends Applied Energistics 2 with probabilistic crafting patterns.
+
+Features:
+- Statistical Pattern Provider: Encodes processing/crafting patterns with configurable success rates, enabling probabilistic production chains with guaranteed overall confidence.
+- Probability Pattern Terminal: A portable terminal for encoding and managing statistical patterns on the go.
+- Upgrade Card Support: Compatible with AE2 upgrade cards (e.g. Energy Card) for enhanced functionality.
+
+Designed for complex automation scenarios where crafting outcomes are uncertain, such as ore processing, recycling, or any process with variable yields.
 '''
+logoFile="assets/probabilitypattern/textures/item/probability_pattern.png"
+
 [[mixins]]
 config="${mod_id}.mixins.json"
 
