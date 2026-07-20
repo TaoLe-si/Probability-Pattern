@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.tz.statpatterns.api.ids.Components;
 import appeng.api.crafting.PatternDetailsHelper;
+import appeng.core.definitions.AEItems;
+import appeng.api.upgrades.Upgrades;
 import com.tz.statpatterns.crafting.ProbabilityPatternDecoder;
 
 import com.tz.statpatterns.core.definition.*;
@@ -41,9 +43,15 @@ public final class ProbabilityPatternMod {
     public static class ModEvents {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
-            event.enqueueWork(() ->
+            event.enqueueWork(() -> {
                 GridLinkables.register(SPItems.PROBABILITY_PATTERN_HANDHELD_TERMINAL,
-                    WirelessTerminalItem.LINKABLE_HANDLER));
+                    WirelessTerminalItem.LINKABLE_HANDLER);
+
+                // Register upgrade card support for the portable probability pattern terminal.
+                // AE2 only registers energy cards for its own wireless terminals by exact item identity,
+                // so we must register our custom terminal separately.
+                Upgrades.add(AEItems.ENERGY_CARD, SPItems.PROBABILITY_PATTERN_HANDHELD_TERMINAL, 2);
+            });
         }
     }
 }
