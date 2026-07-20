@@ -22,6 +22,31 @@ public final class ProbabilitySizing {
     private ProbabilitySizing() {
     }
 
+    /**
+     * Compute the adjusted alpha for multi-pattern chain crafting.
+     * Given m probability patterns in the crafting tree, to ensure overall confidence >= 0.95,
+     * we need P1^m >= 0.95, where P1 = 1 - alpha_adjusted.
+     * Thus alpha_adjusted = 1 - 0.95^(1/m).
+     *
+     * @param m number of probability patterns in the crafting tree
+     * @param userAlpha user-specified alpha (confidence level)
+     * @return adjusted alpha for single pattern
+     */
+    public static double computeAdjustedAlpha(int m, double userAlpha) {
+        if (m <= 0) {
+            return userAlpha;
+        }
+        if (m == 1) {
+            return userAlpha;
+        }
+        // P1 >= 0.95^(1/m), so alpha = 1 - P1 <= 1 - 0.95^(1/m)
+        double p1 = Math.pow(1.0 - userAlpha, 1.0 / m);
+        double adjusted = 1.0 - p1;
+        // Clamp to prevent alpha from becoming too small (numerical stability)
+        // When m is very large, alpha could underflow to 0 or cause excessive attempts
+        return Math.max(adjusted, 1e-10);
+    }
+
     public static ProbabilitySizingResult planAttempts(long targetSuccesses, double successProbability,
             double alpha, int smallSampleLimit) {
         validate(targetSuccesses, successProbability, alpha);

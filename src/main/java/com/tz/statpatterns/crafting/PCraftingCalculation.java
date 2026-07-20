@@ -17,11 +17,13 @@ import appeng.crafting.inv.CraftingSimulationState;
 import appeng.crafting.inv.NetworkCraftingSimulationState;
 import appeng.hooks.ticking.TickHandler;
 import com.google.common.base.Stopwatch;
+import com.tz.statpatterns.math.ProbabilitySizing;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +45,11 @@ public class PCraftingCalculation extends CraftingCalculation {
     private int time = 5;
     private int incTime = Integer.MAX_VALUE;
     private final List<CraftAttempt> attempts = AELog.isCraftingLogEnabled() ? new ArrayList<>() : null;
+    /**
+     * Adjusted alpha for multi-pattern chain crafting. Computed from m (number of probability patterns).
+     * 0 means not yet computed.
+     */
+    private double adjustedAlpha = 0;
 
     public PCraftingCalculation(Level level, IGrid grid, ICraftingSimulationRequester simRequester, GenericStack output, CalculationStrategy strategy) {
         super(level, grid, simRequester, output, strategy);
@@ -57,6 +64,32 @@ public class PCraftingCalculation extends CraftingCalculation {
         this.networkInv = new NetworkCraftingSimulationState(storage, simRequester.getActionSource());
 
         this.tree = new PCraftingTreeNode(craftingService, this, this.output, 1, null, -1);
+
+        // Pre-scan: count probability patterns in the crafting tree to compute adjusted alpha
+        preScanProbabilityPatterns(craftingService);
+    }
+
+    /**
+     * Pre-scan the crafting tree to count the number of probability patterns (m),
+     * then compute the adjusted alpha for multi-pattern chain confidence control.
+     */
+    private void preScanProbabilityPatterns(appeng.api.networking.crafting.ICraftingService craftingService) {
+        var visited = new HashSet<AEKey>();
+        int m = PCraftingTreeNode.countProbabilityPatternsFor(craftingService, this.output, visited);
+        if (m > 0) {
+            // Use the user-specified alpha (0.05 for 95% confidence, 0.01 for 99%)
+            // We use 0.05 as the default global confidence target
+            this.adjustedAlpha = ProbabilitySizing.computeAdjustedAlpha(m, 0.05);
+            AELog.craftingDebug("Probability pattern pre-scan: m=" + m + ", adjustedAlpha=" + this.adjustedAlpha);
+        }
+    }
+
+    /**
+     * Get the adjusted alpha for multi-pattern chain crafting.
+     * Returns 0 if not yet computed or if there are no probability patterns.
+     */
+    double getAdjustedAlpha() {
+        return this.adjustedAlpha;
     }
 
     void addMissing(AEKey what, long amount) {

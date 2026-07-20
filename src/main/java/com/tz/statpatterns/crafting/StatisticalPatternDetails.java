@@ -49,15 +49,21 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     private final EncodedStatisticalPattern encoded;
     @Nullable
     private final Long requestedOutputAmount;
+    /**
+     * Adjusted alpha for multi-pattern chain crafting. Null means use encoded alpha.
+     */
+    @Nullable
+    private final Double adjustedAlpha;
 
     private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded) {
-        this(definition, encoded, null);
+        this(definition, encoded, null, null);
     }
 
-    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount) {
+    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount, @Nullable Double adjustedAlpha) {
         this.definition = Objects.requireNonNull(definition, "definition");
         this.encoded = Objects.requireNonNull(encoded, "encoded");
         this.requestedOutputAmount = requestedOutputAmount;
+        this.adjustedAlpha = adjustedAlpha;
     }
 
     @Override
@@ -165,7 +171,8 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     public ProbabilitySizingResult sizing() {
         var targetOutput = requestedOutputAmount != null ? requestedOutputAmount : encoded.output().amount();
         var successes = Math.max(1, ceilDiv(targetOutput, encoded.output().amount()));
-        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
+        var effectiveAlpha = adjustedAlpha != null ? adjustedAlpha : encoded.alpha();
+        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), effectiveAlpha, encoded.smallSampleLimit());
     }
 
     public double successProbability() {
@@ -173,7 +180,14 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     }
 
     public StatisticalPatternDetails forRequest(long requestedOutputAmount) {
-        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount));
+        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount), adjustedAlpha);
+    }
+
+    /**
+     * Create a sized copy of this pattern with the given adjusted alpha for multi-pattern chain crafting.
+     */
+    public StatisticalPatternDetails forRequest(long requestedOutputAmount, double adjustedAlpha) {
+        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount), adjustedAlpha);
     }
 
     private static long ceilDiv(long numerator, long denominator) {

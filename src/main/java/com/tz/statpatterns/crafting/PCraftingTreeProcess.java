@@ -9,8 +9,10 @@ import appeng.crafting.CraftBranchFailure;
 import appeng.crafting.CraftingTreeNode;
 import appeng.crafting.inv.CraftingSimulationState;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class PCraftingTreeProcess {
 
@@ -139,6 +141,42 @@ public class PCraftingTreeProcess {
             }
         }
         return false;
+    }
+
+    /**
+     * Count the number of statistical (probability) patterns in this process and all sub-processes.
+     */
+    int countStatisticalPatterns() {
+        int count = details instanceof StatisticalPatternDetails ? 1 : 0;
+        for (PCraftingTreeNode node : nodes.keySet()) {
+            count += node.countProbabilityPatterns();
+        }
+        return count;
+    }
+
+    /**
+     * Pre-scan: count statistical patterns available for a given item, without building the full tree.
+     * Follows ALL patterns (both statistical and non-statistical) to correctly count statistical
+     * patterns at any depth in the crafting chain.
+     * Uses a visited set to avoid infinite recursion.
+     */
+    static int countStatisticalPatternsFor(ICraftingService cc, AEKey what, Set<AEKey> visited) {
+        if (!visited.add(what)) return 0;
+        if (cc.canEmitFor(what)) return 0;
+
+        int count = 0;
+        for (var p : cc.getCraftingFor(what)) {
+            if (p instanceof StatisticalPatternDetails) {
+                count++;
+            }
+            // Recurse into ALL patterns' inputs (not just statistical ones)
+            // to find statistical patterns deeper in the chain
+            for (var input : p.getInputs()) {
+                var firstInput = input.getPossibleInputs()[0].what();
+                count += countStatisticalPatternsFor(cc, firstInput, visited);
+            }
+        }
+        return count;
     }
 }
 
