@@ -7,7 +7,6 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.crafting.CraftBranchFailure;
-import appeng.crafting.CraftingTreeProcess;
 import appeng.crafting.execution.CraftingCpuHelper;
 import appeng.crafting.execution.InputTemplate;
 import appeng.crafting.inv.ChildCraftingSimulationState;
@@ -15,14 +14,10 @@ import appeng.crafting.inv.CraftingSimulationState;
 import appeng.crafting.inv.ICraftingInventory;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PCraftingTreeNode {
@@ -122,14 +117,9 @@ public class PCraftingTreeNode {
             return patterns;
         }
         var result = new ArrayList<IPatternDetails>(patterns.size());
-        double adjAlpha = this.job.getAdjustedAlpha();
         for (var p : patterns) {
             if (p instanceof StatisticalPatternDetails spd) {
-                if (adjAlpha > 0) {
-                    result.add(spd.forRequest(this.probabilityTotalRequested, adjAlpha));
-                } else {
-                    result.add(spd.forRequest(this.probabilityTotalRequested));
-                }
+                result.add(spd.forRequest(this.probabilityTotalRequested));
             } else {
                 result.add(p);
             }
@@ -334,24 +324,5 @@ public class PCraftingTreeNode {
             }
         }
         return false;
-    }
-
-    /**
-     * Count the number of probability (statistical) patterns in this node's subtree.
-     */
-    int countProbabilityPatterns() {
-        if (this.nodes == null) return 0;
-        int count = 0;
-        for (PCraftingTreeProcess pro : this.nodes) {
-            count += pro.countStatisticalPatterns();
-        }
-        return count;
-    }
-
-    /**
-     * Pre-scan: count statistical patterns available for this node's item, without building the full tree.
-     */
-    static int countProbabilityPatternsFor(ICraftingService cc, AEKey what, Set<AEKey> visited) {
-        return PCraftingTreeProcess.countStatisticalPatternsFor(cc, what, visited);
     }
 }

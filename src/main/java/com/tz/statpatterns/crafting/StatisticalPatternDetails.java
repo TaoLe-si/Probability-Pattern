@@ -49,21 +49,15 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     private final EncodedStatisticalPattern encoded;
     @Nullable
     private final Long requestedOutputAmount;
-    /**
-     * Adjusted alpha for multi-pattern chain crafting. Null means use encoded alpha.
-     */
-    @Nullable
-    private final Double adjustedAlpha;
 
     private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded) {
-        this(definition, encoded, null, null);
+        this(definition, encoded, null);
     }
 
-    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount, @Nullable Double adjustedAlpha) {
+    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount) {
         this.definition = Objects.requireNonNull(definition, "definition");
         this.encoded = Objects.requireNonNull(encoded, "encoded");
         this.requestedOutputAmount = requestedOutputAmount;
-        this.adjustedAlpha = adjustedAlpha;
     }
 
     @Override
@@ -163,7 +157,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         tooltip.addOutput(encoded.output());
         if (encoded.successProbability() < 1.0) {
             tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.success_probability"), Component.literal("%.0f%%".formatted(encoded.successProbability() * 100.0)));
-            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.isalpha95"), Component.literal("%.0f%%".formatted(encoded.isAlpha95() ? 95.0 : 99.0)));
+            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.isalpha95"), Component.literal("%.0f%%".formatted((1.0 - encoded.alpha()) * 100.0)));
         }
         return tooltip;
     }
@@ -171,23 +165,23 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     public ProbabilitySizingResult sizing() {
         var targetOutput = requestedOutputAmount != null ? requestedOutputAmount : encoded.output().amount();
         var successes = Math.max(1, ceilDiv(targetOutput, encoded.output().amount()));
-        var effectiveAlpha = adjustedAlpha != null ? adjustedAlpha : encoded.alpha();
-        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), effectiveAlpha, encoded.smallSampleLimit());
+        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
     }
 
     public double successProbability() {
         return encoded.successProbability();
     }
 
-    public StatisticalPatternDetails forRequest(long requestedOutputAmount) {
-        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount), adjustedAlpha);
+    /**
+     * Get the alpha (significance level) encoded in this pattern.
+     * alpha = 0.05 corresponds to 95% confidence, alpha = 0.01 to 99%.
+     */
+    public double alpha() {
+        return encoded.alpha();
     }
 
-    /**
-     * Create a sized copy of this pattern with the given adjusted alpha for multi-pattern chain crafting.
-     */
-    public StatisticalPatternDetails forRequest(long requestedOutputAmount, double adjustedAlpha) {
-        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount), adjustedAlpha);
+    public StatisticalPatternDetails forRequest(long requestedOutputAmount) {
+        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount));
     }
 
     private static long ceilDiv(long numerator, long denominator) {
