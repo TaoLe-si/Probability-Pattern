@@ -2,7 +2,7 @@
   "item.probabilitypattern.probability_pattern": "Processing Pattern (Probability)",
   "item.probabilitypattern.probability_pattern_terminal": "ME Probability Pattern Encoding Terminal",
   "block.probabilitypattern.probability_pattern_terminal": "ME Probability Pattern Encoding Terminal",
-  "item.probabilitypattern.probability_pattern_handheld_terminal": "Wireless Probability Pattern Encoding Terminal",
+  "item.probabilitypattern.wireless_probability_pattern_terminal": "Wireless Probability Pattern Encoding Terminal",
   "itemGroup.probabilitypattern": "Applied Energistics 2 | Probability Patterns",
   "container.probabilitypattern.probability_pattern_terminal": "Probability Pattern Encoding",
   "container.probabilitypattern.inputs": "Inputs per Attempt",

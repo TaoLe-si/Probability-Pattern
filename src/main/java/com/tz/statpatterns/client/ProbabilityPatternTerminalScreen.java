@@ -29,7 +29,7 @@ import appeng.client.gui.style.ScreenStyle;
 
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
 
-public class ProbabilityPatternTerminalScreen<P extends PatternEncodingTermMenu> extends PatternEncodingTermScreen<ProbabilityPatternTerminalMenu> {
+public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTerminalMenu> extends PatternEncodingTermScreen<P> {
     private static final int PROBABILITY_FIELD_WIDTH = 40;
     private static final int FIELD_HEIGHT = 14;
     private static final int TITLE_TO_PROBABILITY_GAP = 10;
@@ -40,7 +40,7 @@ public class ProbabilityPatternTerminalScreen<P extends PatternEncodingTermMenu>
     private final AETextField probabilityField;
     private final AECheckbox alpha95;
 
-    public ProbabilityPatternTerminalScreen(ProbabilityPatternTerminalMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
+    public ProbabilityPatternTerminalScreen(P menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
         this.playerInventory = playerInventory;
         this.probabilityField = widgets.addTextField("probability");

@@ -1,3 +1,20 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.tz.statpatterns;
 
 import java.util.List;
@@ -9,6 +26,7 @@ import appeng.api.upgrades.Upgrades;
 import com.tz.statpatterns.crafting.ProbabilityPatternDecoder;
 
 import com.tz.statpatterns.core.definition.*;
+import com.tz.statpatterns.integration.ae2wtlib.AE2WTLibIntegration;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,6 +51,9 @@ public final class ProbabilityPatternMod {
         SPMenus.register(modEventBus);
 
         SPCreativeTabs.CREATIVE_TABS.register(modEventBus);
+
+        // Register with ae2wtlib's Universal Terminal system if installed
+        AE2WTLibIntegration.registerTerminal();
     }
 
     public static ResourceLocation id(String path) {
@@ -44,13 +65,16 @@ public final class ProbabilityPatternMod {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
-                GridLinkables.register(SPItems.PROBABILITY_PATTERN_HANDHELD_TERMINAL,
+                GridLinkables.register(SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL,
                     WirelessTerminalItem.LINKABLE_HANDLER);
 
                 // Register upgrade card support for the portable probability pattern terminal.
                 // AE2 only registers energy cards for its own wireless terminals by exact item identity,
                 // so we must register our custom terminal separately.
-                Upgrades.add(AEItems.ENERGY_CARD, SPItems.PROBABILITY_PATTERN_HANDHELD_TERMINAL, 2);
+                Upgrades.add(AEItems.ENERGY_CARD, SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, 2);
+
+                // Register ae2wtlib upgrade cards (Quantum Bridge Card, Magnet Card) if installed
+                AE2WTLibIntegration.registerUpgrades();
             });
         }
     }

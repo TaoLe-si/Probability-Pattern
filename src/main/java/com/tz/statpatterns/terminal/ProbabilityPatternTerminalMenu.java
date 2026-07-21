@@ -21,7 +21,6 @@ package com.tz.statpatterns.terminal;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import appeng.menu.implementations.MenuTypeBuilder;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
@@ -49,6 +48,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
 
     public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
+        // Note: wireless subclass overrides MenuType via its own constructor
     }
 
     public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
@@ -56,6 +56,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         this.patternHost = Objects.requireNonNull(host, "host");
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
         registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
+        // Note: upgrade slots are handled by MEStorageMenu base class via host.getUpgrades()
     }
 
     public double getProbability() {

@@ -23,6 +23,13 @@ dependencyResolutionManagement {
             name = 'AE2Local'
             url = uri(file('.gradle-home/file-repo').absolutePath)
         }
+        maven {
+            name = 'ModMaven'
+            url = 'https://modmaven.dev/'
+            content {
+                includeGroup 'de.mari_023'
+            }
+        }
         mavenCentral()
     }
 }

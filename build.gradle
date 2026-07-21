@@ -44,6 +44,14 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
 
+    // AE2 Wireless Terminal Library (optional external mod dependency)
+    // Users must install ae2wtlib separately in their mods folder.
+    // compileOnly: available at compile time, NOT bundled in our jar.
+    // This avoids the jarJar classloader isolation issue where bundled API classes
+    // and full mod classes are loaded by different classloaders, causing instanceof failures.
+    compileOnly "de.mari_023:ae2wtlib_api:${ae2wtlib_version}"
+    runtimeOnly "de.mari_023:ae2wtlib:${ae2wtlib_version}"
+
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'

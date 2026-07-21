@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "pattern": [
     "PT"
   ],
@@ -12,7 +13,7 @@
     }
   },
   "result": {
-    "id": "probabilitypattern:probability_pattern_terminal",
-    "count": 1
+    "count": 1,
+    "id": "probabilitypattern:probability_pattern_terminal"
   }
 }

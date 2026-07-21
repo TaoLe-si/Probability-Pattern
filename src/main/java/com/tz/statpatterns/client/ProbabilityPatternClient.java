@@ -18,8 +18,9 @@
  */
 package com.tz.statpatterns.client;
 
-import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.tz.statpatterns.core.definition.SPMenus;
+import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -28,7 +29,6 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import appeng.client.gui.style.StyleManager;
 
 import com.tz.statpatterns.ProbabilityPatternMod;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
 
 @EventBusSubscriber(modid = ProbabilityPatternMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ProbabilityPatternClient {
@@ -37,13 +37,23 @@ public final class ProbabilityPatternClient {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
+        // Wired terminal (no upgrade slots)
         event.<ProbabilityPatternTerminalMenu, ProbabilityPatternTerminalScreen<ProbabilityPatternTerminalMenu>>register(
                 SPMenus.PROBABILITY_PATTERN_TERMINAL.get(),
-                (menu, playerInventory, title) -> new ProbabilityPatternTerminalScreen<ProbabilityPatternTerminalMenu>(
+                (menu, playerInventory, title) -> new ProbabilityPatternTerminalScreen<>(
                         menu,
                         playerInventory,
                         title,
                         StyleManager.loadStyleDoc("/screens/terminals/probability_pattern_encoding_terminal.json")));
+
+        // Wireless terminal (with upgrade slots and ae2wtlib support)
+        event.<WirelessProbabilityPatternTerminalMenu, WirelessProbabilityPatternTerminalScreen>register(
+                SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get(),
+                (menu, playerInventory, title) -> new WirelessProbabilityPatternTerminalScreen(
+                        menu,
+                        playerInventory,
+                        title,
+                        StyleManager.loadStyleDoc("/screens/terminals/wireless_probability_pattern_terminal.json")));
     }
 }
 

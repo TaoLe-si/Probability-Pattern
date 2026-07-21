@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "pattern": [
     " W ",
     " T ",
@@ -17,7 +18,7 @@
     }
   },
   "result": {
-    "id": "probabilitypattern:probability_pattern_handheld_terminal",
-    "count": 1
+    "count": 1,
+    "id": "probabilitypattern:wireless_probability_pattern_terminal"
   }
 }

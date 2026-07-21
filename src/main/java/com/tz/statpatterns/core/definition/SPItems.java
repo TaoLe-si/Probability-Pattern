@@ -48,7 +48,7 @@ public final class SPItems {
             p.stacksTo(64),
             StatisticalPatternDetails::decode,
             StatisticalPatternDetails::getInvalidPatternTooltip));
-    public static final ItemDefinition<ProbabilityPatternTerminalItem> PROBABILITY_PATTERN_HANDHELD_TERMINAL = item("Probability Pattern Handheld Terminal", ItemIds.PROBABILITY_PATTERN_HANDHELD_TERMINAL, ProbabilityPatternTerminalItem::new);
+    public static final ItemDefinition<ProbabilityPatternTerminalItem> WIRELESS_PROBABILITY_PATTERN_TERMINAL = item("Wireless Probability Pattern Terminal", ItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL, ProbabilityPatternTerminalItem::new);
 
     private SPItems() {
     }

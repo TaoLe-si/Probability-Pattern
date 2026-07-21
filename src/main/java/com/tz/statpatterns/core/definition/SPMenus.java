@@ -20,6 +20,7 @@ package com.tz.statpatterns.core.definition;
 
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -35,13 +36,27 @@ public final class SPMenus {
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister
             .create(Registries.MENU, ProbabilityPatternMod.MOD_ID);
 
+    // Pre-create the MenuType so it's available for ae2wtlib registration
+    public static final MenuType<ProbabilityPatternTerminalMenu> PROBABILITY_PATTERN_TERMINAL_TYPE =
+            MenuTypeBuilder
+                    .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
+                                    ProbabilityPatternTerminalMenu::new,
+                            IPatternTerminalMenuHost.class)
+                    .build(ProbabilityPatternMod.id("probability_pattern_terminal"));
+
     public static final DeferredHolder<MenuType<?>, MenuType<ProbabilityPatternTerminalMenu>> PROBABILITY_PATTERN_TERMINAL =
-            MENUS.register("probability_pattern_terminal",
-                    () -> MenuTypeBuilder
-                            .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
-                                            ProbabilityPatternTerminalMenu::new,
-                                    IPatternTerminalMenuHost.class)
-                            .build(ProbabilityPatternMod.id("probability_pattern_terminal")));
+            MENUS.register("probability_pattern_terminal", () -> PROBABILITY_PATTERN_TERMINAL_TYPE);
+
+    // Wireless variant with upgrade slots and singularity slot
+    public static final MenuType<WirelessProbabilityPatternTerminalMenu> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE =
+            MenuTypeBuilder
+                    .create((MenuFactory<WirelessProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
+                                    WirelessProbabilityPatternTerminalMenu::new,
+                            IPatternTerminalMenuHost.class)
+                    .build(ProbabilityPatternMod.id("wireless_probability_pattern_terminal"));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<WirelessProbabilityPatternTerminalMenu>> WIRELESS_PROBABILITY_PATTERN_TERMINAL =
+            MENUS.register("wireless_probability_pattern_terminal", () -> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE);
 
     private SPMenus() {
     }
