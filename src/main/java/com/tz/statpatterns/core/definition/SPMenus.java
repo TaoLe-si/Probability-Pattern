@@ -33,6 +33,7 @@ import appeng.menu.implementations.MenuTypeBuilder.MenuFactory;
 
 
 public final class SPMenus {
+    private static boolean registered = false;
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister
             .create(Registries.MENU, ProbabilityPatternMod.MOD_ID);
 
@@ -42,7 +43,7 @@ public final class SPMenus {
                     .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
                                     ProbabilityPatternTerminalMenu::new,
                             IPatternTerminalMenuHost.class)
-                    .build(ProbabilityPatternMod.id("probability_pattern_terminal"));
+                    .buildUnregistered(ProbabilityPatternMod.id("probability_pattern_terminal"));
 
     public static final DeferredHolder<MenuType<?>, MenuType<ProbabilityPatternTerminalMenu>> PROBABILITY_PATTERN_TERMINAL =
             MENUS.register("probability_pattern_terminal", () -> PROBABILITY_PATTERN_TERMINAL_TYPE);
@@ -53,7 +54,7 @@ public final class SPMenus {
                     .create((MenuFactory<WirelessProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
                                     WirelessProbabilityPatternTerminalMenu::new,
                             IPatternTerminalMenuHost.class)
-                    .build(ProbabilityPatternMod.id("wireless_probability_pattern_terminal"));
+                    .buildUnregistered(ProbabilityPatternMod.id("wireless_probability_pattern_terminal"));
 
     public static final DeferredHolder<MenuType<?>, MenuType<WirelessProbabilityPatternTerminalMenu>> WIRELESS_PROBABILITY_PATTERN_TERMINAL =
             MENUS.register("wireless_probability_pattern_terminal", () -> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE);
@@ -62,6 +63,11 @@ public final class SPMenus {
     }
 
     public static void register(IEventBus modEventBus) {
+        if (registered) {
+            // 如果已经注册过，直接返回，避免添加重复监听器
+            return;
+        }
+        registered = true;
         MENUS.register(modEventBus);
     }
 }

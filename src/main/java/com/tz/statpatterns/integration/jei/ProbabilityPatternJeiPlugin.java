@@ -73,8 +73,7 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
         registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler());
     }
 
-    private static final class PatternTerminalTransferHandler
-            implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {
+    private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {
         @Override
         public Class<? extends ProbabilityPatternTerminalMenu> getContainerClass() {
             return ProbabilityPatternTerminalMenu.class;
@@ -86,8 +85,7 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
         }
 
         @Override
-        public IRecipeTransferError transferRecipe(ProbabilityPatternTerminalMenu menu, Object recipe,
-                                                   IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+        public IRecipeTransferError transferRecipe(ProbabilityPatternTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
             var inputs = collectInputs(recipeSlots);
             var outputs = collectOutputs(recipeSlots);
             if (inputs.isEmpty() || outputs.isEmpty()) {

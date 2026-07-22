@@ -52,7 +52,6 @@ public final class ProbabilityPatternMod {
 
         SPCreativeTabs.CREATIVE_TABS.register(modEventBus);
 
-        // Register with ae2wtlib's Universal Terminal system if installed
         AE2WTLibIntegration.registerTerminal();
     }
 
@@ -65,15 +64,10 @@ public final class ProbabilityPatternMod {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
-                GridLinkables.register(SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL,
-                    WirelessTerminalItem.LINKABLE_HANDLER);
+                GridLinkables.register(SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, WirelessTerminalItem.LINKABLE_HANDLER);
 
-                // Register upgrade card support for the portable probability pattern terminal.
-                // AE2 only registers energy cards for its own wireless terminals by exact item identity,
-                // so we must register our custom terminal separately.
                 Upgrades.add(AEItems.ENERGY_CARD, SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, 2);
 
-                // Register ae2wtlib upgrade cards (Quantum Bridge Card, Magnet Card) if installed
                 AE2WTLibIntegration.registerUpgrades();
             });
         }
