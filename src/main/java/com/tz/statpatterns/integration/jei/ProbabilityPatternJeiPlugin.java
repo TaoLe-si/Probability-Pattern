@@ -29,8 +29,10 @@ import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
+import com.tz.statpatterns.client.WirelessProbabilityPatternTerminalScreen;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -65,23 +67,38 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addGhostIngredientHandler(ProbabilityPatternTerminalScreen.class, new PatternTerminalGhostHandler());
+        var ghostHandler = new PatternTerminalGhostHandler();
+        registration.addGhostIngredientHandler(ProbabilityPatternTerminalScreen.class, ghostHandler);
+        // Cast to raw type to register for wireless subclass (JEI matches by class hierarchy at runtime)
+        IGhostIngredientHandler rawHandler = ghostHandler;
+        registration.addGhostIngredientHandler(WirelessProbabilityPatternTerminalScreen.class, rawHandler);
     }
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler());
+        registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
+                ProbabilityPatternTerminalMenu.class, SPMenus.PROBABILITY_PATTERN_TERMINAL.get()));
+        registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
+                WirelessProbabilityPatternTerminalMenu.class, SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get()));
     }
 
     private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {
+        private final Class<? extends ProbabilityPatternTerminalMenu> containerClass;
+        private final MenuType<?> menuType;
+
+        PatternTerminalTransferHandler(Class<? extends ProbabilityPatternTerminalMenu> containerClass, MenuType<?> menuType) {
+            this.containerClass = containerClass;
+            this.menuType = menuType;
+        }
+
         @Override
         public Class<? extends ProbabilityPatternTerminalMenu> getContainerClass() {
-            return ProbabilityPatternTerminalMenu.class;
+            return containerClass;
         }
 
         @Override
         public Optional<MenuType<ProbabilityPatternTerminalMenu>> getMenuType() {
-            return Optional.of(SPMenus.PROBABILITY_PATTERN_TERMINAL.get());
+            return Optional.of((MenuType<ProbabilityPatternTerminalMenu>) menuType);
         }
 
         @Override
@@ -213,8 +230,7 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
         }
     }
 
-    // ========== 修复后的 Handler ==========
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static final class PatternTerminalGhostHandler
             implements IGhostIngredientHandler<ProbabilityPatternTerminalScreen> {
         @Override
