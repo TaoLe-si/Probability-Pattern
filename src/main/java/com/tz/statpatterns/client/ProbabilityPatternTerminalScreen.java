@@ -66,6 +66,7 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
 
     private void updateState() {
         alpha95.setSelected(getMenu().isAlpha95());
+        alpha95.setMessage(getMenu().isAlpha95() ? Component.translatable("gui.probabilitypattern.alpha95") : Component.translatable("gui.probabilitypattern.alpha99"));
     }
 
     private void save() {

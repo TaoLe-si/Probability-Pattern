@@ -18,7 +18,16 @@
  */
 package com.tz.statpatterns.part;
 
+import appeng.api.inventories.InternalInventory;
+import appeng.helpers.IPatternTerminalLogicHost;
+import appeng.helpers.IPatternTerminalMenuHost;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+import appeng.parts.encoding.PatternEncodingLogic;
+import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
+import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -29,8 +38,12 @@ import appeng.parts.PartModel;
 import appeng.parts.encoding.PatternEncodingTerminalPart;
 
 import com.tz.statpatterns.ProbabilityPatternMod;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
-public class ProbabilityPatternTerminalPart extends PatternEncodingTerminalPart {
+import java.util.List;
+
+public class ProbabilityPatternTerminalPart extends PatternEncodingTerminalPart implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
     public static final ResourceLocation MODEL_OFF = ProbabilityPatternMod.id("part/probability_pattern_terminal_off");
     public static final ResourceLocation MODEL_ON = ProbabilityPatternMod.id("part/probability_pattern_terminal_on");
 
@@ -38,8 +51,13 @@ public class ProbabilityPatternTerminalPart extends PatternEncodingTerminalPart 
     public static final IPartModel MODELS_ON = new PartModel(MODEL_BASE, MODEL_ON, MODEL_STATUS_ON);
     public static final IPartModel MODELS_HAS_CHANNEL = new PartModel(MODEL_BASE, MODEL_ON, MODEL_STATUS_HAS_CHANNEL);
 
+    private final PatternEncodingLogic logic;
+    private double probability = 0.8;
+    private boolean alpha95 = true;
+
     public ProbabilityPatternTerminalPart(IPartItem<?> partItem) {
         super(partItem);
+        this.logic = new PatternEncodingLogic(this);
     }
 
     @Override
@@ -50,5 +68,33 @@ public class ProbabilityPatternTerminalPart extends PatternEncodingTerminalPart 
     @Override
     public IPartModel getStaticModels() {
         return selectModel(MODELS_OFF, MODELS_ON, MODELS_HAS_CHANNEL);
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public boolean isAlpha95() {
+        return alpha95;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = Math.clamp(probability, 0.01, 0.9999);
+        markForSave();
+    }
+
+    public void setAlpha95(boolean value) {
+        this.alpha95 = value;
+        markForSave();
+    }
+
+    @Override
+    public PatternEncodingLogic getLogic() {
+        return logic;
+    }
+
+    @Override
+    public void markForSave() {
+        super.markForSave();
     }
 }

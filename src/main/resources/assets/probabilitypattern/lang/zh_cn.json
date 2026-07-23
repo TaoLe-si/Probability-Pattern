@@ -16,6 +16,8 @@
   "container.probabilitypattern.alpha": "a",
   "gui.probabilitypattern.probability": "概率",
   "gui.probabilitypattern.batch": "N",
+  "gui.probabilitypattern.alpha95": "95%",
+  "gui.probabilitypattern.alpha99": "99%",
   "probabilitypattern.tooltip.target_batch": "批量倍率 N",
   "probabilitypattern.tooltip.target_output": "目标总输出",
   "probabilitypattern.tooltip.success_probability": "单次成功概率",

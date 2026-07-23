@@ -45,10 +45,8 @@ import net.neoforged.fml.ModList;
  */
 public final class AE2WTLibIntegration {
     private static final String AE2WTLIB_MOD_ID = "ae2wtlib";
-    private static final ResourceLocation QUANTUM_BRIDGE_CARD_ID =
-            ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "quantum_bridge_card");
-    private static final ResourceLocation MAGNET_CARD_ID =
-            ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "magnet_card");
+    private static final ResourceLocation QUANTUM_BRIDGE_CARD_ID = ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "quantum_bridge_card");
+    private static final ResourceLocation MAGNET_CARD_ID = ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "magnet_card");
 
     private static final Icon PROBABILITY_PATTERN_ICON = new Icon(
             0, 0, 16, 16,

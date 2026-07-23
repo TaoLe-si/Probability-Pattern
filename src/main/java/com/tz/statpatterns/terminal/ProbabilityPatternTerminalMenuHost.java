@@ -19,7 +19,11 @@ package com.tz.statpatterns.terminal;
 
 import java.util.function.BiConsumer;
 
+import appeng.parts.encoding.EncodingMode;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,18 +44,33 @@ import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
  * Menu host for the handheld probability pattern terminal.
  * Extends WTMenuHost for ae2wtlib Quantum Bridge support.
  */
-public class ProbabilityPatternTerminalMenuHost extends WTMenuHost
-        implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
-
+public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
     private final PatternEncodingLogic logic;
     private boolean isLoading = false;
+    private double probability = 0.8;
+    private boolean alpha95 = true;
 
-    public ProbabilityPatternTerminalMenuHost(ItemWT item, Player player,
-            ItemMenuHostLocator locator,
-            BiConsumer<Player, ISubMenu> returnToMainMenu) {
+    public ProbabilityPatternTerminalMenuHost(ItemWT item, Player player, ItemMenuHostLocator locator, BiConsumer<Player, ISubMenu> returnToMainMenu) {
         super(item, player, locator, returnToMainMenu);
         this.logic = new PatternEncodingLogic(this);
         loadFromItem();
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public boolean isAlpha95() {
+        return alpha95;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = Math.clamp(probability, 0.01, 0.9999);
+        markForSave();
+    }
+    public void setAlpha95(boolean value) {
+        this.alpha95 = value;
+        markForSave();
     }
 
     @Override
@@ -81,6 +100,8 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost
             isLoading = true;
             try {
                 logic.readFromNBT(tag, getPlayer().level().registryAccess());
+                this.setProbability(tag.getDouble("probability"));
+                this.setAlpha95(tag.getBoolean("alpha95"));
             } finally {
                 isLoading = false;
             }
@@ -94,13 +115,11 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost
         ItemStack stack = getItemStack();
         CompoundTag tag = new CompoundTag();
         logic.writeToNBT(tag, getPlayer().level().registryAccess());
+        tag.putDouble("probability",  this.getProbability());
+        tag.putBoolean("alpha95",  this.isAlpha95());
         stack.set(Components.PATTERN_LOGIC_STATE, tag);
     }
 
-    /**
-     * Get the singularity inventory for quantum bridge card support.
-     * Delegates to WTMenuHost's sub-inventory system.
-     */
     public InternalInventory getSingularityInventory() {
         return getSubInventory(WTMenuHost.INV_SINGULARITY);
     }

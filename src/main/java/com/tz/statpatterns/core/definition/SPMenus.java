@@ -40,8 +40,7 @@ public final class SPMenus {
     // Pre-create the MenuType so it's available for ae2wtlib registration
     public static final MenuType<ProbabilityPatternTerminalMenu> PROBABILITY_PATTERN_TERMINAL_TYPE =
             MenuTypeBuilder
-                    .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
-                                    ProbabilityPatternTerminalMenu::new,
+                    .create((MenuFactory<ProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>) ProbabilityPatternTerminalMenu::new,
                             IPatternTerminalMenuHost.class)
                     .buildUnregistered(ProbabilityPatternMod.id("probability_pattern_terminal"));
 

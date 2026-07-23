@@ -35,8 +35,7 @@ public class Components {
      * Stores the PatternEncodingLogic state (blank/encoded pattern inventories, mode, etc.)
      * on the portable probability pattern terminal item stack.
      */
-    public static final DataComponentType<CompoundTag> PATTERN_LOGIC_STATE = register("pattern_logic_state",
-            builder -> builder.persistent(CompoundTag.CODEC));
+    public static final DataComponentType<CompoundTag> PATTERN_LOGIC_STATE = register("pattern_logic_state", builder -> builder.persistent(CompoundTag.CODEC));
 
     private static <T> DataComponentType<T> register(String name, Consumer<DataComponentType.Builder<T>> customizer) {
         var builder = DataComponentType.<T>builder();

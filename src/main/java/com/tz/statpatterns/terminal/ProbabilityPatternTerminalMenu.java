@@ -21,9 +21,14 @@ package com.tz.statpatterns.terminal;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import appeng.parts.encoding.PatternEncodingLogic;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -42,9 +47,10 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private static final String ACTION_SET_PROBABILITY = "setProbability";
     private static final String ACTION_SET_ALPHA95 = "setAlpha95";
 
+    private boolean isLoading = false;
     private double probability = 0.8;
     private boolean alpha95 = true;
-    private final IPatternTerminalMenuHost patternHost;
+    private final PatternEncodingLogic encodingLogic;
 
     public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
@@ -53,7 +59,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
 
     public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         super(menuType, containerId, playerInventory, host, true);
-        this.patternHost = Objects.requireNonNull(host, "host");
+        this.encodingLogic = host.getLogic();
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
         registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
         // Note: upgrade slots are handled by MEStorageMenu base class via host.getUpgrades()
@@ -86,7 +92,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     @Override
     public void onSlotChange(Slot slot) {
         super.onSlotChange(slot);
-        var encodedStack = patternHost.getLogic().getEncodedPatternInv().getStackInSlot(0);
+        var encodedStack = encodingLogic.getEncodedPatternInv().getStackInSlot(0);
         var encoded = encodedStack.get(Components.ENCODED_STATISTICAL_PATTERN);
         if (encoded != null) {
             this.probability = encoded.successProbability();
@@ -109,7 +115,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     }
 
     private void encodeProbabilityProcessingPattern() {
-        var logic = patternHost.getLogic();
+        var logic = encodingLogic;
         var inputsInv = logic.getEncodedInputInv();
         var outputsInv = logic.getEncodedOutputInv();
 
