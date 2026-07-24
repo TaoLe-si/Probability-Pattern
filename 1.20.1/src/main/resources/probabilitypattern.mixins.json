@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.tz.statpatterns.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "refmap": "probabilitypattern.refmap.json",
+    "mixins": [
+        "CraftingTreeNodeMixin",
+        "RestrictedInputSlotMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

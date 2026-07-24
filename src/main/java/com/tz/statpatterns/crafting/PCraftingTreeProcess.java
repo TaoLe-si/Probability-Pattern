@@ -156,5 +156,24 @@ public class PCraftingTreeProcess {
         }
         return false;
     }
+
+    /**
+     * Compute the success probability of this process node recursively.
+     * For statistical patterns, the own success probability is (1 - underproductionRisk)
+     * computed from the sizing result. For non-statistical patterns, it is 1.0.
+     * The total probability is own × product of all child nodes' probabilities.
+     */
+    double getSuccessProbability() {
+        double ownProb = 1.0;
+        if (this.details instanceof StatisticalPatternDetails spd) {
+            var sizingResult = spd.sizing();
+            ownProb = 1.0 - sizingResult.underproductionRisk();
+        }
+        double childProb = 1.0;
+        for (var entry : this.nodes.entrySet()) {
+            childProb *= entry.getKey().getSuccessProbability();
+        }
+        return ownProb * childProb;
+    }
 }
 

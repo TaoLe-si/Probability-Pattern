@@ -60,6 +60,8 @@ public class PCraftingCalculation extends CraftingCalculation {
     private int time = 5;
     private int incTime = Integer.MAX_VALUE;
     private final List<CraftAttempt> attempts = AELog.isCraftingLogEnabled() ? new ArrayList<>() : null;
+    /** Overall success probability computed recursively from the crafting tree after a successful plan. */
+    private double overallSuccessProbability = 1.0;
 
     public PCraftingCalculation(Level level, IGrid grid, ICraftingSimulationRequester simRequester, GenericStack output, CalculationStrategy strategy) {
         super(level, grid, simRequester, output, strategy);
@@ -161,6 +163,8 @@ public class PCraftingCalculation extends CraftingCalculation {
         // }
 
         var plan = CraftingSimulationState.buildCraftingPlan(craftingInventory, this, amount);
+        // Compute overall success probability recursively from the crafting tree
+        this.overallSuccessProbability = this.tree.getSuccessProbability();
         if (AELog.isCraftingLogEnabled()) {
             String type = simulate ? "simulated" : "succeeded";
             this.attempts.add(new CraftAttempt("%d %s (%d bytes)".formatted(amount, type, plan.bytes()), timer));
@@ -281,6 +285,7 @@ public class PCraftingCalculation extends CraftingCalculation {
                         attempt.description, attempt.stopwatch.elapsed(TimeUnit.MILLISECONDS)));
             }
             message.append(" - final plan: %d (%d bytes)".formatted(plan.finalOutput().amount(), plan.bytes()));
+            message.append("\n - overall success probability: %.4f".formatted(this.overallSuccessProbability));
 
             AELog.crafting(message.toString());
         }

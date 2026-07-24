@@ -342,4 +342,26 @@ public class PCraftingTreeNode {
         }
         return false;
     }
+
+    /**
+     * Compute the aggregated success probability from child processes.
+     * For emitable items or items without patterns, returns 1.0.
+     * For single-branch nodes, returns that branch's probability.
+     * For multi-branch nodes (alternative patterns), returns the probability
+     * that at least one branch succeeds: 1 - product(1 - p_i).
+     */
+    double getSuccessProbability() {
+        if (this.nodes == null || this.nodes.isEmpty()) {
+            return 1.0;
+        }
+        if (this.nodes.size() == 1) {
+            return this.nodes.get(0).getSuccessProbability();
+        }
+        // Multiple branches: P(at least one succeeds) = 1 - P(all fail)
+        double failProb = 1.0;
+        for (var pro : this.nodes) {
+            failProb *= (1.0 - pro.getSuccessProbability());
+        }
+        return 1.0 - failProb;
+    }
 }

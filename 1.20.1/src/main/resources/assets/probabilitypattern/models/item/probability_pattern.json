@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "probabilitypattern:item/probability_pattern"
+  }
+}
