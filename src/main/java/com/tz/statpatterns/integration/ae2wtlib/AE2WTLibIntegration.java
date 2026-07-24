@@ -48,10 +48,18 @@ public final class AE2WTLibIntegration {
     private static final ResourceLocation QUANTUM_BRIDGE_CARD_ID = ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "quantum_bridge_card");
     private static final ResourceLocation MAGNET_CARD_ID = ResourceLocation.fromNamespaceAndPath(AE2WTLIB_MOD_ID, "magnet_card");
 
-    private static final Icon PROBABILITY_PATTERN_ICON = new Icon(
-            0, 0, 16, 16,
-            new Icon.Texture(ResourceLocation.fromNamespaceAndPath("probabilitypattern", "textures/gui/icons.png"), 16, 16)
-    );
+    // Lazy-initialized to avoid loading ae2wtlib classes when the mod is absent
+    private static Icon probabilityPatternIcon;
+
+    private static Icon getProbabilityPatternIcon() {
+        if (probabilityPatternIcon == null) {
+            probabilityPatternIcon = new Icon(
+                    0, 0, 16, 16,
+                    new Icon.Texture(ResourceLocation.fromNamespaceAndPath("probabilitypattern", "textures/gui/icons.png"), 16, 16)
+            );
+        }
+        return probabilityPatternIcon;
+    }
 
     private AE2WTLibIntegration() {
     }
@@ -74,13 +82,19 @@ public final class AE2WTLibIntegration {
             return;
         }
 
+        var menuType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE;
+        var terminalItem = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+        if (menuType == null || terminalItem == null) {
+            return;
+        }
+
         AddTerminalEvent.register(event -> {
             event.builder(
                     "probability_pattern",
                     ProbabilityPatternTerminalMenuHost::new,
-                    SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE,
-                    SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL.asItem(),
-                    PROBABILITY_PATTERN_ICON
+                    menuType,
+                    terminalItem.asItem(),
+                    getProbabilityPatternIcon()
             ).addTerminal();
         });
     }
@@ -96,18 +110,23 @@ public final class AE2WTLibIntegration {
             return;
         }
 
+        var terminalItem = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+        if (terminalItem == null) {
+            return;
+        }
+
         // Quantum Bridge Card: allows infinite range access to ME network
         // Max 1 card (same as ae2wtlib's own terminals)
         var quantumBridgeCard = getItem(QUANTUM_BRIDGE_CARD_ID);
         if (quantumBridgeCard != null) {
-            Upgrades.add(quantumBridgeCard, SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, 1);
+            Upgrades.add(quantumBridgeCard, terminalItem, 1);
         }
 
         // Magnet Card: automatically picks up nearby items
         // Max 1 card
         var magnetCard = getItem(MAGNET_CARD_ID);
         if (magnetCard != null) {
-            Upgrades.add(magnetCard, SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, 1);
+            Upgrades.add(magnetCard, terminalItem, 1);
         }
     }
 

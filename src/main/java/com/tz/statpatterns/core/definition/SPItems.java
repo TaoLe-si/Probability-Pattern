@@ -28,6 +28,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
@@ -44,11 +45,23 @@ public final class SPItems {
 
     private static final List<ItemDefinition<?>> ITEMS = new ArrayList<>();
 
+    // Not added to creative tab — blank pattern obtained via terminal mechanics, no standalone recipe
     public static final ItemDefinition<Item> PROBABILITY_PATTERN = item("Probability Pattern", ItemIds.PROBABILITY_PATTERN, (p) -> new ProbabilityPatternItem(
             p.stacksTo(64),
             StatisticalPatternDetails::decode,
-            StatisticalPatternDetails::getInvalidPatternTooltip));
-    public static final ItemDefinition<ProbabilityPatternTerminalItem> WIRELESS_PROBABILITY_PATTERN_TERMINAL = item("Wireless Probability Pattern Terminal", ItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL, ProbabilityPatternTerminalItem::new);
+            StatisticalPatternDetails::getInvalidPatternTooltip), null);
+
+    // Only initialized when ae2wtlib is present; null otherwise
+    @Nullable
+    public static final ItemDefinition<ProbabilityPatternTerminalItem> WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+
+    static {
+        if (ModList.get().isLoaded("ae2wtlib")) {
+            WIRELESS_PROBABILITY_PATTERN_TERMINAL = item("Wireless Probability Pattern Terminal", ItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL, ProbabilityPatternTerminalItem::new);
+        } else {
+            WIRELESS_PROBABILITY_PATTERN_TERMINAL = null;
+        }
+    }
 
     private SPItems() {
     }

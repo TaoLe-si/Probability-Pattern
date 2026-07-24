@@ -18,10 +18,13 @@
 package com.tz.statpatterns.terminal;
 
 import appeng.api.networking.IGridNode;
+import appeng.core.definitions.AEItems;
 import appeng.menu.slot.RestrictedInputSlot;
 import com.tz.statpatterns.core.definition.SPMenus;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -74,5 +77,25 @@ public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTe
      */
     public ProbabilityPatternTerminalMenuHost getWTHost() {
         return wtHost;
+    }
+
+    @Override
+    protected int transferStackToMenu(ItemStack stack) {
+        // Route singularities to the dedicated QE_SINGULARITY slot
+        // (the parent's transferStackToMenu only checks blank/encoded pattern slots)
+        if (stack.is(AEItems.QUANTUM_ENTANGLED_SINGULARITY.asItem())
+                || stack.is(AEItems.SINGULARITY.asItem())) {
+            var count = stack.getCount();
+            for (var slot : slots) {
+                if (slot.mayPlace(stack)) {
+                    var remainder = slot.safeInsert(stack);
+                    if (remainder.isEmpty()) {
+                        return count;
+                    }
+                }
+            }
+            return 0;
+        }
+        return super.transferStackToMenu(stack);
     }
 }

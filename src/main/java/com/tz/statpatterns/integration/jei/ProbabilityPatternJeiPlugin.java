@@ -29,16 +29,15 @@ import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
-import com.tz.statpatterns.client.WirelessProbabilityPatternTerminalScreen;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.fml.ModList;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -69,17 +68,26 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         var ghostHandler = new PatternTerminalGhostHandler();
         registration.addGhostIngredientHandler(ProbabilityPatternTerminalScreen.class, ghostHandler);
-        // Cast to raw type to register for wireless subclass (JEI matches by class hierarchy at runtime)
-        IGhostIngredientHandler rawHandler = ghostHandler;
-        registration.addGhostIngredientHandler(WirelessProbabilityPatternTerminalScreen.class, rawHandler);
+        // Wireless variant — only available when ae2wtlib is present
+        if (ModList.get().isLoaded("ae2wtlib")) {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            var rawHandler = (IGhostIngredientHandler) ghostHandler;
+            registration.addGhostIngredientHandler(
+                    com.tz.statpatterns.client.WirelessProbabilityPatternTerminalScreen.class,
+                    rawHandler);
+        }
     }
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
                 ProbabilityPatternTerminalMenu.class, SPMenus.PROBABILITY_PATTERN_TERMINAL.get()));
-        registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
-                WirelessProbabilityPatternTerminalMenu.class, SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get()));
+        // Wireless variant — only available when ae2wtlib is present
+        if (ModList.get().isLoaded("ae2wtlib")) {
+            registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
+                    com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu.class,
+                    SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get()));
+        }
     }
 
     private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {

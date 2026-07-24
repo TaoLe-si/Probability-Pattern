@@ -25,7 +25,6 @@ import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.parts.encoding.PatternEncodingLogic;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
-import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

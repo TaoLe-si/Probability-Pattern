@@ -46,14 +46,17 @@ public final class ProbabilityPatternClient {
                         title,
                         StyleManager.loadStyleDoc("/screens/terminals/probability_pattern_encoding_terminal.json")));
 
-        // Wireless terminal (with upgrade slots and ae2wtlib support)
-        event.<WirelessProbabilityPatternTerminalMenu, WirelessProbabilityPatternTerminalScreen>register(
-                SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get(),
-                (menu, playerInventory, title) -> new WirelessProbabilityPatternTerminalScreen(
-                        menu,
-                        playerInventory,
-                        title,
-                        StyleManager.loadStyleDoc("/screens/terminals/wireless_probability_pattern_terminal.json")));
+        // Wireless terminal (with upgrade slots and ae2wtlib support) — only when ae2wtlib is present
+        var wirelessMenuType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+        if (wirelessMenuType != null) {
+            event.<WirelessProbabilityPatternTerminalMenu, WirelessProbabilityPatternTerminalScreen>register(
+                    wirelessMenuType.get(),
+                    (menu, playerInventory, title) -> new WirelessProbabilityPatternTerminalScreen(
+                            menu,
+                            playerInventory,
+                            title,
+                            StyleManager.loadStyleDoc("/screens/terminals/wireless_probability_pattern_terminal.json")));
+        }
     }
 }
 

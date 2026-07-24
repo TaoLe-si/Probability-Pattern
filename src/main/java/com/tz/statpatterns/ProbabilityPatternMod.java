@@ -64,9 +64,11 @@ public final class ProbabilityPatternMod {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
-                GridLinkables.register(SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, WirelessTerminalItem.LINKABLE_HANDLER);
-
-                Upgrades.add(AEItems.ENERGY_CARD, SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL, 2);
+                var wirelessTerminal = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+                if (wirelessTerminal != null) {
+                    GridLinkables.register(wirelessTerminal, WirelessTerminalItem.LINKABLE_HANDLER);
+                    Upgrades.add(AEItems.ENERGY_CARD, wirelessTerminal, 2);
+                }
 
                 AE2WTLibIntegration.registerUpgrades();
             });

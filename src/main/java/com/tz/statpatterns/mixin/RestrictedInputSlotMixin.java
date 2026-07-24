@@ -17,6 +17,7 @@
  */
 package com.tz.statpatterns.mixin;
 
+import appeng.core.definitions.AEItems;
 import com.tz.statpatterns.core.definition.SPItems;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -37,11 +38,25 @@ public abstract class RestrictedInputSlotMixin {
 
     @Inject(method = "mayPlace", at = @At("RETURN"), cancellable = true)
     private void allowProbabilityPattern(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        // Also accept our probability pattern in blank pattern slots
+        // Allow our probability pattern in blank pattern slots
         if (!cir.getReturnValue()
                 && which == RestrictedInputSlot.PlacableItemType.BLANK_PATTERN
                 && stack.is(SPItems.PROBABILITY_PATTERN.get())) {
             cir.setReturnValue(true);
         }
+
+        // Reject quantum entangled singularities from pattern slots —
+        // they should only go into dedicated QE_SINGULARITY slots (quantum bridge)
+        if (cir.getReturnValue()
+                && (which == RestrictedInputSlot.PlacableItemType.BLANK_PATTERN
+                    || which == RestrictedInputSlot.PlacableItemType.ENCODED_PATTERN)
+                && isSingularity(stack)) {
+            cir.setReturnValue(false);
+        }
+    }
+
+    private static boolean isSingularity(ItemStack stack) {
+        return stack.is(AEItems.QUANTUM_ENTANGLED_SINGULARITY.asItem())
+                || stack.is(AEItems.SINGULARITY.asItem());
     }
 }
