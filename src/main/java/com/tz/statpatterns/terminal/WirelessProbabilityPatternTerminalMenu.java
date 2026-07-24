@@ -51,10 +51,7 @@ public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTe
         this.wtHost = (ProbabilityPatternTerminalMenuHost) host;
 
         // Add singularity slot for quantum bridge card (same as WETMenu)
-        this.addSlot(
-                new RestrictedInputSlot(RestrictedInputSlot.PlacableItemType.QE_SINGULARITY,
-                        wtHost.getSingularityInventory(), 0),
-                AE2wtlibSlotSemantics.SINGULARITY);
+        this.addSlot(new RestrictedInputSlot(RestrictedInputSlot.PlacableItemType.QE_SINGULARITY, wtHost.getSingularityInventory(), 0), AE2wtlibSlotSemantics.SINGULARITY);
     }
 
     /**

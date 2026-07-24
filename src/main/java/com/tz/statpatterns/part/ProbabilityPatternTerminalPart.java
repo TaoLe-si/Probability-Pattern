@@ -51,13 +51,12 @@ public class ProbabilityPatternTerminalPart extends PatternEncodingTerminalPart 
     public static final IPartModel MODELS_ON = new PartModel(MODEL_BASE, MODEL_ON, MODEL_STATUS_ON);
     public static final IPartModel MODELS_HAS_CHANNEL = new PartModel(MODEL_BASE, MODEL_ON, MODEL_STATUS_HAS_CHANNEL);
 
-    private final PatternEncodingLogic logic;
+    private final ProbabilityPatternEncodingLogic logic = new ProbabilityPatternEncodingLogic(this);
     private double probability = 0.8;
     private boolean alpha95 = true;
 
     public ProbabilityPatternTerminalPart(IPartItem<?> partItem) {
         super(partItem);
-        this.logic = new PatternEncodingLogic(this);
     }
 
     @Override

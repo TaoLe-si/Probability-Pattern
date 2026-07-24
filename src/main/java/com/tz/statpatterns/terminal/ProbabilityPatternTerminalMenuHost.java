@@ -20,6 +20,7 @@ package com.tz.statpatterns.terminal;
 import java.util.function.BiConsumer;
 
 import appeng.parts.encoding.EncodingMode;
+import com.tz.statpatterns.part.ProbabilityPatternEncodingLogic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -45,32 +46,29 @@ import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
  * Extends WTMenuHost for ae2wtlib Quantum Bridge support.
  */
 public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
-    private final PatternEncodingLogic logic;
+    private final ProbabilityPatternEncodingLogic logic;
     private boolean isLoading = false;
-    private double probability = 0.8;
-    private boolean alpha95 = true;
 
     public ProbabilityPatternTerminalMenuHost(ItemWT item, Player player, ItemMenuHostLocator locator, BiConsumer<Player, ISubMenu> returnToMainMenu) {
         super(item, player, locator, returnToMainMenu);
-        this.logic = new PatternEncodingLogic(this);
+        this.logic = new ProbabilityPatternEncodingLogic(this);
         loadFromItem();
     }
 
     public double getProbability() {
-        return probability;
+        return logic.getProbability();
     }
 
     public boolean isAlpha95() {
-        return alpha95;
+        return logic.isAlpha95();
     }
 
     public void setProbability(double probability) {
-        this.probability = Math.clamp(probability, 0.01, 0.9999);
-        markForSave();
+        logic.setProbability(probability);
     }
+
     public void setAlpha95(boolean value) {
-        this.alpha95 = value;
-        markForSave();
+        logic.setAlpha95(value);
     }
 
     @Override
@@ -100,8 +98,6 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IP
             isLoading = true;
             try {
                 logic.readFromNBT(tag, getPlayer().level().registryAccess());
-                this.setProbability(tag.getDouble("probability"));
-                this.setAlpha95(tag.getBoolean("alpha95"));
             } finally {
                 isLoading = false;
             }
@@ -115,8 +111,6 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IP
         ItemStack stack = getItemStack();
         CompoundTag tag = new CompoundTag();
         logic.writeToNBT(tag, getPlayer().level().registryAccess());
-        tag.putDouble("probability",  this.getProbability());
-        tag.putBoolean("alpha95",  this.isAlpha95());
         stack.set(Components.PATTERN_LOGIC_STATE, tag);
     }
 

@@ -21,10 +21,12 @@ package com.tz.statpatterns.terminal;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import appeng.api.storage.ITerminalHost;
 import appeng.parts.encoding.PatternEncodingLogic;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
+import it.unimi.dsi.fastutil.shorts.ShortSet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -34,6 +36,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import org.apache.commons.logging.impl.Log4JLogger;
 import org.jetbrains.annotations.Nullable;
 
 import appeng.api.crafting.PatternDetailsHelper;
@@ -42,19 +45,19 @@ import appeng.helpers.IPatternTerminalMenuHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.parts.encoding.EncodingMode;
 
+import com.tz.statpatterns.part.ProbabilityPatternEncodingLogic;
+
 
 public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private static final String ACTION_SET_PROBABILITY = "setProbability";
     private static final String ACTION_SET_ALPHA95 = "setAlpha95";
 
-    private boolean isLoading = false;
     private double probability = 0.8;
     private boolean alpha95 = true;
     private final PatternEncodingLogic encodingLogic;
 
     public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
-        // Note: wireless subclass overrides MenuType via its own constructor
     }
 
     public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
@@ -62,7 +65,18 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         this.encodingLogic = host.getLogic();
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
         registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
-        // Note: upgrade slots are handled by MEStorageMenu base class via host.getUpgrades()
+
+        // 从编码逻辑中恢复上次保存的概率值
+        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+            this.probability = peLogic.getProbability();
+            this.alpha95 = peLogic.isAlpha95();
+        }
+    }
+
+    @Override
+    public void onServerDataSync(ShortSet updatedFields) {
+        super.onServerDataSync(updatedFields);
+
     }
 
     public double getProbability() {
@@ -75,17 +89,21 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
 
     public void setProbability(double probability) {
         this.probability = Math.max(0.01, Math.min(0.9999, probability));
+        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+            peLogic.setProbability(this.probability);
+        }
         if (isClientSide()) {
             sendClientAction(ACTION_SET_PROBABILITY, this.probability);
         }
     }
     public void setAlpha95(boolean value) {
         this.alpha95 = value;
-        // 客户端点击时发送同步包到服务端
+        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+            peLogic.setAlpha95(value);
+        }
         if (isClientSide()) {
             sendClientAction(ACTION_SET_ALPHA95, value);
         }
-        // 同步所有打开此Menu的客户端界面
         broadcastChanges();
     }
 
@@ -96,6 +114,11 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         var encoded = encodedStack.get(Components.ENCODED_STATISTICAL_PATTERN);
         if (encoded != null) {
             this.probability = encoded.successProbability();
+            this.alpha95 = encoded.isAlpha95();
+            if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+                peLogic.setProbability(this.probability);
+                peLogic.setAlpha95(this.alpha95);
+            }
         }
     }
 
