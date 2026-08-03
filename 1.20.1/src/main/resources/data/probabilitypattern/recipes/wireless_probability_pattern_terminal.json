@@ -18,7 +18,6 @@
     }
   },
   "result": {
-    "count": 1,
-    "id": "probabilitypattern:wireless_probability_pattern_terminal"
+    "item": "probabilitypattern:wireless_probability_pattern_terminal"
   }
 }

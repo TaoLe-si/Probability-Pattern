@@ -5,8 +5,7 @@
     "compatibilityLevel": "JAVA_17",
     "refmap": "probabilitypattern.refmap.json",
     "mixins": [
-        "CraftingTreeNodeMixin",
-        "RestrictedInputSlotMixin"
+        "CraftingServiceMixin"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -19,7 +19,7 @@ import de.mari_023.ae2wtlib.terminal.WTMenuHost;
 
 /**
  * Menu host for the handheld probability pattern terminal.
- * Extends WTMenuHost for ae2wtlib Quantum Bridge support.
+ * Extends WTMenuHost for ae2wtlib Quantum Bridge (singularity) support.
  */
 public class ProbabilityPatternTerminalMenuHost extends WTMenuHost
         implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
@@ -91,6 +91,7 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost
         Components.writePatternLogicState(stack, tag);
     }
 
+    /** Returns the singularity inventory for Quantum Bridge Card. */
     public InternalInventory getSingularityInventory() {
         return getSubInventory(WTMenuHost.INV_SINGULARITY);
     }

@@ -114,7 +114,10 @@ public final class StatisticalPatternDetails implements IPatternDetails {
 
     public ProbabilitySizingResult sizing() {
         var targetOutput = requestedOutputAmount != null ? requestedOutputAmount : encoded.output().amount();
-        var successes = Math.max(1, targetOutput);
+        var outputPerBatch = encoded.output().amount();
+        // Convert item-level target to batch-level successes
+        // e.g. 1000 items at 4 per batch = 250 successes needed
+        var successes = Math.max(1, ceilDiv(targetOutput, outputPerBatch));
         return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
     }
 
@@ -148,6 +151,10 @@ public final class StatisticalPatternDetails implements IPatternDetails {
 
     public StatisticalPatternDetails forRequest(long requestedOutputAmount) {
         return new StatisticalPatternDetails(definition, encoded, Math.max(1, requestedOutputAmount));
+    }
+
+    private static long ceilDiv(long numerator, long denominator) {
+        return (numerator + denominator - 1) / denominator;
     }
 
     private static final class Input implements IPatternDetails.IInput {

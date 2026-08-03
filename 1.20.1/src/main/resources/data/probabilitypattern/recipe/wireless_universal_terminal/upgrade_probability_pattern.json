@@ -1,7 +1,0 @@
-{
-  "type": "ae2wtlib:upgrade",
-  "terminal": {
-    "item": "probabilitypattern:wireless_probability_pattern_terminal"
-  },
-  "terminalName": "probability_pattern"
-}

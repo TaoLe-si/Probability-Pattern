@@ -16,7 +16,7 @@ import de.mari_023.ae2wtlib.wut.ItemWUT;
 
 /**
  * Wireless variant of the probability pattern terminal menu.
- * Adds a singularity slot for quantum bridge functionality.
+ * Includes singularity slot for Quantum Bridge Card and WUT support.
  */
 public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTerminalMenu {
 
@@ -33,7 +33,7 @@ public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTe
 
         this.wtHost = (ProbabilityPatternTerminalMenuHost) host;
 
-        // Add singularity slot for quantum bridge card
+        // Singularity slot for Quantum Bridge Card
         this.addSlot(new RestrictedInputSlot(RestrictedInputSlot.PlacableItemType.QE_SINGULARITY,
                 wtHost.getSingularityInventory(), 0), AE2wtlibSlotSemantics.SINGULARITY);
     }
