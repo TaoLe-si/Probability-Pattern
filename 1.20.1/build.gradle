@@ -59,14 +59,6 @@ repositories {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
-    maven {
-        name = 'TerraformersMC'
-        url = 'https://maven.terraformersmc.com/'
-    }
-    maven {
-        name = 'Shedaniel'
-        url = 'https://maven.shedaniel.me/'
-    }
 }
 
 dependencies {
@@ -77,12 +69,6 @@ dependencies {
 
     compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-
-    // EMI (optional recipe viewer — integration lives in integration/emi, loaded only when EMI is installed)
-    compileOnly "dev.emi:emi-forge:${emi_version}:api"
-
-    // Roughly Enough Items (optional recipe viewer — integration lives in integration/rei, loaded only when REI is installed)
-    compileOnly "me.shedaniel:RoughlyEnoughItems-forge:${rei_version}"
 
     compileOnly "appeng:appliedenergistics2-forge:${ae2_version}"
 
