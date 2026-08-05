@@ -1,0 +1,96 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev'
+}
+
+group = mod_group_id
+version = mod_version
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(java_version)
+    }
+    withSourcesJar()
+}
+
+neoForge {
+    version = neoforge_version
+
+    mods {
+        probabilitypattern {
+            sourceSet sourceSets.main
+        }
+    }
+
+    runs {
+        configureEach {
+            gameDirectory = project.file('run')
+            logLevel = org.slf4j.event.Level.INFO
+        }
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+    }
+}
+
+dependencies {
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    // EMI (optional recipe viewer — integration lives in integration/emi, loaded only when EMI is installed)
+    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
+    // Roughly Enough Items (optional recipe viewer — integration lives in integration/rei, loaded only when REI is installed)
+    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
+    // GuideME — in-game guide book (AE2 ships this at runtime; compileOnly keeps it out of our jar)
+    compileOnly "org.appliedenergistics:guideme:${guideme_version}"
+    implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+
+    // AE2 Wireless Terminal Library (optional external mod dependency)
+    // Users must install ae2wtlib separately in their mods folder.
+    // compileOnly: available at compile time, NOT bundled in our jar.
+    // This avoids the jarJar classloader isolation issue where bundled API classes
+    // and full mod classes are loaded by different classloaders, causing instanceof failures.
+    compileOnly "de.mari_023:ae2wtlib_api:${ae2wtlib_version}"
+    runtimeOnly "de.mari_023:ae2wtlib:${ae2wtlib_version}"
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.assertj:assertj-core:3.26.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+tasks.named('processResources', ProcessResources) {
+    var replaceProperties = [
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_version            : mod_version,
+            minecraft_version      : minecraft_version,
+            neoforge_version_range : neoforge_version_range,
+            ae2_version_range      : ae2_version_range
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties
+    }
+}
+
+
+tasks.named('compileJava', JavaCompile) {
+    options.compilerArgs += [
+        '-Amixin.refmap=probabilitypattern.refmap.json'
+    ]
+}
