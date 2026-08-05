@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
+import appeng.integration.modules.jeirei.EncodingHelper;
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
 import com.tz.statpatterns.core.definition.SPMenus;
@@ -17,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.fml.ModList;
 
 import mezz.jei.api.IModPlugin;
@@ -82,13 +84,27 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
 
         @Override
         public IRecipeTransferError transferRecipe(ProbabilityPatternTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+            var vanillaRecipe = recipe instanceof Recipe<?> r ? r : null;
+
             var inputs = collectInputs(recipeSlots);
             var outputs = collectOutputs(recipeSlots);
             if (inputs.isEmpty() || outputs.isEmpty()) return null;
 
+            // Auto-select the pattern type just like vanilla AE2: crafting recipes
+            // that fit the 3x3 grid become crafting patterns, everything else becomes
+            // a processing (probability) pattern.
+            boolean craftingRecipe = EncodingHelper.isSupportedCraftingRecipe(vanillaRecipe);
+            if (craftingRecipe && vanillaRecipe != null && !vanillaRecipe.canCraftInDimensions(3, 3)) {
+                return null; // too large for the 3x3 crafting grid
+            }
+
             if (doTransfer) {
-                extractProbability(recipe).ifPresent(menu::setProbability);
-                EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
+                if (craftingRecipe && vanillaRecipe != null) {
+                    EncodingHelper.encodeCraftingRecipe(menu, vanillaRecipe, inputs, stack -> true);
+                } else {
+                    extractProbability(recipe).ifPresent(menu::setProbability);
+                    EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
+                }
                 menu.encode();
             }
             return null;
