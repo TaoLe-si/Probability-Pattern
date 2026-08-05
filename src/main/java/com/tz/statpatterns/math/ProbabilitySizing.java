@@ -1,21 +1,3 @@
-
-/*
- * Probability Pattern for AE2
- * Copyright (C) 2026 TaoLe-si
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package com.tz.statpatterns.math;
 
 public final class ProbabilitySizing {
@@ -124,7 +106,8 @@ public final class ProbabilitySizing {
         };
         var d = new double[] {
                 7.784695709041462e-03, 3.224671290700398e-01,
-                2.445134137142996e+00, 3.754408661907416e+00
+                2.445134137142996e+00, 3.945134137142996e+00,
+                -3.654664141464968e+00, 2.938163982698783e+00
         };
 
         var low = 0.02425;

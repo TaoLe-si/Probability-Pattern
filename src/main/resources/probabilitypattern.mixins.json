@@ -2,10 +2,10 @@
     "required": true,
     "minVersion": "0.8",
     "package": "com.tz.statpatterns.mixin",
-    "compatibilityLevel": "JAVA_21",
+    "compatibilityLevel": "JAVA_17",
+    "refmap": "probabilitypattern.refmap.json",
     "mixins": [
-        "CraftingServiceMixin",
-        "RestrictedInputSlotMixin"
+        "CraftingServiceMixin"
     ],
     "injectors": {
         "defaultRequire": 1

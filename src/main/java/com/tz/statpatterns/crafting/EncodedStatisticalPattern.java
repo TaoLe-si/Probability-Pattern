@@ -1,35 +1,15 @@
-
-/*
- * Probability Pattern for AE2
- * Copyright (C) 2026 TaoLe-si
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package com.tz.statpatterns.crafting;
 
 import java.util.Collections;
 import java.util.List;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-
 import appeng.api.stacks.GenericStack;
 
+/**
+ * Record holding the encoded statistical pattern data.
+ * In 1.20.1, serialization is handled via NBT in Components class
+ * (no DataComponent/Codec/StreamCodec in Forge 1.20.1).
+ */
 public record EncodedStatisticalPattern(
         List<GenericStack> inputsPerAttempt,
         GenericStack output,
@@ -57,37 +37,5 @@ public record EncodedStatisticalPattern(
         if (smallSampleLimit < 1) {
             throw new IllegalArgumentException("Small sample limit must be positive.");
         }
-
     }
-
-    public static final Codec<EncodedStatisticalPattern> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-                    GenericStack.FAULT_TOLERANT_LIST_CODEC.fieldOf("inputsPerAttempt")
-                            .forGetter(EncodedStatisticalPattern::inputsPerAttempt),
-                    GenericStack.CODEC.fieldOf("output")
-                            .forGetter(EncodedStatisticalPattern::output),
-                    Codec.DOUBLE.fieldOf("successProbability")
-                            .forGetter(EncodedStatisticalPattern::successProbability),
-                    Codec.DOUBLE.optionalFieldOf("alpha", 0.05)
-                            .forGetter(EncodedStatisticalPattern::alpha),
-                    Codec.INT.optionalFieldOf("smallSampleLimit", 30)
-                            .forGetter(EncodedStatisticalPattern::smallSampleLimit),
-                    Codec.BOOL.optionalFieldOf("isAlpha95", true)
-                            .forGetter(EncodedStatisticalPattern::isAlpha95))
-            .apply(builder, EncodedStatisticalPattern::new));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, EncodedStatisticalPattern> STREAM_CODEC = StreamCodec
-            .composite(
-                    GenericStack.STREAM_CODEC.apply(ByteBufCodecs.list()),
-                    EncodedStatisticalPattern::inputsPerAttempt,
-                    GenericStack.STREAM_CODEC,
-                    EncodedStatisticalPattern::output,
-                    ByteBufCodecs.DOUBLE,
-                    EncodedStatisticalPattern::successProbability,
-                    ByteBufCodecs.DOUBLE,
-                    EncodedStatisticalPattern::alpha,
-                    ByteBufCodecs.VAR_INT,
-                    EncodedStatisticalPattern::smallSampleLimit,
-                    ByteBufCodecs.BOOL,
-                    EncodedStatisticalPattern::isAlpha95,
-                    EncodedStatisticalPattern::new);
 }

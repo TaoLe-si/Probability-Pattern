@@ -1,25 +1,6 @@
-
-/*
- * Probability Pattern for AE2
- * Copyright (C) 2026 TaoLe-si
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package com.tz.statpatterns.client;
 
 import appeng.client.gui.widgets.*;
-import appeng.menu.me.items.PatternEncodingTermMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -60,7 +41,6 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
 
         this.alpha95 = widgets.addCheckbox("alpha", Component.translatable("gui.probabilitypattern.alpha95"), this::save);
         this.alpha95.setWidth(100);
-
         updateState();
     }
 
@@ -77,10 +57,8 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-
         var probabilityLabel = Component.translatable("gui.probabilitypattern.probability");
         guiGraphics.drawString(font, probabilityLabel, probabilityLabelX(), labelY() + 1, 0x404040, false);
-
         probabilityField.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
@@ -104,20 +82,13 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
         return probabilityLabelX() + font.width(label) + LABEL_TO_FIELD_GAP;
     }
 
-    private int fieldY() {
-        return labelY() - 3;
-    }
-
-    private int labelY() {
-        return topPos + playerInventoryTopY() - INVENTORY_TITLE_GAP;
-    }
+    private int fieldY() { return labelY() - 3; }
+    private int labelY() { return topPos + playerInventoryTopY() - INVENTORY_TITLE_GAP; }
 
     private int playerInventoryLeftX() {
         var minX = Integer.MAX_VALUE;
         for (var slot : menu.slots) {
-            if (slot.container == playerInventory) {
-                minX = Math.min(minX, slot.x);
-            }
+            if (slot.container == playerInventory) minX = Math.min(minX, slot.x);
         }
         return minX == Integer.MAX_VALUE ? inventoryLabelX : minX;
     }
@@ -125,9 +96,7 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
     private int playerInventoryTopY() {
         var minY = Integer.MAX_VALUE;
         for (var slot : menu.slots) {
-            if (slot.container == playerInventory) {
-                minY = Math.min(minY, slot.y);
-            }
+            if (slot.container == playerInventory) minY = Math.min(minY, slot.y);
         }
         return minY == Integer.MAX_VALUE ? inventoryLabelY + 12 : minY;
     }
@@ -139,11 +108,8 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
     private static Double parseProbability(String value) {
         try {
             var parsed = Double.parseDouble(value.trim());
-            if (parsed > 0.0 && parsed <= 1.0) {
-                return parsed;
-            }
-        } catch (NumberFormatException ignored) {
-        }
+            if (parsed > 0.0 && parsed <= 1.0) return parsed;
+        } catch (NumberFormatException ignored) {}
         return null;
     }
 }

@@ -1,20 +1,3 @@
-/*
- * Probability Pattern for AE2
- * Copyright (C) 2026 TaoLe-si
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package com.tz.statpatterns.crafting;
 
 import appeng.api.config.Actionable;
@@ -35,90 +18,59 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Custom crafting tree node that wraps StatisticalPatternDetails.forRequest().
+ * Mirrors AE2's CraftingTreeNode with probability-aware pattern selection.
+ */
 public class PCraftingTreeNode {
 
-    /**
-     * what input this node is for. Null for the top-level node.
-     */
     @Nullable
     final IPatternDetails.IInput parentInput;
     private final PCraftingCalculation job;
-    // parent node.
     private final PCraftingTreeProcess parent;
     private final Level level;
-    /**
-     * "Template" of the item this node is making. For top-level node: the count is always 1. For child nodes: the count
-     * is that of the template of the corresponding input.
-     */
     private final AEKey what;
     private final long amount;
-    /**
-     * The patterns that can make this node. Null if they haven't been computed yet.
-     */
     private ArrayList<PCraftingTreeProcess> nodes = null;
     private final boolean canEmit;
-
     private long probabilityTotalRequested;
 
     public PCraftingTreeNode(ICraftingService cc, PCraftingCalculation job, AEKey what, long amount,
-                            PCraftingTreeProcess par, int slot) {
+            PCraftingTreeProcess par, int slot) {
         this.parent = par;
         this.parentInput = slot == -1 ? null : par.details.getInputs()[slot];
         this.level = job.getLevel();
         this.job = job;
         this.what = findCraftedStack(cc, what);
         this.amount = amount;
-
         this.canEmit = cc.canEmitFor(what);
     }
 
     private AEKey findCraftedStack(ICraftingService cc, AEKey wat) {
-        if (cc.canEmitFor(wat)) {
-            return wat; // if we can emit for something, use that.
-        }
-
+        if (cc.canEmitFor(wat)) return wat;
         var patterns = cc.getCraftingFor(wat);
-
         if (patterns.isEmpty() && parentInput != null) {
-            // No pattern for the exact encoded input. Try to find a pattern for a substitute ingredient. ;)
             long acceptableAmount = parentInput.getPossibleInputs()[0].amount();
-
             for (var possibleInput : parentInput.getPossibleInputs()) {
-                if (possibleInput.amount() != acceptableAmount) {
-                    // Skip if the amounts don't match (don't want to replace 1000 water by 1000 buckets for example).
-                    continue;
-                }
-
-                var fuzzy = cc.getFuzzyCraftable(possibleInput.what(), fuzzyCandidate -> {
-                    return this.parentInput.isValid(fuzzyCandidate, level);
-                });
-
-                if (fuzzy != null) {
-                    return fuzzy;
-                }
+                if (possibleInput.amount() != acceptableAmount) continue;
+                var fuzzy = cc.getFuzzyCraftable(possibleInput.what(),
+                        fuzzyCandidate -> this.parentInput.isValid(fuzzyCandidate, level));
+                if (fuzzy != null) return fuzzy;
             }
         }
-
         return wat;
     }
 
     private void buildChildPatterns() {
-        // Sanity check: this should never be called if this is emitable
         if (this.canEmit) {
             throw new IllegalStateException("Internal AE2 error: this node is emitable, it shouldn't use patterns!");
         }
-
         if (this.nodes == null) {
             this.nodes = new ArrayList<>();
-
             var gridNode = this.job.simRequester.getGridNode();
-
-            // If the node is null, we just skip patterns and let the request (likely) fail.
             if (gridNode != null) {
                 var craftingService = gridNode.getGrid().getCraftingService();
-
                 for (var details : wrapPatternsForNode(craftingService, this.what)) {
                     if (this.parent == null || this.parent.notRecursive(details)) {
                         this.nodes.add(new PCraftingTreeProcess(craftingService, job, details, this));
@@ -130,9 +82,7 @@ public class PCraftingTreeNode {
 
     private Collection<IPatternDetails> wrapPatternsForNode(ICraftingService service, AEKey whatToCraft) {
         var patterns = service.getCraftingFor(whatToCraft);
-        if (this.probabilityTotalRequested <= 0) {
-            return patterns;
-        }
+        if (this.probabilityTotalRequested <= 0) return patterns;
         var result = new ArrayList<IPatternDetails>(patterns.size());
         for (var p : patterns) {
             if (p instanceof StatisticalPatternDetails spd) {
@@ -143,147 +93,73 @@ public class PCraftingTreeNode {
         }
         return result;
     }
-    /**
-     * Return true if adding this pattern as a child would not cause recursion.
-     */
+
     boolean notRecursive(IPatternDetails details) {
         for (var output : details.getOutputs()) {
-            if (this.what.matches(output)) {
-                return false;
-            }
+            if (this.what.matches(output)) return false;
         }
-
         for (var input : details.getInputs()) {
-            if (this.what.matches(input.getPossibleInputs()[0])) {
-                return false;
-            }
+            if (this.what.matches(input.getPossibleInputs()[0])) return false;
         }
-
-        if (this.parent == null) {
-            return true;
-        }
-
+        if (this.parent == null) return true;
         return this.parent.notRecursive(details);
     }
 
-    /**
-     * Request items. Will always succeed or throw an exception.
-     *
-     * @param inv             Current simulated inventory.
-     * @param requestedAmount How many items. The raw amount for top-level requests, or the number of inputs for
-     *                        requests that have a parent.
-     * @param containerItems  A list where produced container items are written if it's not null.
-     * @throws CraftBranchFailure If the request failed.
-     */
-    void request(CraftingSimulationState inv, long requestedAmount, @Nullable KeyCounter containerItems) throws CraftBranchFailure, InterruptedException {
+    void request(CraftingSimulationState inv, long requestedAmount,
+            @Nullable KeyCounter containerItems) throws CraftBranchFailure, InterruptedException {
         this.probabilityTotalRequested = requestedAmount * this.amount;
-
         this.job.handlePausing();
-
         inv.addStackBytes(what, amount, requestedAmount);
 
-        /*
-         * 1) COLLECT ITEMS FROM THE INVENTORY
-         */
-        // Templates: must copy before using!
         for (var template : getValidItemTemplates(inv)) {
             long extracted = CraftingCpuHelper.extractTemplates(inv, template, requestedAmount);
-
             if (extracted > 0) {
-                // TODO: we should keep track of which items we extracted to make sure the CPU uses exactly those when
-                // TODO: it processes the job.
                 requestedAmount -= extracted;
                 addContainerItems(template.key(), extracted, containerItems);
-
-                if (requestedAmount == 0) {
-                    return;
-                }
+                if (requestedAmount == 0) return;
             }
         }
 
-        // Already add the container items: if we fail, the process above will fail and they will be discarded anyway.
         addContainerItems(what, requestedAmount, containerItems);
 
-        /*
-         * 2) EMITABLE ITEMS
-         */
         if (this.canEmit) {
             inv.emitItems(this.what, this.amount * requestedAmount);
             return;
         }
 
-        /*
-         * 3) USE PATTERNS
-         */
         buildChildPatterns();
         long totalRequestedItems = requestedAmount * this.amount;
         if (this.nodes.size() == 1) {
-            // Single branch: just query as much as we can and let it throw if that's not possible.
             final PCraftingTreeProcess pro = this.nodes.get(0);
             var craftedPerPattern = pro.getOutputCount(this.what);
-
             while (pro.possible && totalRequestedItems > 0) {
-                long times;
-                if (pro.limitsQuantity()) {
-                    times = 1;
-                } else {
-                    // Craft all at once!
-                    times = (totalRequestedItems + craftedPerPattern - 1) / craftedPerPattern;
-                }
+                long times = pro.limitsQuantity() ? 1
+                        : (totalRequestedItems + craftedPerPattern - 1) / craftedPerPattern;
                 pro.request(inv, times);
-
-                // by now we have succeeded, as request throws an exception in case of failure
-                // check how much was actually produced
                 var available = inv.extract(this.what, totalRequestedItems, Actionable.MODULATE);
                 if (available != 0) {
                     totalRequestedItems -= available;
-
-                    if (totalRequestedItems <= 0) {
-                        return;
-                    }
+                    if (totalRequestedItems <= 0) return;
                 } else {
-                    var pattern = pro.details.getDefinition();
-                    String outputs = pro.details.getOutputs()
-                            .stream()
-                            .map(GenericStack::toString)
-                            .collect(Collectors.joining(", "));
-                    String errorMessage = """
-                            Unexpected error in the crafting calculation: can't find created items.
-                            This is an AE2 bug, please report it, with the following important information:
-
-                            - Found none of %s. Remaining request: %d of %d*%d.
-                            - Tried crafting %d times the pattern %s.
-                            - Pattern outputs: %s.
-                            """.formatted(what, totalRequestedItems, requestedAmount, amount, times, pattern, outputs);
-                    throw new UnsupportedOperationException(errorMessage);
+                    pro.possible = false;
                 }
             }
         } else if (this.nodes.size() > 1) {
-            // Multiple branches: try as much as possible of one branch before moving to the next one.
             for (PCraftingTreeProcess pro : this.nodes) {
                 try {
                     while (pro.possible && totalRequestedItems > 0) {
                         final ChildCraftingSimulationState child = new ChildCraftingSimulationState(inv);
-                        // craft one by one, using the sub inventory as target
                         pro.request(child, 1);
-
-                        // by now we have succeeded, as request throws an exception in case of failure
                         var available = child.extract(this.what, totalRequestedItems, Actionable.MODULATE);
-
                         if (available != 0) {
                             child.applyDiff(inv);
-
                             totalRequestedItems -= available;
-
-                            if (totalRequestedItems <= 0) {
-                                return;
-                            }
+                            if (totalRequestedItems <= 0) return;
                         } else {
-                            pro.possible = false; // ;P
+                            pro.possible = false;
                         }
                     }
                 } catch (CraftBranchFailure fail) {
-                    // TODO: why try again after a failure? just in case we receive the right inputs by chance?
                     pro.possible = true;
                 }
             }
@@ -296,72 +172,38 @@ public class PCraftingTreeNode {
         }
     }
 
-    // Only item stacks are supported.
-    private void addContainerItems(AEKey template, long multiplier,
-                                   @Nullable KeyCounter outputList) {
-        if (outputList != null) {
+    private void addContainerItems(AEKey template, long multiplier, @Nullable KeyCounter outputList) {
+        if (outputList != null && parentInput != null) {
             var containerItem = parentInput.getRemainingKey(template);
-            if (containerItem != null) {
-                outputList.add(containerItem, multiplier);
-            }
+            if (containerItem != null) outputList.add(containerItem, multiplier);
         }
     }
 
-    /**
-     * Get all stack templates that can be used for this node.
-     *
-     * @param inv Crafting inventory, used for fuzzy matching.
-     */
     private Iterable<InputTemplate> getValidItemTemplates(ICraftingInventory inv) {
-        if (this.parentInput == null)
-            return List.of(new InputTemplate(what, 1));
+        if (this.parentInput == null) return List.of(new InputTemplate(what, 1));
         return CraftingCpuHelper.getValidItemTemplates(inv, this.parentInput, level);
     }
 
     long getNodeCount() {
         long tot = 1;
         if (this.nodes != null) {
-            for (PCraftingTreeProcess pro : this.nodes) {
-                tot += pro.getNodeCount();
-            }
+            for (PCraftingTreeProcess pro : this.nodes) { tot += pro.getNodeCount(); }
         }
         return tot;
     }
 
     boolean hasMultiplePaths() {
-        if (this.nodes == null) {
-            return false;
-        }
-        if (this.nodes.size() > 1) {
-            return true;
-        }
-        for (var pro : this.nodes) {
-            if (pro.hasMultiplePaths()) {
-                return true;
-            }
-        }
+        if (this.nodes == null) return false;
+        if (this.nodes.size() > 1) return true;
+        for (var pro : this.nodes) { if (pro.hasMultiplePaths()) return true; }
         return false;
     }
 
-    /**
-     * Compute the aggregated success probability from child processes.
-     * For emitable items or items without patterns, returns 1.0.
-     * For single-branch nodes, returns that branch's probability.
-     * For multi-branch nodes (alternative patterns), returns the probability
-     * that at least one branch succeeds: 1 - product(1 - p_i).
-     */
     double getSuccessProbability() {
-        if (this.nodes == null || this.nodes.isEmpty()) {
-            return 1.0;
-        }
-        if (this.nodes.size() == 1) {
-            return this.nodes.get(0).getSuccessProbability();
-        }
-        // Multiple branches: P(at least one succeeds) = 1 - P(all fail)
+        if (this.nodes == null || this.nodes.isEmpty()) return 1.0;
+        if (this.nodes.size() == 1) return this.nodes.get(0).getSuccessProbability();
         double failProb = 1.0;
-        for (var pro : this.nodes) {
-            failProb *= (1.0 - pro.getSuccessProbability());
-        }
+        for (var pro : this.nodes) { failProb *= (1.0 - pro.getSuccessProbability()); }
         return 1.0 - failProb;
     }
 }

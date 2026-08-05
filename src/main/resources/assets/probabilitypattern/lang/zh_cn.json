@@ -24,5 +24,6 @@
   "probabilitypattern.tooltip.alpha": "显著性水平",
   "probabilitypattern.tooltip.trials": "计划尝试次数",
   "probabilitypattern.tooltip.distribution": "检验分布",
-  "probabilitypattern.tooltip.failure_probability": "少产风险"
+  "probabilitypattern.tooltip.failure_probability": "少产风险",
+  "probabilitypattern.tooltip.isalpha95": "置信水平"
 }

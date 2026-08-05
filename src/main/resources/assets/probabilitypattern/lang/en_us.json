@@ -25,5 +25,5 @@
   "probabilitypattern.tooltip.trials": "Planned Attempts",
   "probabilitypattern.tooltip.distribution": "Test Distribution",
   "probabilitypattern.tooltip.failure_probability": "Underproduction Risk",
-  "probabilitypattern.tooltip.isalpha95": "置信度区间"
+  "probabilitypattern.tooltip.isalpha95": "Confidence Level"
 }

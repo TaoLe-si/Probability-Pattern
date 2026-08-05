@@ -1,14 +1,16 @@
 package com.tz.statpatterns.part;
 
-import appeng.api.ids.AEComponents;
+import appeng.api.inventories.InternalInventory;
 import appeng.helpers.IPatternTerminalLogicHost;
 import appeng.parts.encoding.EncodingMode;
 import appeng.parts.encoding.PatternEncodingLogic;
 import appeng.util.inv.AppEngInternalInventory;
+import com.tz.statpatterns.api.ids.Components;
+import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 
 public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
     private double probability = 0.8;
@@ -37,7 +39,7 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
     }
 
     @Override
-    public void onChangeInventory(AppEngInternalInventory inv, int slot) {
+    public void onChangeInventory(InternalInventory inv, int slot) {
         super.onChangeInventory(inv, slot);
 
         if (inv == getEncodedPatternInv()) {
@@ -48,13 +50,13 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
         }
     }
 
-    private void loadProbabilityPattern(net.minecraft.world.item.ItemStack pattern) {
-        var encoded = pattern.get(AEComponents.ENCODED_PROCESSING_PATTERN);
+    private void loadProbabilityPattern(ItemStack pattern) {
+        var encoded = Components.readStatisticalPattern(pattern);
         if (encoded != null) {
             setMode(EncodingMode.PROCESSING);
 
-            var inputs = encoded.sparseInputs();
-            var outputs = encoded.sparseOutputs();
+            var inputs = encoded.inputsPerAttempt();
+            var output = encoded.output();
 
             var inputInv = getEncodedInputInv();
             var outputInv = getEncodedOutputInv();
@@ -71,7 +73,7 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
             outputInv.beginBatch();
             try {
                 for (int i = 0; i < outputInv.size(); i++) {
-                    outputInv.setStack(i, i < outputs.size() ? outputs.get(i) : null);
+                    outputInv.setStack(i, i == 0 ? output : null);
                 }
             } finally {
                 outputInv.endBatch();
@@ -82,8 +84,8 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
     }
 
     @Override
-    public void readFromNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        super.readFromNBT(tag, provider);
+    public void readFromNBT(CompoundTag tag) {
+        super.readFromNBT(tag);
         if (tag.contains("probability")) {
             this.probability = Mth.clamp(tag.getDouble("probability"), 0.01, 0.9999);
         }
@@ -93,8 +95,8 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
     }
 
     @Override
-    public void writeToNBT(CompoundTag tag, HolderLookup.Provider provider) {
-        super.writeToNBT(tag, provider);
+    public void writeToNBT(CompoundTag tag) {
+        super.writeToNBT(tag);
         tag.putDouble("probability", this.probability);
         tag.putBoolean("alpha95", this.alpha95);
     }

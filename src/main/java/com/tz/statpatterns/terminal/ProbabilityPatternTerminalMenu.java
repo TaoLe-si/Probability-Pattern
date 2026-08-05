@@ -1,42 +1,17 @@
-
-/*
- * Probability Pattern for AE2
- * Copyright (C) 2026 TaoLe-si
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package com.tz.statpatterns.terminal;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-import appeng.api.storage.ITerminalHost;
-import appeng.parts.encoding.PatternEncodingLogic;
 import com.tz.statpatterns.api.ids.Components;
 import com.tz.statpatterns.core.definition.SPMenus;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
-import it.unimi.dsi.fastutil.shorts.ShortSet;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.jetbrains.annotations.Nullable;
 
 import appeng.api.crafting.PatternDetailsHelper;
@@ -44,9 +19,9 @@ import appeng.api.stacks.GenericStack;
 import appeng.helpers.IPatternTerminalMenuHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.parts.encoding.EncodingMode;
+import appeng.parts.encoding.PatternEncodingLogic;
 
 import com.tz.statpatterns.part.ProbabilityPatternEncodingLogic;
-
 
 public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private static final String ACTION_SET_PROBABILITY = "setProbability";
@@ -57,7 +32,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private final PatternEncodingLogic encodingLogic;
 
     public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
-        this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
+        this(SPMenus.PROBABILITY_PATTERN_TERMINAL, containerId, playerInventory, host);
     }
 
     public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
@@ -66,7 +41,6 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
         registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
 
-        // 从编码逻辑中恢复上次保存的概率值
         if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
             this.probability = peLogic.getProbability();
             this.alpha95 = peLogic.isAlpha95();
@@ -74,9 +48,8 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     }
 
     @Override
-    public void onServerDataSync(ShortSet updatedFields) {
-        super.onServerDataSync(updatedFields);
-
+    public void onServerDataSync() {
+        super.onServerDataSync();
     }
 
     public double getProbability() {
@@ -96,6 +69,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
             sendClientAction(ACTION_SET_PROBABILITY, this.probability);
         }
     }
+
     public void setAlpha95(boolean value) {
         this.alpha95 = value;
         if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
@@ -111,7 +85,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     public void onSlotChange(Slot slot) {
         super.onSlotChange(slot);
         var encodedStack = encodingLogic.getEncodedPatternInv().getStackInSlot(0);
-        var encoded = encodedStack.get(Components.ENCODED_STATISTICAL_PATTERN);
+        var encoded = Components.readStatisticalPattern(encodedStack);
         if (encoded != null) {
             this.probability = encoded.successProbability();
             this.alpha95 = encoded.isAlpha95();
