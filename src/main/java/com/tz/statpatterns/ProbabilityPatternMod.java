@@ -106,21 +106,9 @@ public final class ProbabilityPatternMod {
                 calcProcessor);
         }
 
-        final ItemStack blankPattern = AEApi.instance()
-            .definitions()
-            .materials()
-            .blankPattern()
-            .maybeStack(1)
-            .orNull();
-        final ItemStack logicProcessor = AEApi.instance()
-            .definitions()
-            .materials()
-            .logicProcessor()
-            .maybeStack(1)
-            .orNull();
-
-        if (blankPattern != null && logicProcessor != null) {
-            GameRegistry.addShapelessRecipe(new ItemStack(probabilityPatternItem), blankPattern, logicProcessor);
-        }
+        // NOTE: encoding consumes the vanilla AE2 blank pattern directly (same as the
+        // 1.21.1 original); there is intentionally no separate "blank probability pattern"
+        // crafting recipe. The ProbabilityPatternItem's blank (no-NBT) form is only
+        // available from the creative tab / via the terminal mechanics.
     }
 }

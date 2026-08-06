@@ -27,6 +27,7 @@ import com.tz.statpatterns.crafting.ProbabilityPatternItem;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
 import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
 
+import appeng.api.AEApi;
 import appeng.api.storage.ITerminalHost;
 import appeng.container.guisync.GuiSync;
 import appeng.container.implementations.ContainerMEMonitorable;
@@ -203,8 +204,19 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable impl
 
         if (existingEncoded == null) {
             final ItemStack blank = patternInv.getStackInSlot(0);
-            if (blank == null || !(blank.getItem() instanceof ProbabilityPatternItem)) {
-                return; // no blank probability pattern
+            if (blank == null) {
+                return; // no blank pattern to consume
+            }
+            // Accept either the vanilla AE2 blank pattern (preferred, same as the 1.21.1
+            // original) or our own blank probability pattern item.
+            final boolean isAE2Blank = AEApi.instance()
+                .definitions()
+                .materials()
+                .blankPattern()
+                .isSameAs(blank);
+            final boolean isOurBlank = blank.getItem() instanceof ProbabilityPatternItem;
+            if (!isAE2Blank && !isOurBlank) {
+                return;
             }
             blank.stackSize--;
             if (blank.stackSize <= 0) {
