@@ -21,13 +21,17 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
+import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
 import com.tz.statpatterns.crafting.StatisticalPatternDetails;
 import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
 
 import appeng.api.AEApi;
+import appeng.api.implementations.ICraftingPatternItem;
+import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.ITerminalHost;
 import appeng.container.guisync.GuiSync;
 import appeng.container.implementations.ContainerMEMonitorable;
@@ -37,6 +41,7 @@ import appeng.container.slot.SlotPatternOutputs;
 import appeng.container.slot.SlotRestrictedInput;
 import appeng.helpers.IContainerCraftingPacket;
 import appeng.util.Platform;
+import cpw.mods.fml.common.FMLLog;
 
 /**
  * Container for the ME Probability Pattern Encoding Terminal.
@@ -208,37 +213,48 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable
 
         final ItemStack existingEncoded = patternInv.getStackInSlot(1);
         if (existingEncoded != null && !(existingEncoded.getItem() instanceof ProbabilityPatternItem)) {
+            FMLLog.info("[ProbabilityPattern] encode: encoded slot holds a foreign item, aborting");
             return; // only our own probability patterns may occupy the encoded slot
         }
 
-        // collect per-attempt inputs
+        // Collect per-attempt inputs. Fake slots may report stackSize 0; normalise to 1 so
+        // PatternHelper does not reject the encoded pattern as empty ("No pattern here!").
         final List<ItemStack> inputs = new ArrayList<ItemStack>();
         for (int i = 0; i < craftingInv.getSizeInventory(); i++) {
             final ItemStack s = craftingInv.getStackInSlot(i);
             if (s != null) {
+                if (s.stackSize <= 0) {
+                    s.stackSize = 1;
+                }
                 inputs.add(s);
             }
         }
         if (inputs.isEmpty()) {
+            FMLLog.info("[ProbabilityPattern] encode: no crafting inputs");
             return;
         }
 
-        // collect target output (first non-null)
+        // Collect target output (first non-null), normalise size as well.
         ItemStack output = null;
         for (int i = 0; i < outputInv.getSizeInventory(); i++) {
             final ItemStack s = outputInv.getStackInSlot(i);
             if (s != null) {
+                if (s.stackSize <= 0) {
+                    s.stackSize = 1;
+                }
                 output = s;
                 break;
             }
         }
         if (output == null) {
+            FMLLog.info("[ProbabilityPattern] encode: no target output");
             return;
         }
 
         if (existingEncoded == null) {
             final ItemStack blank = patternInv.getStackInSlot(0);
             if (blank == null) {
+                FMLLog.info("[ProbabilityPattern] encode: no blank pattern in slot");
                 return; // no blank pattern to consume
             }
             // Accept either the vanilla AE2 blank pattern (preferred, same as the 1.21.1
@@ -250,6 +266,7 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable
                 .isSameAs(blank);
             final boolean isOurBlank = blank.getItem() instanceof ProbabilityPatternItem;
             if (!isAE2Blank && !isOurBlank) {
+                FMLLog.info("[ProbabilityPattern] encode: blank slot holds %s, not a blank pattern", blank);
                 return;
             }
             blank.stackSize--;
@@ -265,6 +282,25 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable
         patternInv.setInventorySlotContents(1, encoded);
         this.patternTerminal.saveChanges();
         this.detectAndSendChanges();
+
+        // Diagnostic: verify the freshly encoded pattern decodes through AE2's pattern path.
+        try {
+            final World w = this.patternTerminal.getTile()
+                .getWorldObj();
+            final ICraftingPatternDetails d = ((ICraftingPatternItem) ProbabilityPatternMod.probabilityPatternItem)
+                .getPatternForItem(encoded, w);
+            if (d == null) {
+                FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
+            } else {
+                FMLLog.info(
+                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d craftable=%s",
+                    d.getInputs().length,
+                    d.getOutputs().length,
+                    d.isCraftable());
+            }
+        } catch (final Throwable t) {
+            FMLLog.info("[ProbabilityPattern] encode: decode threw: %s", t.toString());
+        }
     }
 
     public void clear() {

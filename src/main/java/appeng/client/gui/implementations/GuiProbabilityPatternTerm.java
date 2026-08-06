@@ -92,14 +92,14 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         // Everything is positioned relative to ySize, so the controls move together with the
         // inventory bar. The "Inventory" label drawn by GuiMEMonitorable sits at x=8, so the
         // controls start at x=74 to avoid overlapping it.
-        this.alphaButton = new GuiButton(10, this.guiLeft + 114, this.guiTop + this.ySize - 98, 56, 12, "");
+        this.alphaButton = new GuiButton(10, this.guiLeft + 50, this.guiTop + this.ySize - 98, 56, 12, "");
         this.buttonList.add(this.alphaButton);
 
         this.probabilityField = new GuiTextField(
             this.fontRendererObj,
-            this.guiLeft + 74,
+            this.guiLeft + 8,
             this.guiTop + this.ySize - 98,
-            38,
+            40,
             12);
         this.probabilityField.setMaxStringLength(8);
         this.probabilityField.setText(formatProbability(this.container.probabilityScaled / 10000.0));
@@ -165,7 +165,7 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         }
 
         final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
-        this.fontRendererObj.drawString(label, 74, this.ySize - 112, 4210752);
+        this.fontRendererObj.drawString(label, 8, this.ySize - 112, 4210752);
         this.probabilityField.drawTextBox();
 
         this.alphaButton.displayString = StatCollector.translateToLocal(
