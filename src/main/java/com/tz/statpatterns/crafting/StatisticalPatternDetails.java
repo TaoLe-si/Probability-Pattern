@@ -1,19 +1,16 @@
 /*
  * Probability Pattern for AE2
  * Copyright (C) 2026 TaoLe-si
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.tz.statpatterns.crafting;
 
@@ -23,11 +20,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
-import appeng.helpers.PatternHelper;
-
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.math.ProbabilitySizing;
 import com.tz.statpatterns.math.ProbabilitySizingResult;
+
+import appeng.helpers.PatternHelper;
 
 /**
  * ICraftingPatternDetails implementation for a probability (statistical) pattern.
@@ -42,78 +39,80 @@ import com.tz.statpatterns.math.ProbabilitySizingResult;
  * {@code appeng.crafting.CraftingTreeProcess.getTimes} so that the crafting tree
  * runs the machine enough times to guarantee P(produced >= N) >= 1 - alpha.
  */
-public class StatisticalPatternDetails extends PatternHelper
-{
-	private final double successProbability;
-	private final double alpha;
-	private final boolean isAlpha95;
-	private final int smallSampleLimit;
+public class StatisticalPatternDetails extends PatternHelper {
 
-	public StatisticalPatternDetails( final ItemStack is, final World w )
-	{
-		super( is, w );
+    private final double successProbability;
+    private final double alpha;
+    private final boolean isAlpha95;
+    private final int smallSampleLimit;
 
-		final NBTTagCompound tag = is.getTagCompound();
-		this.successProbability = tag.getDouble( EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY );
-		this.alpha = tag.getDouble( EncodedStatisticalPattern.TAG_ALPHA );
-		this.isAlpha95 = tag.getBoolean( EncodedStatisticalPattern.TAG_ALPHA95 );
-		this.smallSampleLimit = tag.hasKey( EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT ) ? tag.getInteger( EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT ) : 30;
-	}
+    public StatisticalPatternDetails(final ItemStack is, final World w) {
+        super(is, w);
 
-	/**
-	 * @return true if this is a genuine probability pattern (p < 1.0). Deterministic
-	 * patterns (p == 1.0) behave exactly like normal processing patterns and must NOT
-	 * have their attempt count overridden.
-	 */
-	public boolean isProbabilityPattern()
-	{
-		return this.successProbability < 1.0;
-	}
+        final NBTTagCompound tag = is.getTagCompound();
+        this.successProbability = tag.getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+        this.alpha = tag.getDouble(EncodedStatisticalPattern.TAG_ALPHA);
+        this.isAlpha95 = tag.getBoolean(EncodedStatisticalPattern.TAG_ALPHA95);
+        this.smallSampleLimit = tag.hasKey(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
+            ? tag.getInteger(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
+            : 30;
+    }
 
-	public double successProbability()
-	{
-		return this.successProbability;
-	}
+    /**
+     * @return true if this is a genuine probability pattern (p < 1.0). Deterministic
+     *         patterns (p == 1.0) behave exactly like normal processing patterns and must NOT
+     *         have their attempt count overridden.
+     */
+    public boolean isProbabilityPattern() {
+        return this.successProbability < 1.0;
+    }
 
-	public double alpha()
-	{
-		return this.alpha;
-	}
+    public double successProbability() {
+        return this.successProbability;
+    }
 
-	public boolean isAlpha95()
-	{
-		return this.isAlpha95;
-	}
+    public double alpha() {
+        return this.alpha;
+    }
 
-	public int smallSampleLimit()
-	{
-		return this.smallSampleLimit;
-	}
+    public boolean isAlpha95() {
+        return this.isAlpha95;
+    }
 
-	/**
-	 * Compute the planned number of attempts needed to produce at least
-	 * {@code requestedOutputAmount} items with confidence 1 - alpha.
-	 * <p>
-	 * This is the method invoked by the crafting-interception coremod
-	 * ({@code CraftingTreeProcess.getTimes}).
-	 */
-	public long plannedAttempts( final long requestedOutputAmount )
-	{
-		final long successes = Math.max( 1, requestedOutputAmount );
-		final ProbabilitySizingResult sizing = ProbabilitySizing.planAttempts( successes, this.successProbability, this.alpha, this.smallSampleLimit );
-		return sizing.attempts();
-	}
+    public int smallSampleLimit() {
+        return this.smallSampleLimit;
+    }
 
-	/**
-	 * Create a probability pattern ItemStack from per-attempt inputs and a target output.
-	 */
-	public static ItemStack encode( final List<ItemStack> inputsPerAttempt, final ItemStack output, final double successProbability, final double alpha, final boolean alpha95 )
-	{
-		final EncodedStatisticalPattern encoded = new EncodedStatisticalPattern( inputsPerAttempt, output, successProbability, alpha, 30, alpha95 );
-		final ItemStack stack = new ItemStack( ProbabilityPatternMod.probabilityPatternItem );
-		final NBTTagCompound tag = new NBTTagCompound();
-		encoded.writeToNBT( tag );
-		stack.setTagCompound( tag );
-		return stack;
-	}
+    /**
+     * Compute the planned number of attempts needed to produce at least
+     * {@code requestedOutputAmount} items with confidence 1 - alpha.
+     * <p>
+     * This is the method invoked by the crafting-interception coremod
+     * ({@code CraftingTreeProcess.getTimes}).
+     */
+    public long plannedAttempts(final long requestedOutputAmount) {
+        final long successes = Math.max(1, requestedOutputAmount);
+        final ProbabilitySizingResult sizing = ProbabilitySizing
+            .planAttempts(successes, this.successProbability, this.alpha, this.smallSampleLimit);
+        return sizing.attempts();
+    }
+
+    /**
+     * Create a probability pattern ItemStack from per-attempt inputs and a target output.
+     */
+    public static ItemStack encode(final List<ItemStack> inputsPerAttempt, final ItemStack output,
+        final double successProbability, final double alpha, final boolean alpha95) {
+        final EncodedStatisticalPattern encoded = new EncodedStatisticalPattern(
+            inputsPerAttempt,
+            output,
+            successProbability,
+            alpha,
+            30,
+            alpha95);
+        final ItemStack stack = new ItemStack(ProbabilityPatternMod.probabilityPatternItem);
+        final NBTTagCompound tag = new NBTTagCompound();
+        encoded.writeToNBT(tag);
+        stack.setTagCompound(tag);
+        return stack;
+    }
 }

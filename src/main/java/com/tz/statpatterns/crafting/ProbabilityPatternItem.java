@@ -1,19 +1,16 @@
 /*
  * Probability Pattern for AE2
  * Copyright (C) 2026 TaoLe-si
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.tz.statpatterns.crafting;
 
@@ -28,13 +25,12 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import com.tz.statpatterns.ProbabilityPatternMod;
 
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
-
-import com.tz.statpatterns.ProbabilityPatternMod;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 /**
  * The Probability Pattern item.
@@ -44,81 +40,79 @@ import com.tz.statpatterns.ProbabilityPatternMod;
  * Implements {@link ICraftingPatternItem} so AE2's crafting grid decodes it through
  * {@link StatisticalPatternDetails} and the probability sizing coremod kicks in.
  */
-public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
-{
-	@SideOnly( Side.CLIENT )
-	private IIcon icon;
+public class ProbabilityPatternItem extends Item implements ICraftingPatternItem {
 
-	public ProbabilityPatternItem()
-	{
-		this.setMaxStackSize( 1 );
-		this.setUnlocalizedName( "probabilitypattern.probability_pattern" );
-		this.setTextureName( "probabilitypattern:probability_pattern" );
-	}
+    @SideOnly(Side.CLIENT)
+    private IIcon icon;
 
-	@Override
-	public ICraftingPatternDetails getPatternForItem( final ItemStack is, final World w )
-	{
-		if( is == null || is.getItem() != this || !is.hasTagCompound() )
-		{
-			return null; // blank pattern
-		}
-		if( EncodedStatisticalPattern.decode( is.getTagCompound() ) == null )
-		{
-			return null;
-		}
-		try
-		{
-			return new StatisticalPatternDetails( is, w );
-		}
-		catch( final Throwable t )
-		{
-			return null;
-		}
-	}
+    public ProbabilityPatternItem() {
+        this.setMaxStackSize(1);
+        this.setUnlocalizedName("probabilitypattern.probability_pattern");
+        this.setTextureName("probabilitypattern:probability_pattern");
+    }
 
-	/**
-	 * @return true if this stack is an encoded (non-blank) probability pattern.
-	 */
-	public static boolean isEncoded( final ItemStack is )
-	{
-		return is != null && is.getItem() instanceof ProbabilityPatternItem && is.hasTagCompound() && is.getTagCompound().hasKey( EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY );
-	}
+    @Override
+    public ICraftingPatternDetails getPatternForItem(final ItemStack is, final World w) {
+        if (is == null || is.getItem() != this || !is.hasTagCompound()) {
+            return null; // blank pattern
+        }
+        if (EncodedStatisticalPattern.decode(is.getTagCompound()) == null) {
+            return null;
+        }
+        try {
+            return new StatisticalPatternDetails(is, w);
+        } catch (final Throwable t) {
+            return null;
+        }
+    }
 
-	@Override
-	@SideOnly( Side.CLIENT )
-	public void registerIcons( final IIconRegister iconRegister )
-	{
-		this.icon = iconRegister.registerIcon( "probabilitypattern:probability_pattern" );
-	}
+    /**
+     * @return true if this stack is an encoded (non-blank) probability pattern.
+     */
+    public static boolean isEncoded(final ItemStack is) {
+        return is != null && is.getItem() instanceof ProbabilityPatternItem
+            && is.hasTagCompound()
+            && is.getTagCompound()
+                .hasKey(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+    }
 
-	@Override
-	@SideOnly( Side.CLIENT )
-	public IIcon getIconFromDamage( final int meta )
-	{
-		return this.icon;
-	}
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerIcons(final IIconRegister iconRegister) {
+        this.icon = iconRegister.registerIcon("probabilitypattern:probability_pattern");
+    }
 
-	@SuppressWarnings( { "unchecked", "rawtypes" } )
-	@Override
-	public void getSubItems( final Item item, final CreativeTabs tab, final List list )
-	{
-		if( tab == ProbabilityPatternMod.creativeTab )
-		{
-			list.add( new ItemStack( item, 1, 0 ) );
-		}
-	}
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IIcon getIconFromDamage(final int meta) {
+        return this.icon;
+    }
 
-	@SuppressWarnings( { "unchecked", "rawtypes" } )
-	@Override
-	public void addInformation( final ItemStack stack, final EntityPlayer player, final List lines, final boolean advanced )
-	{
-		if( isEncoded( stack ) )
-		{
-			final double p = stack.getTagCompound().getDouble( EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY );
-			lines.add( StatCollector.translateToLocalFormatted( "probabilitypattern.tooltip.success_probability", String.format( "%.0f%%", p * 100.0 ) ) );
-			final double alpha = stack.getTagCompound().getDouble( EncodedStatisticalPattern.TAG_ALPHA );
-			lines.add( StatCollector.translateToLocalFormatted( "probabilitypattern.tooltip.alpha", String.format( "%.0f%%", ( 1.0 - alpha ) * 100.0 ) ) );
-		}
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public void getSubItems(final Item item, final CreativeTabs tab, final List list) {
+        if (tab == ProbabilityPatternMod.creativeTab) {
+            list.add(new ItemStack(item, 1, 0));
+        }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public void addInformation(final ItemStack stack, final EntityPlayer player, final List lines,
+        final boolean advanced) {
+        if (isEncoded(stack)) {
+            final double p = stack.getTagCompound()
+                .getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+            lines.add(
+                StatCollector.translateToLocalFormatted(
+                    "probabilitypattern.tooltip.success_probability",
+                    String.format("%.0f%%", p * 100.0)));
+            final double alpha = stack.getTagCompound()
+                .getDouble(EncodedStatisticalPattern.TAG_ALPHA);
+            lines.add(
+                StatCollector.translateToLocalFormatted(
+                    "probabilitypattern.tooltip.alpha",
+                    String.format("%.0f%%", (1.0 - alpha) * 100.0)));
+        }
+    }
 }
