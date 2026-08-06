@@ -35,6 +35,7 @@ import appeng.container.slot.IOptionalSlotHost;
 import appeng.container.slot.SlotFakeCraftingMatrix;
 import appeng.container.slot.SlotPatternOutputs;
 import appeng.container.slot.SlotRestrictedInput;
+import appeng.helpers.IContainerCraftingPacket;
 import appeng.util.Platform;
 
 /**
@@ -45,7 +46,8 @@ import appeng.util.Platform;
  * so it can customise the pattern slots (accept the Probability Pattern item) and bake
  * the probability parameters into the encoded pattern.
  */
-public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable implements IOptionalSlotHost {
+public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable
+    implements IOptionalSlotHost, IContainerCraftingPacket {
 
     private static final int GUI_SYNC_PROBABILITY = 96;
     private static final int GUI_SYNC_ALPHA95 = 97;
@@ -124,6 +126,38 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable impl
     public boolean isSlotEnabled(final int idx) {
         // Processing-only terminal: all output slots are always enabled.
         return true;
+    }
+
+    /**
+     * IContainerCraftingPacket: lets AE2's {@code PacketNEIRecipe} (NEI recipe transfer)
+     * and other crafting-packet consumers resolve this terminal's inventories.
+     */
+    @Override
+    public IInventory getInventoryByName(final String name) {
+        if (name.equals("player")) {
+            return this.getInventoryPlayer();
+        }
+        return this.patternTerminal.getInventoryByName(name);
+    }
+
+    @Override
+    public boolean useRealItems() {
+        return false;
+    }
+
+    /**
+     * Fill the per-attempt crafting grid and the target output from an NEI recipe.
+     * {@code inputs} is length 9 (3x3, null = empty); {@code output} goes to the first
+     * target output slot.
+     */
+    public void applyNEIRecipe(final ItemStack[] inputs, final ItemStack output) {
+        final IInventory craftingInv = this.patternTerminal.getInventoryByName("crafting");
+        final IInventory outputInv = this.patternTerminal.getInventoryByName("output");
+        for (int i = 0; i < 9; i++) {
+            craftingInv.setInventorySlotContents(i, inputs != null && i < inputs.length ? inputs[i] : null);
+        }
+        outputInv.setInventorySlotContents(0, output);
+        this.detectAndSendChanges();
     }
 
     public double getProbability() {

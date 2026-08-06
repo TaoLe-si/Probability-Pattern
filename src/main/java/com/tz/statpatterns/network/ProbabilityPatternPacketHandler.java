@@ -46,6 +46,8 @@ public class ProbabilityPatternPacketHandler implements IMessageHandler<Probabil
             container.encode();
         } else if (action == Action.CLEAR) {
             container.clear();
+        } else if (action == Action.NEI_RECIPE) {
+            container.applyNEIRecipe(message.getInputs(), message.getOutput());
         }
 
         return null;

@@ -24,6 +24,7 @@ import com.tz.statpatterns.crafting.StatisticalPatternDetails;
 
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.crafting.CraftingTreeProcess;
+import cpw.mods.fml.common.FMLLog;
 
 /**
  * Makes AE2's crafting tree run probability patterns enough times.
@@ -55,7 +56,15 @@ public abstract class CraftingTreeProcessMixin {
         if (this.details instanceof StatisticalPatternDetails) {
             final StatisticalPatternDetails spd = (StatisticalPatternDetails) this.details;
             if (spd.isProbabilityPattern()) {
-                cir.setReturnValue(spd.plannedAttempts(remaining));
+                final long times = spd.plannedAttempts(remaining);
+                FMLLog.info(
+                    "[ProbabilityPattern] CraftingTreeProcess.getTimes intercepted: remaining=%d stackSize=%d times=%d p=%.3f alpha=%.3f",
+                    remaining,
+                    stackSize,
+                    times,
+                    spd.successProbability(),
+                    spd.alpha());
+                cir.setReturnValue(times);
             }
         }
     }

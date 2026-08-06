@@ -20,10 +20,15 @@ import net.minecraft.item.ItemStack;
 
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
 import com.tz.statpatterns.handler.ProbabilityPatternGuiHandler;
+import com.tz.statpatterns.integration.nei.ProbabilityPatternNEIOverlayHandler;
 import com.tz.statpatterns.item.ItemProbabilityPatternTerminal;
 import com.tz.statpatterns.network.ProbabilityPatternNetwork;
 
 import appeng.api.AEApi;
+import appeng.client.gui.implementations.GuiProbabilityPatternTerm;
+import appeng.integration.modules.NEIHelpers.TerminalCraftingSlotFinder;
+import codechicken.nei.api.API;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -31,6 +36,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 /**
  * Probability Pattern for AE2 — 1.7.10 port.
@@ -110,5 +117,30 @@ public final class ProbabilityPatternMod {
         // 1.21.1 original); there is intentionally no separate "blank probability pattern"
         // crafting recipe. The ProbabilityPatternItem's blank (no-NBT) form is only
         // available from the creative tab / via the terminal mechanics.
+
+        if (event.getSide()
+            .isClient()) {
+            this.registerNEI();
+        }
+    }
+
+    /**
+     * Register NEI integration (client-only): the "?" recipe-transfer button on the
+     * probability pattern terminal fills the 3x3 inputs and the target output from the
+     * hovered NEI recipe, mirroring the 1.21.1 original's JEI/EMI/REI recipe transfer.
+     */
+    @SideOnly(Side.CLIENT)
+    private void registerNEI() {
+        try {
+            if (Loader.isModLoaded("NotEnoughItems")) {
+                API.registerGuiOverlay(GuiProbabilityPatternTerm.class, "crafting", new TerminalCraftingSlotFinder());
+                API.registerGuiOverlayHandler(
+                    GuiProbabilityPatternTerm.class,
+                    new ProbabilityPatternNEIOverlayHandler(),
+                    "crafting");
+            }
+        } catch (final Throwable ignored) {
+            // NEI not present / optional dependency — never crash.
+        }
     }
 }

@@ -24,6 +24,7 @@ import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.math.ProbabilitySizing;
 import com.tz.statpatterns.math.ProbabilitySizingResult;
 
+import appeng.api.storage.data.IAEItemStack;
 import appeng.helpers.PatternHelper;
 
 /**
@@ -91,7 +92,14 @@ public class StatisticalPatternDetails extends PatternHelper {
      * ({@code CraftingTreeProcess.getTimes}).
      */
     public long plannedAttempts(final long requestedOutputAmount) {
-        final long successes = Math.max(1, requestedOutputAmount);
+        // Each attempt produces the encoded per-attempt output amount. Convert the
+        // requested output amount into the number of successful attempts needed.
+        long outputPerAttempt = 1;
+        final IAEItemStack[] outputs = this.getOutputs();
+        if (outputs != null && outputs.length > 0 && outputs[0] != null) {
+            outputPerAttempt = Math.max(1, outputs[0].getStackSize());
+        }
+        final long successes = Math.max(1, (requestedOutputAmount + outputPerAttempt - 1) / outputPerAttempt);
         final ProbabilitySizingResult sizing = ProbabilitySizing
             .planAttempts(successes, this.successProbability, this.alpha, this.smallSampleLimit);
         return sizing.attempts();

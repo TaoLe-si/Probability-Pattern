@@ -23,6 +23,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import appeng.util.Platform;
+
 /**
  * Encoded statistical pattern data (1.7.10 port of the {@code record EncodedStatisticalPattern}
  * from the 1.21.1 version). In 1.7.10 the data is stored as plain NBT on the pattern ItemStack
@@ -127,9 +129,17 @@ public final class EncodedStatisticalPattern {
         return tag;
     }
 
+    /**
+     * Write the stack using AE2's canonical pattern NBT encoding
+     * ({@link appeng.util.Platform#writeItemStackToNBT}). {@code PatternHelper} decodes
+     * pattern slots through {@code Platform.loadItemStackFromNBT}, which overwrites
+     * {@code stackSize} from the integer {@code Count} tag. Plain
+     * {@code ItemStack.writeToNBT} stores {@code Count} as a byte, so the decoded amount
+     * would be 0 and the pattern would be rejected as "No pattern here!".
+     */
     private static NBTBase createItemTag(final ItemStack i) {
         final NBTTagCompound c = new NBTTagCompound();
-        i.writeToNBT(c);
+        Platform.writeItemStackToNBT(i, c);
         return c;
     }
 
@@ -144,7 +154,7 @@ public final class EncodedStatisticalPattern {
         final List<ItemStack> inputs = new ArrayList<ItemStack>();
         final NBTTagList inTag = tag.getTagList(TAG_INPUTS, 10);
         for (int x = 0; x < inTag.tagCount(); x++) {
-            final ItemStack gs = ItemStack.loadItemStackFromNBT(inTag.getCompoundTagAt(x));
+            final ItemStack gs = Platform.loadItemStackFromNBT(inTag.getCompoundTagAt(x));
             if (gs != null) {
                 inputs.add(gs);
             }
@@ -153,7 +163,7 @@ public final class EncodedStatisticalPattern {
         ItemStack output = null;
         final NBTTagList outTag = tag.getTagList(TAG_OUTPUT, 10);
         for (int x = 0; x < outTag.tagCount(); x++) {
-            final ItemStack gs = ItemStack.loadItemStackFromNBT(outTag.getCompoundTagAt(x));
+            final ItemStack gs = Platform.loadItemStackFromNBT(outTag.getCompoundTagAt(x));
             if (gs != null) {
                 output = gs;
                 break;
