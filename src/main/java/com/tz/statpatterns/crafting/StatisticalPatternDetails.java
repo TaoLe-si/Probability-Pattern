@@ -24,7 +24,9 @@ import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.math.ProbabilitySizing;
 import com.tz.statpatterns.math.ProbabilitySizingResult;
 
+import appeng.api.storage.data.IAEItemStack;
 import appeng.helpers.PatternHelper;
+import cpw.mods.fml.common.FMLLog;
 
 /**
  * ICraftingPatternDetails implementation for a probability (statistical) pattern.
@@ -56,6 +58,22 @@ public class StatisticalPatternDetails extends PatternHelper {
         this.smallSampleLimit = tag.hasKey(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
             ? tag.getInteger(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
             : 30;
+
+        // Diagnostic: shows where AE2 constructs our details (interface registration, crafting
+        // job, tooltip rendering, ...) and that the per-attempt inputs/outputs decode correctly.
+        try {
+            final IAEItemStack[] ins = this.getInputs();
+            final IAEItemStack[] outs = this.getOutputs();
+            FMLLog.info(
+                "[ProbabilityPattern] details constructed: in=%d out=%d outStack=%d p=%.3f alpha=%.3f",
+                ins.length,
+                outs.length,
+                outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
+                this.successProbability,
+                this.alpha);
+        } catch (final Throwable t) {
+            FMLLog.info("[ProbabilityPattern] details constructed but getInputs/getOutputs threw: %s", t.toString());
+        }
     }
 
     /**

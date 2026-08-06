@@ -33,6 +33,7 @@ import appeng.api.AEApi;
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.ITerminalHost;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.container.guisync.GuiSync;
 import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.slot.IOptionalSlotHost;
@@ -292,10 +293,12 @@ public class ContainerProbabilityPatternTerm extends ContainerMEMonitorable
             if (d == null) {
                 FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
             } else {
+                final IAEItemStack[] outs = d.getOutputs();
                 FMLLog.info(
-                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d craftable=%s",
+                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d craftable=%s",
                     d.getInputs().length,
-                    d.getOutputs().length,
+                    outs.length,
+                    outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
                     d.isCraftable());
             }
         } catch (final Throwable t) {
