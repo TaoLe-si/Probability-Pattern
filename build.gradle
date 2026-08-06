@@ -3,8 +3,12 @@
  * Copyright (C) 2026 TaoLe-si, ZincGluxx
  * Licensed under LGPLv3 (see LICENSE)
  *
- * This is a Minecraft 1.7.10 / Forge 10.13.4.1448 addon built with the classic
- * ForgeGradle 1.2 toolchain (the same one Applied Energistics 2 rv3 uses).
+ * This is a Minecraft 1.7.10 / Forge 10.13.4.1448 addon built with the GTNH
+ * ForgeGradle 1.2 fork (the upstream ForgeGradle 1.2 is no longer hosted by
+ * MinecraftForge; the GTNH fork is available on JitPack).
+ *
+ * Crafting interception uses late-phase Mixin provided by UniMixins
+ * (com.github.LegacyModdingMC.UniMixins) — the modern Mixin loader for 1.7.10.
  *
  * NOTE: Building this project requires JDK 8 (ForgeGradle 1.2 / MCP 1.7.10 does
  * not work with newer JDKs). See README.md for full build instructions.
@@ -24,10 +28,16 @@ buildscript {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+
+        maven {
+            name = "JitPack"
+            url = "https://jitpack.io"
+        }
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        // GTNH-maintained ForgeGradle 1.2 fork (the upstream one is retired)
+        classpath 'com.github.GTNewHorizons:ForgeGradle:1.2.11'
     }
 }
 
@@ -40,6 +50,8 @@ targetCompatibility = JavaVersion.VERSION_1_6
 version = project.version
 group = project.group
 archivesBaseName = project.archivesBaseName
+
+def modid = "probabilitypattern"
 
 minecraft {
     version = project.minecraft_version + "-" + project.forge_version
@@ -58,6 +70,10 @@ repositories {
         name = "CurseMaven"
         url = "https://cursemaven.com"
     }
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
 }
 
 dependencies {
@@ -67,6 +83,11 @@ dependencies {
 
     // Option B (alternative): pull a known rv3-beta-6 build from CurseMaven.
     // compile 'curse.maven:ae2-223794:2304403'
+
+    // -- UniMixins (late-phase Mixin support for 1.7.10) --
+    def unimixinsVersion = "0.3.1"
+    implementation("com.github.LegacyModdingMC.UniMixins:unimixins-all-1.7.10:$unimixinsVersion:dev")
+    annotationProcessor("com.github.LegacyModdingMC.UniMixins:unimixins-all-1.7.10:$unimixinsVersion:dev")
 }
 
 processResources {
@@ -82,10 +103,22 @@ processResources {
     }
 }
 
+// -- Mixin (UniMixins) setup --
+runClient {
+    args("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+}
+
+runServer {
+    args("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+}
+
+def outSrgFile = "${tasks.compileJava.temporaryDir}/outSrg.srg"
+def outRefMapFile = "${tasks.compileJava.temporaryDir}/mixins.${modid}.refmap.json"
+
 jar {
     manifest {
-        attributes 'FMLCorePlugin': 'com.tz.statpatterns.coremod.PPCore'
-        attributes 'FMLCorePluginContainsFMLMod': 'true'
+        attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker'
+        attributes 'MixinConfigs': "mixins.${modid}.json"
     }
 
     // Only bundle what belongs to this mod
@@ -93,6 +126,21 @@ jar {
     include "assets/probabilitypattern/**"
     include "mcmod.info"
     include "pack.mcmeta"
+    include "mixins.${modid}.json"
+    include "mixins.${modid}.late.json"
+    include "mixins.${modid}.refmap.json"
+
+    from outRefMapFile
+}
+
+tasks.compileJava.options.compilerArgs += [
+        "-AreobfSrgFile=${tasks.reobf.srg}",
+        "-AoutSrgFile=${outSrgFile}",
+        "-AoutRefMapFile=${outRefMapFile}"
+]
+
+reobf {
+    addExtraSrgFile outSrgFile
 }
 
 task deobfJar(type: Jar) {
