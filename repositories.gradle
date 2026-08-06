@@ -1,0 +1,9 @@
+// Add any additional repositories for your dependencies here.
+
+repositories {
+    // AE2 rv3 (1.7.10) is not hosted on any public maven we can verify;
+    // drop a DEV (deobfuscated) jar into ./libs instead.
+    flatDir {
+        dirs "libs"
+    }
+}

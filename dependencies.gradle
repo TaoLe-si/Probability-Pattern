@@ -1,0 +1,16 @@
+/*
+ * Add your dependencies here. Supported configurations:
+ *  - api("g:n:v:c"): if you use the types from this dependency in the public API
+ *  - implementation("g:n:v:c"): internal implementation details
+ *  - compileOnly("g:n:v:c"): not needed at runtime
+ *  - devOnlyNonPublishable("g:n:v:c"): compiletime + runtime for dev, not published
+ *  - runtimeOnlyNonPublishable("g:n:v:c"): runtime for dev runs, not published
+ *  - annotationProcessor("g:n:v:c")
+ */
+
+dependencies {
+    // Applied Energistics 2 rv3 (1.7.10).
+    // AE2 rv3 is not on any public maven; provide a DEV (deobfuscated, MCP-named)
+    // jar as ./libs/appliedenergistics2-rv3-deobf.jar
+    devOnlyNonPublishable(files("libs/appliedenergistics2-rv3-deobf.jar"))
+}
