@@ -87,19 +87,20 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         this.clearBtn.setHalfSize(true);
         this.buttonList.add(this.clearBtn);
 
-        // Layout notes (GUI-internal coords, relative to the encoding area of pattern2.png):
-        // the 3x3 input grid occupies x=18..72, the output slot x=110 (row 1), the pattern
-        // slots x=147. The right side of the encoding area (x=74..176, rows 2-3) is free, so
-        // the probability controls live there instead of overlapping the input grid.
-        this.alphaButton = new GuiButton(10, this.guiLeft + 74, this.guiTop + this.ySize - 120, 70, 20, "");
+        // Layout notes (GUI-internal coords): the probability controls sit in the free row
+        // directly above the player inventory (player slot row 1 renders at ySize - 83).
+        // Everything is positioned relative to ySize, so the controls move together with the
+        // inventory bar. The "Inventory" label drawn by GuiMEMonitorable sits at x=8, so the
+        // controls start at x=74 to avoid overlapping it.
+        this.alphaButton = new GuiButton(10, this.guiLeft + 114, this.guiTop + this.ySize - 98, 56, 12, "");
         this.buttonList.add(this.alphaButton);
 
         this.probabilityField = new GuiTextField(
             this.fontRendererObj,
-            this.guiLeft + 92,
-            this.guiTop + this.ySize - 138,
-            52,
-            14);
+            this.guiLeft + 74,
+            this.guiTop + this.ySize - 98,
+            38,
+            12);
         this.probabilityField.setMaxStringLength(8);
         this.probabilityField.setText(formatProbability(this.container.probabilityScaled / 10000.0));
 
@@ -164,7 +165,7 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         }
 
         final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
-        this.fontRendererObj.drawString(label, 74, this.ySize - 136, 4210752);
+        this.fontRendererObj.drawString(label, 74, this.ySize - 112, 4210752);
         this.probabilityField.drawTextBox();
 
         this.alphaButton.displayString = StatCollector.translateToLocal(
