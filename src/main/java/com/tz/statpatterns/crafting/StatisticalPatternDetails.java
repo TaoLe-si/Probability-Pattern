@@ -24,7 +24,6 @@ import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.math.ProbabilitySizing;
 import com.tz.statpatterns.math.ProbabilitySizingResult;
 
-import appeng.api.storage.data.IAEItemStack;
 import appeng.helpers.PatternHelper;
 
 /**
@@ -90,16 +89,14 @@ public class StatisticalPatternDetails extends PatternHelper {
      * <p>
      * This is the method invoked by the crafting-interception coremod
      * ({@code CraftingTreeProcess.getTimes}).
+     * <p>
+     * Matches the 1.21.1 original's {@code StatisticalPatternDetails.sizing()}: the
+     * requested item count is used directly as the target number of successes. Do NOT
+     * divide by the per-attempt output amount — when the per-attempt output is &gt; 1 that
+     * under-counts the successes and fails the requested confidence.
      */
     public long plannedAttempts(final long requestedOutputAmount) {
-        // Each attempt produces the encoded per-attempt output amount. Convert the
-        // requested output amount into the number of successful attempts needed.
-        long outputPerAttempt = 1;
-        final IAEItemStack[] outputs = this.getOutputs();
-        if (outputs != null && outputs.length > 0 && outputs[0] != null) {
-            outputPerAttempt = Math.max(1, outputs[0].getStackSize());
-        }
-        final long successes = Math.max(1, (requestedOutputAmount + outputPerAttempt - 1) / outputPerAttempt);
+        final long successes = Math.max(1, requestedOutputAmount);
         final ProbabilitySizingResult sizing = ProbabilitySizing
             .planAttempts(successes, this.successProbability, this.alpha, this.smallSampleLimit);
         return sizing.attempts();
