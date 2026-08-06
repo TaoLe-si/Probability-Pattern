@@ -9,6 +9,7 @@ container.probabilitypattern.encode=Encode Pattern
 container.probabilitypattern.plan=Plan
 container.probabilitypattern.invalid=Invalid Input
 gui.probabilitypattern.probability=Probability
+gui.probabilitypattern.short_probability=p =
 gui.probabilitypattern.batch=N
 gui.probabilitypattern.alpha95=95%
 gui.probabilitypattern.alpha99=99%

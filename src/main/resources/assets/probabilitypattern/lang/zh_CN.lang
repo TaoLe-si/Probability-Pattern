@@ -9,6 +9,7 @@ container.probabilitypattern.encode=编写样板
 container.probabilitypattern.plan=计划
 container.probabilitypattern.invalid=无效输入
 gui.probabilitypattern.probability=概率
+gui.probabilitypattern.short_probability=p =
 gui.probabilitypattern.batch=N
 gui.probabilitypattern.alpha95=95%
 gui.probabilitypattern.alpha99=99%

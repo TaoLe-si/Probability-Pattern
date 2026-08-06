@@ -58,6 +58,16 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         this.setReservedSpace(81);
     }
 
+    /**
+     * Fix the terminal height to 3 ME rows. The pattern2.png background is drawn with exactly 3
+     * monitor rows on top, so without this the GUI would grow with the screen height, pushing the
+     * encoding area (and the probability controls) off screen / misaligned on tall displays.
+     */
+    @Override
+    protected int getMaxRows() {
+        return 3;
+    }
+
     @Override
     public void initGui() {
         super.initGui();
@@ -77,14 +87,18 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
         this.clearBtn.setHalfSize(true);
         this.buttonList.add(this.clearBtn);
 
-        this.alphaButton = new GuiButton(10, this.guiLeft + 8, this.guiTop + this.ySize - 132, 70, 20, "");
+        // Layout notes (GUI-internal coords, relative to the encoding area of pattern2.png):
+        // the 3x3 input grid occupies x=18..72, the output slot x=110 (row 1), the pattern
+        // slots x=147. The right side of the encoding area (x=74..176, rows 2-3) is free, so
+        // the probability controls live there instead of overlapping the input grid.
+        this.alphaButton = new GuiButton(10, this.guiLeft + 74, this.guiTop + this.ySize - 120, 70, 20, "");
         this.buttonList.add(this.alphaButton);
 
         this.probabilityField = new GuiTextField(
             this.fontRendererObj,
-            this.guiLeft + 8,
-            this.guiTop + this.ySize - 154,
-            56,
+            this.guiLeft + 92,
+            this.guiTop + this.ySize - 138,
+            52,
             14);
         this.probabilityField.setMaxStringLength(8);
         this.probabilityField.setText(formatProbability(this.container.probabilityScaled / 10000.0));
@@ -149,8 +163,8 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
             }
         }
 
-        final String label = StatCollector.translateToLocal("gui.probabilitypattern.probability");
-        this.fontRendererObj.drawString(label, 8, this.ySize - 166, 4210752);
+        final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
+        this.fontRendererObj.drawString(label, 74, this.ySize - 136, 4210752);
         this.probabilityField.drawTextBox();
 
         this.alphaButton.displayString = StatCollector.translateToLocal(
