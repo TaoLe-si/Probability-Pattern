@@ -1,0 +1,16 @@
+item.probabilitypattern.probability_pattern.name=Processing Pattern (Probability)
+item.probabilitypattern.probability_pattern_terminal.name=ME Probability Pattern Encoding Terminal
+itemGroup.probabilitypattern=Applied Energistics 2 | Probability Patterns
+container.probabilitypattern.probability_pattern_terminal=Probability Pattern Encoding
+container.probabilitypattern.inputs=Inputs per Attempt
+container.probabilitypattern.output=Target Output
+container.probabilitypattern.pattern=Pattern
+container.probabilitypattern.encode=Encode Pattern
+container.probabilitypattern.plan=Plan
+container.probabilitypattern.invalid=Invalid Input
+gui.probabilitypattern.probability=Probability
+gui.probabilitypattern.batch=N
+gui.probabilitypattern.alpha95=95%
+gui.probabilitypattern.alpha99=99%
+probabilitypattern.tooltip.success_probability=Single Attempt Success Probability: %s
+probabilitypattern.tooltip.alpha=Confidence: %s

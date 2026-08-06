@@ -1,0 +1,16 @@
+item.probabilitypattern.probability_pattern.name=处理样板（概率）
+item.probabilitypattern.probability_pattern_terminal.name=ME概率样板编码终端
+itemGroup.probabilitypattern=应用能源2 - 概率样板
+container.probabilitypattern.probability_pattern_terminal=概率样板编码
+container.probabilitypattern.inputs=每次尝试输入
+container.probabilitypattern.output=目标产物
+container.probabilitypattern.pattern=样板
+container.probabilitypattern.encode=编写样板
+container.probabilitypattern.plan=计划
+container.probabilitypattern.invalid=无效输入
+gui.probabilitypattern.probability=概率
+gui.probabilitypattern.batch=N
+gui.probabilitypattern.alpha95=95%
+gui.probabilitypattern.alpha99=99%
+probabilitypattern.tooltip.success_probability=单次成功概率: %s
+probabilitypattern.tooltip.alpha=置信度: %s

@@ -1,0 +1,104 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.tz.statpatterns;
+
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.registry.GameRegistry;
+
+import appeng.api.AEApi;
+
+import com.tz.statpatterns.crafting.ProbabilityPatternItem;
+import com.tz.statpatterns.handler.ProbabilityPatternGuiHandler;
+import com.tz.statpatterns.item.ItemProbabilityPatternTerminal;
+import com.tz.statpatterns.network.ProbabilityPatternNetwork;
+
+/**
+ * Probability Pattern for AE2 — 1.7.10 port.
+ * <p>
+ * Adds probabilistic (statistical) crafting patterns to Applied Energistics 2.
+ * A probability pattern encodes per-attempt inputs, a target output and a single
+ * attempt success probability p. When the ME crafting tree requests N output items,
+ * the crafting interception coremod makes it run the machine enough times so that
+ * P(total_produced >= N) >= 1 - alpha.
+ */
+@Mod( modid = ProbabilityPatternMod.MOD_ID, name = ProbabilityPatternMod.MOD_NAME, version = ProbabilityPatternMod.MOD_VERSION, dependencies = ProbabilityPatternMod.DEPENDENCIES )
+public final class ProbabilityPatternMod
+{
+	public static final String MOD_ID = "probabilitypattern";
+	public static final String MOD_NAME = "Probability Pattern for AE2";
+	public static final String MOD_VERSION = "@version@";
+	public static final String DEPENDENCIES = "required-after:appliedenergistics2;required-after:Forge@[10.13.4.1448,);required-after:minecraft@[1.7.10]";
+
+	@Instance( MOD_ID )
+	public static ProbabilityPatternMod instance;
+
+	public static Item probabilityPatternItem;
+	public static Item probabilityPatternTerminalItem;
+	public static CreativeTabs creativeTab;
+
+	@EventHandler
+	public void preInit( final FMLPreInitializationEvent event )
+	{
+		creativeTab = new CreativeTabs( "probabilitypattern" )
+		{
+			@Override
+			public Item getTabIconItem()
+			{
+				return probabilityPatternTerminalItem;
+			}
+		};
+
+		probabilityPatternItem = new ProbabilityPatternItem().setCreativeTab( creativeTab );
+		GameRegistry.registerItem( probabilityPatternItem, "probability_pattern" );
+
+		probabilityPatternTerminalItem = new ItemProbabilityPatternTerminal().setCreativeTab( creativeTab );
+		GameRegistry.registerItem( probabilityPatternTerminalItem, "probability_pattern_terminal" );
+
+		ProbabilityPatternNetwork.init();
+		NetworkRegistry.INSTANCE.registerGuiHandler( this, new ProbabilityPatternGuiHandler() );
+	}
+
+	@EventHandler
+	public void init( final FMLInitializationEvent event )
+	{
+		final ItemStack patternTerminal = AEApi.instance().definitions().parts().patternTerminal().maybeStack( 1 ).orNull();
+		final ItemStack calcProcessor = AEApi.instance().definitions().materials().calcProcessor().maybeStack( 1 ).orNull();
+
+		if( patternTerminal != null && calcProcessor != null )
+		{
+			GameRegistry.addRecipe( new ItemStack( probabilityPatternTerminalItem ), "PC", 'P', patternTerminal, 'C', calcProcessor );
+		}
+
+		final ItemStack blankPattern = AEApi.instance().definitions().materials().blankPattern().maybeStack( 1 ).orNull();
+		final ItemStack logicProcessor = AEApi.instance().definitions().materials().logicProcessor().maybeStack( 1 ).orNull();
+
+		if( blankPattern != null && logicProcessor != null )
+		{
+			GameRegistry.addShapelessRecipe( new ItemStack( probabilityPatternItem ), blankPattern, logicProcessor );
+		}
+	}
+}

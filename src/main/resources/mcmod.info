@@ -1,0 +1,16 @@
+[
+{
+  "modid": "probabilitypattern",
+  "name": "Probability Pattern for AE2",
+  "description": "A Minecraft mod that extends Applied Energistics 2 with probabilistic crafting patterns.\n\nFeatures:\n- Statistical (Probability) Pattern: encodes per-attempt inputs, a target output and a single-attempt success probability p, enabling probabilistic production chains with a guaranteed overall confidence.\n- ME Probability Pattern Encoding Terminal: a cable-attached terminal for encoding and managing statistical patterns.\n\nDesigned for complex automation scenarios where crafting outcomes are uncertain, such as ore processing, recycling, or any process with variable yields.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/TaoLe-si/Probability-Pattern",
+  "authorList": ["TaoLe-si", "ZincGluxx"],
+  "credits": "TaoLe-si, ZincGluxx",
+  "logoFile": "",
+  "screenshots": [],
+  "parent": "",
+  "dependencies": ["appliedenergistics2"]
+}
+]

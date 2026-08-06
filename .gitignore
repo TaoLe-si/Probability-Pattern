@@ -1,0 +1,10 @@
+bin/
+build/
+eclipse/
+.idea/
+*.iml
+*.class
+*.log
+.gradle/
+run/
+libs/

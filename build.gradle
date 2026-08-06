@@ -1,0 +1,105 @@
+/*
+ * Probability Pattern for AE2 (1.7.10 port)
+ * Copyright (C) 2026 TaoLe-si, ZincGluxx
+ * Licensed under LGPLv3 (see LICENSE)
+ *
+ * This is a Minecraft 1.7.10 / Forge 10.13.4.1448 addon built with the classic
+ * ForgeGradle 1.2 toolchain (the same one Applied Energistics 2 rv3 uses).
+ *
+ * NOTE: Building this project requires JDK 8 (ForgeGradle 1.2 / MCP 1.7.10 does
+ * not work with newer JDKs). See README.md for full build instructions.
+ */
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+
+apply plugin: 'forge'
+
+// Match the Java level of 1.7.10 mods (ForgeGradle 1.2 uses Java 6/7/8 bytecode)
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
+
+version = project.version
+group = project.group
+archivesBaseName = project.archivesBaseName
+
+minecraft {
+    version = project.minecraft_version + "-" + project.forge_version
+    runDir = "run"
+
+    replaceIn "ProbabilityPatternMod.java"
+    replace "@version@", project.version
+}
+
+repositories {
+    flatDir {
+        name = "libs"
+        dirs 'libs'
+    }
+    maven {
+        name = "CurseMaven"
+        url = "https://cursemaven.com"
+    }
+}
+
+dependencies {
+    // Applied Energistics 2 rv3 (1.7.10)
+    // Option A: drop the compiled AE2 jar into ./libs (recommended for offline builds)
+    compile fileTree(dir: 'libs', include: '*.jar')
+
+    // Option B (alternative): pull a known rv3-beta-6 build from CurseMaven.
+    // compile 'curse.maven:ae2-223794:2304403'
+}
+
+processResources {
+    // Replace tokens in mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': project.minecraft_version
+    }
+
+    // Everything else stays as-is
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest {
+        attributes 'FMLCorePlugin': 'com.tz.statpatterns.coremod.PPCore'
+        attributes 'FMLCorePluginContainsFMLMod': 'true'
+    }
+
+    // Only bundle what belongs to this mod
+    include "com/tz/statpatterns/**"
+    include "assets/probabilitypattern/**"
+    include "mcmod.info"
+    include "pack.mcmeta"
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+artifacts {
+    archives deobfJar
+}
