@@ -50,17 +50,37 @@ public abstract class CraftingTreeProcessMixin {
     @Shadow
     private ICraftingPatternDetails details;
 
+    @Shadow
+    private boolean limitQty;
+
+    @Shadow
+    private boolean fullSimulation;
+
     @Inject(method = "getTimes", at = @At("HEAD"), cancellable = true)
     private void probabilityPatternTimes(final long remaining, final long stackSize,
         final CallbackInfoReturnable<Long> cir) {
+        // AE2 short-circuits getTimes to 1 when it is only simulating the job or running a
+        // quantity-limited request. Overriding those phases with a huge planned attempt
+        // count would multiply the requested quantities many-fold, so keep AE2's behavior.
+        if (this.limitQty || this.fullSimulation) {
+            return;
+        }
         if (this.details instanceof StatisticalPatternDetails) {
             final StatisticalPatternDetails spd = (StatisticalPatternDetails) this.details;
             if (spd.isProbabilityPattern()) {
-                final long times = spd.plannedAttempts(remaining);
+                // 695's CraftingTreeProcess.getTimes(remaining, stackSize) is called with
+                // remaining = target output amount and stackSize = output per attempt, and
+                // returns ceil(remaining / stackSize) = how many successful attempts we need.
+                // Plan for that many successes (not the raw output amount), otherwise every
+                // attempt that yields > 1 output would over-plan and the requested quantity
+                // would be wrong.
+                final long requiredSuccesses = remaining <= 0 ? 1L : (remaining + stackSize - 1) / stackSize;
+                final long times = spd.plannedAttempts(requiredSuccesses);
                 FMLLog.info(
-                    "[ProbabilityPattern] CraftingTreeProcess.getTimes intercepted: remaining=%d stackSize=%d times=%d p=%.3f alpha=%.3f",
+                    "[ProbabilityPattern] CraftingTreeProcess.getTimes intercepted: remaining=%d stackSize=%d success=%d times=%d p=%.3f alpha=%.3f",
                     remaining,
                     stackSize,
+                    requiredSuccesses,
                     times,
                     spd.successProbability(),
                     spd.alpha());

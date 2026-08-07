@@ -102,19 +102,19 @@ public class StatisticalPatternDetails extends PatternHelper {
     }
 
     /**
-     * Compute the planned number of attempts needed to produce at least
-     * {@code requestedOutputAmount} items with confidence 1 - alpha.
+     * Compute the planned number of attempts needed to reach at least
+     * {@code requiredSuccesses} successful attempts with confidence 1 - alpha.
      * <p>
-     * This is the method invoked by the crafting-interception coremod
-     * ({@code CraftingTreeProcess.getTimes}).
-     * <p>
-     * Matches the 1.21.1 original's {@code StatisticalPatternDetails.sizing()}: the
-     * requested item count is used directly as the target number of successes. Do NOT
-     * divide by the per-attempt output amount — when the per-attempt output is &gt; 1 that
-     * under-counts the successes and fails the requested confidence.
+     * This is the method invoked by the crafting-interception mixin
+     * ({@code CraftingTreeProcess.getTimes}). The caller converts the requested output
+     * amount into the required number of <em>successes</em> first
+     * ({@code ceil(requestedOutput / outputPerAttempt)}), so the success target, not the
+     * raw output count, is passed in here — mirroring the 1.21.1 original's
+     * {@code StatisticalPatternDetails.sizing()}. Do NOT divide by the per-attempt output
+     * amount again here, that would under-count the successes and fail the confidence.
      */
-    public long plannedAttempts(final long requestedOutputAmount) {
-        final long successes = Math.max(1, requestedOutputAmount);
+    public long plannedAttempts(final long requiredSuccesses) {
+        final long successes = Math.max(1, requiredSuccesses);
         final ProbabilitySizingResult sizing = ProbabilitySizing
             .planAttempts(successes, this.successProbability, this.alpha, this.smallSampleLimit);
         return sizing.attempts();

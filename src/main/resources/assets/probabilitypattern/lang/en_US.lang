@@ -15,3 +15,6 @@ gui.probabilitypattern.alpha95=95%
 gui.probabilitypattern.alpha99=99%
 probabilitypattern.tooltip.success_probability=Single Attempt Success Probability: %s
 probabilitypattern.tooltip.alpha=Confidence: %s
+probabilitypattern.tooltip.result=Result
+probabilitypattern.tooltip.ingredients=Ingredients
+probabilitypattern.tooltip.hold_shift=Hold Shift for inputs

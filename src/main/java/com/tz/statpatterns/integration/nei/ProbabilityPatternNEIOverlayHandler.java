@@ -17,6 +17,7 @@ package com.tz.statpatterns.integration.nei;
 import java.util.List;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import com.tz.statpatterns.network.ProbabilityPatternNetwork;
@@ -24,6 +25,7 @@ import com.tz.statpatterns.network.ProbabilityPatternPacket;
 import com.tz.statpatterns.network.ProbabilityPatternPacket.Action;
 
 import appeng.client.gui.implementations.GuiProbabilityPatternTerm;
+import appeng.container.slot.SlotFakeCraftingMatrix;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.api.IOverlayHandler;
 import codechicken.nei.recipe.IRecipeHandler;
@@ -34,17 +36,14 @@ import codechicken.nei.recipe.IRecipeHandler;
  * recipe's 3x3 inputs and its result and sends them to the server to fill the
  * terminal, exactly like the 1.21.1 original's JEI/EMI/REI recipe transfer.
  * <p>
- * The GUI is registered with {@link codechicken.nei.api.API#registerGuiOverlay}
- * using AE2's {@code TerminalCraftingSlotFinder}, so {@link PositionedStack}s are
- * repositioned onto this terminal's 3x3 grid before this handler sees them. The
- * grid starts at GUI-internal (18, 93) because the terminal is pinned to 3 ME
- * rows (ySize = 250, first input row renders at ySize - 157 = 93).
+ * The slot math mirrors GTNH AE2's {@code NEICraftingHandler.packIngredients}: NEI
+ * crafting recipes lay out the 3x3 grid starting at (25, 6) with 18px cells, and the
+ * target slot is located by walking {@code gui.inventorySlots} for a
+ * {@link SlotFakeCraftingMatrix} whose {@code getSlotIndex()} matches
+ * {@code col + row * 3}. This is coordinate-independent, so it keeps working no matter
+ * how the terminal is resized/repositioned.
  */
 public class ProbabilityPatternNEIOverlayHandler implements IOverlayHandler {
-
-    private static final int INPUT_X = 18;
-    private static final int INPUT_Y = 93;
-    private static final int SLOT_SIZE = 18;
 
     @Override
     public void overlayRecipe(final GuiContainer gui, final IRecipeHandler recipe, final int recipeIndex,
@@ -57,14 +56,23 @@ public class ProbabilityPatternNEIOverlayHandler implements IOverlayHandler {
             final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
             if (ingredients != null) {
                 for (final PositionedStack ps : ingredients) {
-                    if (ps == null || ps.item == null) {
+                    if (ps == null || ps.items == null || ps.items.length == 0) {
                         continue;
                     }
-                    final int col = (ps.relx - INPUT_X + SLOT_SIZE / 2) / SLOT_SIZE;
-                    final int row = (ps.rely - INPUT_Y + SLOT_SIZE / 2) / SLOT_SIZE;
+                    final int col = (ps.relx - 25) / 18;
+                    final int row = (ps.rely - 6) / 18;
                     final int idx = col + row * 3;
-                    if (idx >= 0 && idx < 9) {
-                        inputs[idx] = ps.item;
+                    if (idx < 0 || idx >= 9) {
+                        continue;
+                    }
+                    for (final Object o : gui.inventorySlots.inventorySlots) {
+                        if (o instanceof Slot) {
+                            final Slot slot = (Slot) o;
+                            if (slot instanceof SlotFakeCraftingMatrix && slot.getSlotIndex() == idx) {
+                                inputs[idx] = ps.items[0];
+                                break;
+                            }
+                        }
                     }
                 }
             }
