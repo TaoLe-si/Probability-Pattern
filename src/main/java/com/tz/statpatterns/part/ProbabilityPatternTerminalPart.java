@@ -66,6 +66,21 @@ public class ProbabilityPatternTerminalPart extends PartPatternTerminal {
         data.setBoolean(NBT_ALPHA95, this.alpha95);
     }
 
+    /**
+     * A probability pattern is always a processing pattern: the machine has a per-attempt
+     * success chance and no vanilla crafting recipe. Pin the terminal to processing mode so
+     * the server-side {@code ContainerPatternTerm.update} syncs its {@code craftingMode}
+     * from this ({@code isCraftingRecipe()}) to {@code false}. Without this override the
+     * inherited default is {@code true} (crafting mode): {@code PatternHelper} would then
+     * look up a vanilla 3x3 recipe during decode and either throw "No pattern here!"
+     * (-> getPatternForItem returns null -> interfaces ignore the pattern) or bake the
+     * recipe result as the output instead of the user-selected output.
+     */
+    @Override
+    public boolean isCraftingRecipe() {
+        return false;
+    }
+
     public double getProbability() {
         return this.probability;
     }

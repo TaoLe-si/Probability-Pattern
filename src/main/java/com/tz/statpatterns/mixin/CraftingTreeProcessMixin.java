@@ -42,6 +42,13 @@ import cpw.mods.fml.common.FMLLog;
 @Mixin(value = CraftingTreeProcess.class, remap = false)
 public abstract class CraftingTreeProcessMixin {
 
+    static {
+        // Runs when the mixin class is loaded, i.e. when UniMixins applies it to
+        // CraftingTreeProcess. Seeing this line proves the late mixin was really injected
+        // (not just registered). CraftingTreeProcess only loads on the first crafting job.
+        FMLLog.info("[ProbabilityPattern] CraftingTreeProcessMixin loaded (injected into CraftingTreeProcess)");
+    }
+
     @Shadow
     private ICraftingPatternDetails details;
 
