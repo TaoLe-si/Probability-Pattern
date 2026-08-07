@@ -59,6 +59,18 @@ public abstract class CraftingTreeProcessMixin {
     @Inject(method = "getTimes", at = @At("HEAD"), cancellable = true)
     private void probabilityPatternTimes(final long remaining, final long stackSize,
         final CallbackInfoReturnable<Long> cir) {
+        // Unconditional diagnostic: shows whether AE2's crafting tree actually reaches
+        // getTimes at all, and whether it is the simulation / limited phase or a real
+        // request (only the latter should get the probability plan).
+        FMLLog.info(
+            "[ProbabilityPattern] getTimes called: remaining=%d stackSize=%d limitQty=%s fullSim=%s details=%s",
+            remaining,
+            stackSize,
+            this.limitQty,
+            this.fullSimulation,
+            this.details == null ? "null"
+                : this.details.getClass()
+                    .getName());
         // AE2 short-circuits getTimes to 1 when it is only simulating the job or running a
         // quantity-limited request. Overriding those phases with a huge planned attempt
         // count would multiply the requested quantities many-fold, so keep AE2's behavior.
