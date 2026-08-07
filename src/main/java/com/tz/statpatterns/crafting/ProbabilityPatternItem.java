@@ -22,7 +22,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
@@ -39,10 +38,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 /**
  * The Probability Pattern item.
  * <p>
- * Acts as both the blank pattern (no NBT) and the encoded probability pattern
- * (carries the AE2 "in"/"out" tags plus the "sp_*" probability tags).
- * Implements {@link ICraftingPatternItem} so AE2's crafting grid decodes it through
- * {@link StatisticalPatternDetails} and the probability sizing coremod kicks in.
+ * Serves both as the blank pattern (no NBT, {@link #getPatternForItem} returns null) and
+ * as the encoded probability pattern (vanilla AE2 pattern NBT plus the {@code sp_*}
+ * probability tags). Implements {@link ICraftingPatternItem} so AE2's crafting grid
+ * decodes it through {@link StatisticalPatternDetails} and the crafting mixin kicks in.
  */
 public class ProbabilityPatternItem extends Item implements ICraftingPatternItem {
 
@@ -57,11 +56,10 @@ public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
 
     @Override
     public ICraftingPatternDetails getPatternForItem(final ItemStack is, final World w) {
-        if (is == null || is.getItem() != this || !is.hasTagCompound()) {
-            return null; // blank pattern
-        }
-        if (EncodedStatisticalPattern.decode(is.getTagCompound()) == null) {
-            return null;
+        if (is == null || is.getItem() != this
+            || !is.hasTagCompound()
+            || !EncodedStatisticalPattern.isProbabilityPattern(is.getTagCompound())) {
+            return null; // blank or invalid
         }
         try {
             return new StatisticalPatternDetails(is, w);
@@ -76,8 +74,7 @@ public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
     public static boolean isEncoded(final ItemStack is) {
         return is != null && is.getItem() instanceof ProbabilityPatternItem
             && is.hasTagCompound()
-            && is.getTagCompound()
-                .hasKey(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+            && EncodedStatisticalPattern.isProbabilityPattern(is.getTagCompound());
     }
 
     @Override
@@ -108,8 +105,8 @@ public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
             return;
         }
 
-        // Show the encoded recipe the same way GTNH's ItemEncodedPattern does: outputs
-        // always, inputs while holding Shift.
+        // Outputs always, inputs while holding Shift (like GTNH's ItemEncodedPattern),
+        // then the probability / confidence lines.
         try {
             final ICraftingPatternDetails details = this.getPatternForItem(stack, player.worldObj);
             if (details != null) {
@@ -160,13 +157,14 @@ public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
             // tooltip rendering must never crash
         }
 
-        final NBTTagCompound tag = stack.getTagCompound();
-        final double p = tag.getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+        final double p = stack.getTagCompound()
+            .getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
         lines.add(
             StatCollector.translateToLocalFormatted(
                 "probabilitypattern.tooltip.success_probability",
                 String.format("%.0f%%", p * 100.0)));
-        final double alpha = tag.getDouble(EncodedStatisticalPattern.TAG_ALPHA);
+        final double alpha = stack.getTagCompound()
+            .getDouble(EncodedStatisticalPattern.TAG_ALPHA);
         lines.add(
             StatCollector.translateToLocalFormatted(
                 "probabilitypattern.tooltip.alpha",

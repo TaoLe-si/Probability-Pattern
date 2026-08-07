@@ -15,7 +15,7 @@
 package com.tz.statpatterns.math;
 
 /**
- * Core probability sizing algorithm (ported verbatim from the 1.21.1 version).
+ * Core probability sizing algorithm (binomial / normal-approximation statistics).
  * <p>
  * Models a probabilistic machine as a binomial process: each attempt succeeds with
  * probability {@code p}. Given a target of {@code N} successes and an acceptable

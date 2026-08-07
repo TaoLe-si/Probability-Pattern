@@ -29,20 +29,15 @@ import cpw.mods.fml.common.FMLLog;
 /**
  * Makes AE2's crafting tree run probability patterns enough times.
  * <p>
- * This is the late-phase Mixin equivalent of the 1.21.1 version's
- * {@code CraftingTreeNodeMixin} (and the earlier ASM coremod used in this port).
- * It injects at the head of {@code CraftingTreeProcess.getTimes(long, long)} — the
- * exact spot where AE2 decides how many times to run a processing pattern to produce
- * {@code remaining} output. For a probability pattern we replace the deterministic
- * {@code ceil(remaining/output)} with the binomial / normal-approximation attempt
- * plan from {@code ProbabilitySizing}, guaranteeing
- * P(produced &gt;= remaining) &gt;= 1 - alpha.
+ * Injects at the head of {@code CraftingTreeProcess.getTimes(long, long)} (GTNH 695):
+ * for a probability pattern the deterministic {@code ceil(remaining/outputPerAttempt)}
+ * is replaced by the binomial / normal-approximation attempt plan from
+ * {@code ProbabilitySizing}, guaranteeing P(produced &gt;= remaining) &gt;= 1 - alpha.
  * <p>
- * AE2 is a regular mod (not a coremod), so this is registered as a <b>late</b> mixin
- * via {@link LateMixinLoader} (requires UniMixins / GTNHMixins late phase).
+ * AE2 loads after Mixin's early phase, so this is registered as a late mixin via
+ * {@link com.tz.statpatterns.LateMixinLoader}.
  * <p>
- * remap = false: CraftingTreeProcess is a mod class (not obfuscated), so Mixin's
- * annotation processor must not try to resolve its method/field names to SRG names.
+ * remap = false: CraftingTreeProcess is a mod class (not obfuscated).
  */
 @Mixin(value = CraftingTreeProcess.class, remap = false)
 public abstract class CraftingTreeProcessMixin {
@@ -59,37 +54,21 @@ public abstract class CraftingTreeProcessMixin {
     @Inject(method = "getTimes", at = @At("HEAD"), cancellable = true)
     private void probabilityPatternTimes(final long remaining, final long stackSize,
         final CallbackInfoReturnable<Long> cir) {
-        // Unconditional diagnostic: shows whether AE2's crafting tree actually reaches
-        // getTimes at all, and whether it is the simulation / limited phase or a real
-        // request (only the latter should get the probability plan).
-        FMLLog.info(
-            "[ProbabilityPattern] getTimes called: remaining=%d stackSize=%d limitQty=%s fullSim=%s details=%s",
-            remaining,
-            stackSize,
-            this.limitQty,
-            this.fullSimulation,
-            this.details == null ? "null"
-                : this.details.getClass()
-                    .getName());
-        // AE2 short-circuits getTimes to 1 when it is only simulating the job or running a
-        // quantity-limited request. Overriding those phases with a huge planned attempt
-        // count would multiply the requested quantities many-fold, so keep AE2's behavior.
+        // AE2 returns 1 while simulating the job or running a quantity-limited request;
+        // overriding those phases would multiply the requested quantities, so keep it.
         if (this.limitQty || this.fullSimulation) {
             return;
         }
         if (this.details instanceof StatisticalPatternDetails) {
             final StatisticalPatternDetails spd = (StatisticalPatternDetails) this.details;
             if (spd.isProbabilityPattern()) {
-                // 695's CraftingTreeProcess.getTimes(remaining, stackSize) is called with
-                // remaining = target output amount and stackSize = output per attempt, and
-                // returns ceil(remaining / stackSize) = how many successful attempts we need.
-                // Plan for that many successes (not the raw output amount), otherwise every
-                // attempt that yields > 1 output would over-plan and the requested quantity
-                // would be wrong.
+                // getTimes(remaining, stackSize): remaining = target output amount,
+                // stackSize = output per attempt, so the required successes are
+                // ceil(remaining / stackSize).
                 final long requiredSuccesses = remaining <= 0 ? 1L : (remaining + stackSize - 1) / stackSize;
                 final long times = spd.plannedAttempts(requiredSuccesses);
                 FMLLog.info(
-                    "[ProbabilityPattern] CraftingTreeProcess.getTimes intercepted: remaining=%d stackSize=%d success=%d times=%d p=%.3f alpha=%.3f",
+                    "[ProbabilityPattern] getTimes intercepted: remaining=%d stackSize=%d success=%d times=%d p=%.3f alpha=%.3f",
                     remaining,
                     stackSize,
                     requiredSuccesses,

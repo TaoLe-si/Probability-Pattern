@@ -12,9 +12,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-// NOTE: This class intentionally lives in AE2's GUI package so it can extend
-// GuiPatternTerm and access the package-private helpers of GuiMEMonitorable
-// (setReservedSpace / getReservedSpace), a common technique for 1.7.10 AE2 addons.
+// NOTE: lives in AE2's GUI package to extend GuiPatternTerm and access the
+// package-private helpers of GuiMEMonitorable (setReservedSpace / getReservedSpace).
 package appeng.client.gui.implementations;
 
 import net.minecraft.client.gui.GuiButton;
@@ -37,15 +36,14 @@ import appeng.container.implementations.ContainerPatternTerm;
  * GUI for the ME Probability Pattern Encoding Terminal.
  * <p>
  * Extends AE2 GTNH's {@link GuiPatternTerm} so the complete vanilla pattern-terminal
- * screen is reused verbatim (crafting/processing tabs, substitute toggles, encode /
- * clear / double buttons, NEI overlay, ME monitor rows). On top of that it adds the two
- * probability controls in the free row directly above the player inventory: the single
- * attempt success probability text field and the 95% / 99% confidence toggle button.
+ * screen is reused. It pins the terminal to processing mode (a probability pattern is
+ * always a processing pattern, so the crafting/processing tabs are hidden) and adds the
+ * two probability controls on the "Inventory" label row: the single-attempt success
+ * probability text field and the 95% / 99% confidence toggle.
  * <p>
- * The probability values live on the {@link ProbabilityPatternTerminalPart} (shared
- * between client and server through the part NBT), so the GUI reads them from the part
- * and sends {@link ProbabilityPatternPacket} SET_PROBABILITY / SET_ALPHA95 to the
- * server when the user changes them.
+ * The probability values live on the {@link ProbabilityPatternTerminalPart} (shared via
+ * part NBT); the GUI reads them from the part and sends {@link ProbabilityPatternPacket}
+ * SET_PROBABILITY / SET_ALPHA95 to the server when the user changes them.
  */
 public class GuiProbabilityPatternTerm extends GuiPatternTerm {
 
@@ -61,11 +59,6 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
         this.alpha95Display = this.probabilityPart.isAlpha95();
     }
 
-    /**
-     * Pin the terminal height to 3 ME rows (processing terminal layout, pattern2.png).
-     * Without this the GUI would grow with the screen height, pushing the probability
-     * controls off the inventory bar.
-     */
     @Override
     protected int getMaxRows() {
         return 3;
@@ -75,9 +68,7 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
     public void initGui() {
         super.initGui();
 
-        // A probability pattern is always a processing pattern, so pin the terminal to
-        // processing mode (pattern2.png layout) and hide the crafting/processing tabs to
-        // avoid switching into a crafting mode that this pattern cannot express.
+        // Pin to processing mode and hide the crafting/processing tabs.
         ((ContainerPatternTerm) this.inventorySlots).craftingMode = false;
         for (final Object o : this.buttonList) {
             if (o instanceof GuiTabButton) {
@@ -85,9 +76,8 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
             }
         }
 
-        // Probability controls sit on the same row as the "Inventory" label, to its
-        // right (GuiMEMonitorable.drawFG paints "Inventory" at x=8, ySize-93), so nothing
-        // overlaps. Everything is positioned relative to ySize.
+        // Probability controls on the same row as the "Inventory" label (drawn at x=8,
+        // ySize-93 by GuiMEMonitorable.drawFG), to its right.
         this.alphaButton = new GuiButton(200, this.guiLeft + 122, this.guiTop + this.ySize - 94, 56, 12, "");
         this.buttonList.add(this.alphaButton);
 
@@ -144,11 +134,10 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
 
-        // "p =" label just right of the "Inventory" text (x=8, ySize-93).
+        // "p =" label just right of the "Inventory" text.
         final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
         this.fontRendererObj.drawString(label, 60, this.ySize - 93, 4210752);
 
-        // Keep the text field in sync with the part's value unless the user is editing.
         if (!this.probabilityField.isFocused()) {
             final String current = formatProbability(this.probabilityPart.getProbability());
             if (!current.equals(this.probabilityField.getText())) {

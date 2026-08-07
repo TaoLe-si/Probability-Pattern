@@ -113,10 +113,10 @@ public final class ProbabilityPatternMod {
                 calcProcessor);
         }
 
-        // NOTE: encoding consumes the vanilla AE2 blank pattern directly (same as the
-        // 1.21.1 original); there is intentionally no separate "blank probability pattern"
-        // crafting recipe. The ProbabilityPatternItem's blank (no-NBT) form is only
-        // available from the creative tab / via the terminal mechanics.
+        // Encoding consumes the vanilla AE2 blank pattern directly (1.7.10 GTNH behaviour);
+        // there is intentionally no separate "blank probability pattern" crafting recipe.
+        // The ProbabilityPatternItem's blank (no-NBT) form is only available from the
+        // creative tab / via the terminal mechanics.
 
         if (event.getSide()
             .isClient()) {

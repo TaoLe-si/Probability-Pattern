@@ -16,7 +16,6 @@ package com.tz.statpatterns.math;
 
 /**
  * Result of a probability sizing calculation.
- * (1.7.10 port of the {@code record ProbabilitySizingResult} from the 1.21.1 version.)
  */
 public final class ProbabilitySizingResult {
 

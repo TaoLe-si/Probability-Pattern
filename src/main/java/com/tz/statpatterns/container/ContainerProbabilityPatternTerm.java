@@ -24,7 +24,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.World;
 
 import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
@@ -36,7 +35,6 @@ import appeng.api.definitions.IDefinitions;
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.ITerminalHost;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.util.Platform;
 import cpw.mods.fml.common.FMLLog;
@@ -44,13 +42,11 @@ import cpw.mods.fml.common.FMLLog;
 /**
  * Container for the ME Probability Pattern Encoding Terminal.
  * <p>
- * Extends AE2 GTNH's {@link ContainerPatternTerm} so every vanilla pattern-terminal
- * behaviour is reused verbatim: the 3x3 fake crafting grid + 3 output slots + blank /
- * encoded pattern slots, NEI recipe transfer through {@code IContainerCraftingPacket},
- * stack doubling / halving, substitute toggles, clear, and the terminal buttons
- * (crafting/processing tabs, encode, clear, double). Only {@link #encode()} is
- * overridden to bake the probability parameters into a {@link ProbabilityPatternItem}
- * instead of a vanilla encoded pattern, and the two probability controls are exposed.
+ * Extends AE2 GTNH's {@link ContainerPatternTerm} so all vanilla pattern-terminal
+ * behaviour (slot layout, NEI recipe transfer, stack doubling / halving, substitute
+ * toggles, clear, buttons) is reused. {@link #encode()} is a faithful port of the
+ * vanilla encode with the probability parameters baked into the
+ * {@link ProbabilityPatternItem}, and the two probability controls are exposed.
  */
 public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
 
@@ -87,8 +83,8 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
     }
 
     /**
-     * When an already-encoded probability pattern is loaded into the encoded-pattern slot,
-     * restore its probability parameters into the terminal part.
+     * Restore the probability parameters into the part when an already-encoded
+     * probability pattern is loaded into the encoded-pattern slot.
      */
     @Override
     public void onSlotChange(final Slot s) {
@@ -97,8 +93,7 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
             .getInventoryByName("pattern") && s.getSlotIndex() == 1) {
             final ItemStack encoded = s.getStack();
             if (encoded != null && encoded.getTagCompound() != null
-                && encoded.getTagCompound()
-                    .hasKey(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY)) {
+                && EncodedStatisticalPattern.isProbabilityPattern(encoded.getTagCompound())) {
                 this.probabilityPart()
                     .setProbability(
                         encoded.getTagCompound()
@@ -112,12 +107,11 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
     }
 
     /**
-     * Faithful port of GTNH AE2 695's {@code ContainerPatternTerm.encode()}: same slot
-     * reads (9 fake crafting inputs incl. nulls, non-null outputs), same
-     * {@code createItemTag} ({@code ItemStack.writeToNBT} then integer {@code Count}), same
-     * tags ({@code in}/{@code out}/{@code crafting}/{@code substitute}/{@code beSubstitute}/
-     * {@code author}), and the same output carrier: the vanilla AE2 encoded pattern. The
-     * only addition is the {@code sp_*} probability tags, which the crafting mixin reads.
+     * Faithful port of GTNH AE2 695's {@code ContainerPatternTerm.encode()}: 9 fake
+     * crafting inputs (incl. nulls), non-null outputs, {@code createItemTag} = writeToNBT
+     * + integer {@code Count}, tags {@code in}/{@code out}/{@code crafting}/{@code substitute}/
+     * {@code beSubstitute}/{@code author}. The output pattern is our own
+     * {@link ProbabilityPatternItem} carrying the vanilla NBT plus the {@code sp_*} tags.
      */
     @Override
     public void encode() {
@@ -130,7 +124,6 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
 
         ItemStack output = patternInv.getStackInSlot(1);
 
-        // 9 fake crafting inputs, null = empty (vanilla getInputs()).
         final ItemStack[] in = new ItemStack[9];
         boolean hasInput = false;
         for (int i = 0; i < 9; i++) {
@@ -139,7 +132,6 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
                 hasInput = true;
             }
         }
-        FMLLog.info("[ProbabilityPattern] encode: hasInput=%s encodedSlot=%s", hasInput, output);
         if (!hasInput) {
             return;
         }
@@ -151,28 +143,23 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
                 out.add(s);
             }
         }
-        FMLLog.info("[ProbabilityPattern] encode: outputs=%d", out.size());
         if (out.isEmpty()) {
             return;
         }
 
         if (output != null && !this.isPattern(output)) {
-            FMLLog.info("[ProbabilityPattern] encode: encoded slot holds foreign %s, aborting", output);
             return;
         }
 
         if (output == null) {
             final ItemStack blank = patternInv.getStackInSlot(0);
             if (blank == null || !this.isPattern(blank)) {
-                FMLLog.info("[ProbabilityPattern] encode: blank slot holds %s, not a blank pattern", blank);
                 return;
             }
             blank.stackSize--;
             if (blank.stackSize <= 0) {
                 patternInv.setInventorySlotContents(0, null);
             }
-            // Our own probability pattern item carries the same NBT as the vanilla encoded
-            // pattern (written with the vanilla logic below), plus the sp_* tags.
             output = new ItemStack(ProbabilityPatternMod.probabilityPatternItem);
         }
 
@@ -201,28 +188,25 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
         this.saveChanges();
         this.detectAndSendChanges();
 
-        // Diagnostic: verify the freshly encoded pattern decodes through our own
-        // getPatternForItem (StatisticalPatternDetails).
+        // Diagnostic: verify the freshly encoded pattern decodes through our getPatternForItem.
         try {
-            final World w = this.getPatternTerminal()
-                .getTile()
-                .getWorldObj();
             final ICraftingPatternDetails d = ((ICraftingPatternItem) ProbabilityPatternMod.probabilityPatternItem)
-                .getPatternForItem(output, w);
+                .getPatternForItem(
+                    output,
+                    this.getPatternTerminal()
+                        .getTile()
+                        .getWorldObj());
             if (d == null) {
                 FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
             } else {
-                final IAEItemStack[] outs = d.getOutputs();
-                final IAEItemStack[] ins = d.getInputs();
                 FMLLog.info(
-                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d inStack=%d outStack=%d p=%.3f alpha=%.3f craftable=%s",
-                    ins.length,
-                    outs.length,
-                    ins.length > 0 && ins[0] != null ? ins[0].getStackSize() : -1L,
-                    outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
+                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d inStack=%d outStack=%d p=%.3f alpha=%.3f",
+                    d.getInputs().length,
+                    d.getOutputs().length,
+                    d.getInputs().length > 0 && d.getInputs()[0] != null ? d.getInputs()[0].getStackSize() : -1L,
+                    d.getOutputs().length > 0 && d.getOutputs()[0] != null ? d.getOutputs()[0].getStackSize() : -1L,
                     this.getProbability(),
-                    this.isAlpha95() ? 0.05 : 0.01,
-                    d.isCraftable());
+                    this.isAlpha95() ? 0.05 : 0.01);
             }
         } catch (final Throwable t) {
             FMLLog.info("[ProbabilityPattern] encode: decode threw: %s", t.toString());
@@ -241,7 +225,7 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
         isPattern |= definitions.materials()
             .blankPattern()
             .isSameAs(is);
-        // keep accepting already-encoded probability patterns
+        // accept already-encoded probability patterns
         isPattern |= is.getItem() instanceof ProbabilityPatternItem;
         return isPattern;
     }
