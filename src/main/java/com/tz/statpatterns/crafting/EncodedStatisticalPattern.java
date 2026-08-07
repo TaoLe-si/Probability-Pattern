@@ -23,8 +23,6 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
-import appeng.api.AEApi;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.util.Platform;
 
 /**
@@ -137,14 +135,15 @@ public final class EncodedStatisticalPattern {
     }
 
     /**
-     * Write a single pattern slot using the exact encoding GTNH's AE2 produces in
-     * {@code appeng.helpers.PatternEncodingHelper.encode}: {@code id}, {@code Count}=0
-     * (byte) and the real amount in the long {@code Cnt} tag.
+     * Write a single pattern slot using GTNH AE2 695's exact encoding:
+     * {@code Platform.writeItemStackToNBT} (i.e. {@code ItemStack.writeToNBT} then the
+     * amount is stored as an <b>integer</b> {@code Count} tag).
      * <p>
-     * The {@code Cnt} amount is written explicitly from the ItemStack's stackSize instead
-     * of trusting {@code IAEItemStack.writeToNBT}: the stack obtained from a fake slot can
-     * report stackSize 0, and several GTNH readers ({@code PatternHelper},
-     * {@code AEItemStack.loadItemStackFromNBT}) recover the amount from {@code Cnt} only.
+     * GTNH 695's {@code PatternHelper} recovers the amount through
+     * {@code Platform.loadItemStackFromNBT}, which overwrites {@code stackSize} from
+     * {@code tagCompound.getInteger("Count")}. The newer Unofficial "Cnt" (long) tag is
+     * <em>not</em> read by 695, so writing {@code Count = 0} + {@code Cnt} makes 695
+     * decode every slot amount as 0 and the pattern is not recognised as craftable.
      */
     private static NBTBase createItemTag(final ItemStack i) {
         final NBTTagCompound c = new NBTTagCompound();
@@ -152,32 +151,16 @@ public final class EncodedStatisticalPattern {
             // Empty crafting slot → empty tag, exactly like GTNH's PatternEncodingHelper.
             return c;
         }
-        final IAEItemStack ae = AEApi.instance()
-            .storage()
-            .createItemStack(i);
-        if (ae != null) {
-            ae.writeToNBT(c);
-        } else {
-            i.writeToNBT(c);
-        }
-        // AE2 canonical encoding: Count is 0 and the amount lives in the long "Cnt" tag.
-        c.setByte("Count", (byte) 0);
-        c.setLong("Cnt", i.stackSize);
-        c.setLong("Req", 0);
+        Platform.writeItemStackToNBT(i, c);
         return c;
     }
 
     /**
-     * Decode a single pattern slot the same way GTNH's {@code PatternHelper} does: the
-     * encoded {@code Count} is 0 (AE2 keeps the amount in the long {@code Cnt} tag), so
-     * restore the amount from {@code Cnt} when needed.
+     * Decode a single pattern slot exactly like GTNH 695's {@code PatternHelper}: the
+     * amount is read from the integer {@code Count} tag.
      */
     private static ItemStack loadStackFromNBT(final NBTTagCompound tag) {
-        final ItemStack gs = Platform.loadItemStackFromNBT(tag);
-        if (gs != null && gs.stackSize == 0 && tag.hasKey("Cnt")) {
-            gs.stackSize = (int) tag.getLong("Cnt");
-        }
-        return gs;
+        return Platform.loadItemStackFromNBT(tag);
     }
 
     /**

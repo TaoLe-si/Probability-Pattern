@@ -85,16 +85,16 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
             }
         }
 
-        // Probability controls sit in the free row directly above the player inventory
-        // (player slot row 1 renders at ySize - 83); everything is positioned relative to
-        // ySize so the controls move together with the inventory bar.
-        this.alphaButton = new GuiButton(200, this.guiLeft + 50, this.guiTop + this.ySize - 98, 56, 12, "");
+        // Probability controls sit on the same row as the "Inventory" label, to its
+        // right (GuiMEMonitorable.drawFG paints "Inventory" at x=8, ySize-93), so nothing
+        // overlaps. Everything is positioned relative to ySize.
+        this.alphaButton = new GuiButton(200, this.guiLeft + 122, this.guiTop + this.ySize - 94, 56, 12, "");
         this.buttonList.add(this.alphaButton);
 
         this.probabilityField = new GuiTextField(
             this.fontRendererObj,
-            this.guiLeft + 8,
-            this.guiTop + this.ySize - 98,
+            this.guiLeft + 80,
+            this.guiTop + this.ySize - 94,
             40,
             12);
         this.probabilityField.setMaxStringLength(8);
@@ -144,8 +144,9 @@ public class GuiProbabilityPatternTerm extends GuiPatternTerm {
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
 
+        // "p =" label just right of the "Inventory" text (x=8, ySize-93).
         final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
-        this.fontRendererObj.drawString(label, 8, this.ySize - 112, 4210752);
+        this.fontRendererObj.drawString(label, 60, this.ySize - 93, 4210752);
 
         // Keep the text field in sync with the part's value unless the user is editing.
         if (!this.probabilityField.isFocused()) {
