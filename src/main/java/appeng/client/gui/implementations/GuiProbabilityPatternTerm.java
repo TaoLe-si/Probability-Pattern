@@ -12,9 +12,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-// NOTE: This class intentionally lives in AE2's GUI package so it can access the
-// package-private helpers (setReservedSpace / getReservedSpace) of GuiMEMonitorable,
-// a common technique for 1.7.10 AE2 addons.
+// NOTE: This class intentionally lives in AE2's GUI package so it can extend
+// GuiPatternTerm and access the package-private helpers of GuiMEMonitorable
+// (setReservedSpace / getReservedSpace), a common technique for 1.7.10 AE2 addons.
 package appeng.client.gui.implementations;
 
 import net.minecraft.client.gui.GuiButton;
@@ -24,44 +24,47 @@ import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 
-import com.tz.statpatterns.container.ContainerProbabilityPatternTerm;
 import com.tz.statpatterns.network.ProbabilityPatternNetwork;
 import com.tz.statpatterns.network.ProbabilityPatternPacket;
 import com.tz.statpatterns.network.ProbabilityPatternPacket.Action;
+import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
 
-import appeng.api.config.ActionItems;
-import appeng.api.config.Settings;
 import appeng.api.storage.ITerminalHost;
-import appeng.client.gui.widgets.GuiImgButton;
-import appeng.container.slot.AppEngSlot;
+import appeng.client.gui.widgets.GuiTabButton;
+import appeng.container.implementations.ContainerPatternTerm;
 
 /**
  * GUI for the ME Probability Pattern Encoding Terminal.
  * <p>
- * Extends {@link GuiMEMonitorable} (the ME terminal GUI) and adds a probability
- * text field plus a 95% / 99% confidence toggle button, mirroring the 1.21.1
- * version's probability terminal screen.
+ * Extends AE2 GTNH's {@link GuiPatternTerm} so the complete vanilla pattern-terminal
+ * screen is reused verbatim (crafting/processing tabs, substitute toggles, encode /
+ * clear / double buttons, NEI overlay, ME monitor rows). On top of that it adds the two
+ * probability controls in the free row directly above the player inventory: the single
+ * attempt success probability text field and the 95% / 99% confidence toggle button.
+ * <p>
+ * The probability values live on the {@link ProbabilityPatternTerminalPart} (shared
+ * between client and server through the part NBT), so the GUI reads them from the part
+ * and sends {@link ProbabilityPatternPacket} SET_PROBABILITY / SET_ALPHA95 to the
+ * server when the user changes them.
  */
-public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
+public class GuiProbabilityPatternTerm extends GuiPatternTerm {
 
-    private final ContainerProbabilityPatternTerm container;
-
-    private GuiImgButton encodeBtn;
-    private GuiImgButton clearBtn;
+    private final ProbabilityPatternTerminalPart probabilityPart;
     private GuiButton alphaButton;
     private GuiTextField probabilityField;
+    private boolean alpha95Display;
     private double lastSentProbability = -1.0;
 
     public GuiProbabilityPatternTerm(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
-        super(inventoryPlayer, te, new ContainerProbabilityPatternTerm(inventoryPlayer, te));
-        this.container = (ContainerProbabilityPatternTerm) this.inventorySlots;
-        this.setReservedSpace(81);
+        super(inventoryPlayer, te);
+        this.probabilityPart = (ProbabilityPatternTerminalPart) te;
+        this.alpha95Display = this.probabilityPart.isAlpha95();
     }
 
     /**
-     * Fix the terminal height to 3 ME rows. The pattern2.png background is drawn with exactly 3
-     * monitor rows on top, so without this the GUI would grow with the screen height, pushing the
-     * encoding area (and the probability controls) off screen / misaligned on tall displays.
+     * Pin the terminal height to 3 ME rows (processing terminal layout, pattern2.png).
+     * Without this the GUI would grow with the screen height, pushing the probability
+     * controls off the inventory bar.
      */
     @Override
     protected int getMaxRows() {
@@ -72,27 +75,20 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
     public void initGui() {
         super.initGui();
 
-        this.encodeBtn = new GuiImgButton(
-            this.guiLeft + 147,
-            this.guiTop + this.ySize - 142,
-            Settings.ACTIONS,
-            ActionItems.ENCODE);
-        this.buttonList.add(this.encodeBtn);
+        // A probability pattern is always a processing pattern, so pin the terminal to
+        // processing mode (pattern2.png layout) and hide the crafting/processing tabs to
+        // avoid switching into a crafting mode that this pattern cannot express.
+        ((ContainerPatternTerm) this.inventorySlots).craftingMode = false;
+        for (final Object o : this.buttonList) {
+            if (o instanceof GuiTabButton) {
+                ((GuiTabButton) o).visible = false;
+            }
+        }
 
-        this.clearBtn = new GuiImgButton(
-            this.guiLeft + 74,
-            this.guiTop + this.ySize - 163,
-            Settings.ACTIONS,
-            ActionItems.CLOSE);
-        this.clearBtn.setHalfSize(true);
-        this.buttonList.add(this.clearBtn);
-
-        // Layout notes (GUI-internal coords): the probability controls sit in the free row
-        // directly above the player inventory (player slot row 1 renders at ySize - 83).
-        // Everything is positioned relative to ySize, so the controls move together with the
-        // inventory bar. The "Inventory" label drawn by GuiMEMonitorable sits at x=8, so the
-        // controls start at x=74 to avoid overlapping it.
-        this.alphaButton = new GuiButton(10, this.guiLeft + 50, this.guiTop + this.ySize - 98, 56, 12, "");
+        // Probability controls sit in the free row directly above the player inventory
+        // (player slot row 1 renders at ySize - 83); everything is positioned relative to
+        // ySize so the controls move together with the inventory bar.
+        this.alphaButton = new GuiButton(200, this.guiLeft + 50, this.guiTop + this.ySize - 98, 56, 12, "");
         this.buttonList.add(this.alphaButton);
 
         this.probabilityField = new GuiTextField(
@@ -102,7 +98,7 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
             40,
             12);
         this.probabilityField.setMaxStringLength(8);
-        this.probabilityField.setText(formatProbability(this.container.probabilityScaled / 10000.0));
+        this.probabilityField.setText(formatProbability(this.probabilityPart.getProbability()));
 
         this.updateAlphaButton();
     }
@@ -111,15 +107,11 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
     protected void actionPerformed(final GuiButton btn) {
         super.actionPerformed(btn);
 
-        if (btn == this.encodeBtn) {
-            ProbabilityPatternNetwork.CHANNEL.sendToServer(new ProbabilityPatternPacket(Action.ENCODE, 0));
-        } else if (btn == this.clearBtn) {
-            ProbabilityPatternNetwork.CHANNEL.sendToServer(new ProbabilityPatternPacket(Action.CLEAR, 0));
-        } else if (btn == this.alphaButton) {
-            // Server side is authoritative; the @GuiSync field will refresh the display.
-            final boolean newAlpha95 = this.container.alpha95Flag == 0;
+        if (btn == this.alphaButton) {
+            this.alpha95Display = !this.alpha95Display;
             ProbabilityPatternNetwork.CHANNEL
-                .sendToServer(new ProbabilityPatternPacket(Action.SET_ALPHA95, newAlpha95 ? 1 : 0));
+                .sendToServer(new ProbabilityPatternPacket(Action.SET_ALPHA95, this.alpha95Display ? 1 : 0));
+            this.updateAlphaButton();
         }
     }
 
@@ -152,43 +144,24 @@ public class GuiProbabilityPatternTerm extends GuiMEMonitorable {
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
 
-        final String title = StatCollector
-            .translateToLocal("container.probabilitypattern.probability_pattern_terminal");
-        this.fontRendererObj.drawString(title, 8, this.ySize - 96 + 2 - this.getReservedSpace(), 4210752);
+        final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
+        this.fontRendererObj.drawString(label, 8, this.ySize - 112, 4210752);
 
-        // Keep the text field in sync with the server-synced value unless the user is editing.
+        // Keep the text field in sync with the part's value unless the user is editing.
         if (!this.probabilityField.isFocused()) {
-            final String current = formatProbability(this.container.probabilityScaled / 10000.0);
+            final String current = formatProbability(this.probabilityPart.getProbability());
             if (!current.equals(this.probabilityField.getText())) {
                 this.probabilityField.setText(current);
             }
         }
-
-        final String label = StatCollector.translateToLocal("gui.probabilitypattern.short_probability");
-        this.fontRendererObj.drawString(label, 8, this.ySize - 112, 4210752);
         this.probabilityField.drawTextBox();
-
-        this.alphaButton.displayString = StatCollector.translateToLocal(
-            this.container.alpha95Flag != 0 ? "gui.probabilitypattern.alpha95" : "gui.probabilitypattern.alpha99");
+        this.updateAlphaButton();
     }
 
     private void updateAlphaButton() {
-        this.alphaButton.displayString = StatCollector.translateToLocal(
-            this.container.alpha95Flag != 0 ? "gui.probabilitypattern.alpha95" : "gui.probabilitypattern.alpha99");
-    }
-
-    @Override
-    protected String getBackground() {
-        // Processing-only layout (same texture the AE2 processing pattern terminal uses).
-        return "guis/pattern2.png";
-    }
-
-    @Override
-    protected void repositionSlot(final AppEngSlot s) {
-        if (s.isPlayerSide()) {
-            s.yDisplayPosition = s.getY() + this.ySize - 78 - 5;
-        } else {
-            s.yDisplayPosition = s.getY() + this.ySize - 78 - 3;
+        if (this.alphaButton != null) {
+            this.alphaButton.displayString = StatCollector.translateToLocal(
+                this.alpha95Display ? "gui.probabilitypattern.alpha95" : "gui.probabilitypattern.alpha99");
         }
     }
 

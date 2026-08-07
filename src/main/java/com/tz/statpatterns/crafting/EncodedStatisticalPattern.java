@@ -109,10 +109,15 @@ public final class EncodedStatisticalPattern {
      * Serialize to NBT. The standard AE2 pattern keys ("in" / "out" / "crafting" /
      * "substitute") are written so that {@link appeng.helpers.PatternHelper} can also
      * decode the inputs/outputs; the probability keys are namespaced with {@code sp_}.
+     * <p>
+     * GTNH's {@code PatternEncodingHelper.encode} writes all 9 crafting-grid slots
+     * (empty slots become empty tags), so the encoded pattern is structurally identical
+     * to a vanilla GTNH processing pattern.
      */
     public NBTTagCompound writeToNBT(final NBTTagCompound tag) {
         final NBTTagList tagIn = new NBTTagList();
-        for (ItemStack in : this.inputsPerAttempt) {
+        for (int x = 0; x < 9; x++) {
+            final ItemStack in = x < this.inputsPerAttempt.size() ? this.inputsPerAttempt.get(x) : null;
             tagIn.appendTag(createItemTag(in));
         }
         tag.setTag(TAG_INPUTS, tagIn);
@@ -133,25 +138,32 @@ public final class EncodedStatisticalPattern {
 
     /**
      * Write a single pattern slot using the exact encoding GTNH's AE2 produces in
-     * {@code appeng.helpers.PatternEncodingHelper.encode}: the stack is written through
-     * {@code IAEItemStack.writeToNBT} (GTNH's {@code AEItemStack} writes {@code id},
-     * {@code Count}=0, {@code Damage} and stores the real amount in the long {@code Cnt}
-     * tag).
+     * {@code appeng.helpers.PatternEncodingHelper.encode}: {@code id}, {@code Count}=0
+     * (byte) and the real amount in the long {@code Cnt} tag.
      * <p>
-     * This matters because GTNH's {@code PatternHelper} and
-     * {@code AEItemStack.loadItemStackFromNBT} recover the amount from {@code Cnt}. Writing
-     * a plain non-zero integer {@code Count} (as {@code Platform.writeItemStackToNBT} does)
-     * makes every GTNH reader that uses {@code Cnt} decode the amount as 0, so the encoded
-     * pattern is not recognised as a valid/craftable pattern.
+     * The {@code Cnt} amount is written explicitly from the ItemStack's stackSize instead
+     * of trusting {@code IAEItemStack.writeToNBT}: the stack obtained from a fake slot can
+     * report stackSize 0, and several GTNH readers ({@code PatternHelper},
+     * {@code AEItemStack.loadItemStackFromNBT}) recover the amount from {@code Cnt} only.
      */
     private static NBTBase createItemTag(final ItemStack i) {
         final NBTTagCompound c = new NBTTagCompound();
+        if (i == null) {
+            // Empty crafting slot → empty tag, exactly like GTNH's PatternEncodingHelper.
+            return c;
+        }
         final IAEItemStack ae = AEApi.instance()
             .storage()
             .createItemStack(i);
         if (ae != null) {
             ae.writeToNBT(c);
+        } else {
+            i.writeToNBT(c);
         }
+        // AE2 canonical encoding: Count is 0 and the amount lives in the long "Cnt" tag.
+        c.setByte("Count", (byte) 0);
+        c.setLong("Cnt", i.stackSize);
+        c.setLong("Req", 0);
         return c;
     }
 

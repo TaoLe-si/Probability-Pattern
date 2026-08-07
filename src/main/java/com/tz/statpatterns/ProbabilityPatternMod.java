@@ -20,12 +20,12 @@ import net.minecraft.item.ItemStack;
 
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
 import com.tz.statpatterns.handler.ProbabilityPatternGuiHandler;
-import com.tz.statpatterns.integration.nei.ProbabilityPatternNEIOverlayHandler;
 import com.tz.statpatterns.item.ItemProbabilityPatternTerminal;
 import com.tz.statpatterns.network.ProbabilityPatternNetwork;
 
 import appeng.api.AEApi;
 import appeng.client.gui.implementations.GuiProbabilityPatternTerm;
+import appeng.integration.modules.NEIHelpers.NEICraftingHandler;
 import appeng.integration.modules.NEIHelpers.TerminalCraftingSlotFinder;
 import codechicken.nei.api.API;
 import cpw.mods.fml.common.Loader;
@@ -125,9 +125,11 @@ public final class ProbabilityPatternMod {
     }
 
     /**
-     * Register NEI integration (client-only): the "?" recipe-transfer button on the
-     * probability pattern terminal fills the 3x3 inputs and the target output from the
-     * hovered NEI recipe, mirroring the 1.21.1 original's JEI/EMI/REI recipe transfer.
+     * Register NEI integration (client-only): reuse AE2 GTNH's {@link NEICraftingHandler}
+     * for the "?" recipe-transfer button. Because {@link GuiProbabilityPatternTerm}
+     * extends {@code GuiPatternTerm}, NEICraftingHandler recognises it and transfers the
+     * recipe through {@code PacketNEIRecipe} -> {@code IContainerCraftingPacket} exactly
+     * like the vanilla processing pattern terminal.
      */
     @SideOnly(Side.CLIENT)
     private void registerNEI() {
@@ -136,7 +138,7 @@ public final class ProbabilityPatternMod {
                 API.registerGuiOverlay(GuiProbabilityPatternTerm.class, "crafting", new TerminalCraftingSlotFinder());
                 API.registerGuiOverlayHandler(
                     GuiProbabilityPatternTerm.class,
-                    new ProbabilityPatternNEIOverlayHandler(),
+                    new NEICraftingHandler(0, 0),
                     "crafting");
             }
         } catch (final Throwable ignored) {

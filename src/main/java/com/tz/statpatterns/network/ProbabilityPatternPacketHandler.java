@@ -24,7 +24,8 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
 /**
- * Server-side handler for {@link ProbabilityPatternPacket}.
+ * Server-side handler for {@link ProbabilityPatternPacket}: applies the probability /
+ * confidence changes to the probability pattern terminal part.
  */
 public class ProbabilityPatternPacketHandler implements IMessageHandler<ProbabilityPatternPacket, IMessage> {
 
@@ -42,12 +43,6 @@ public class ProbabilityPatternPacketHandler implements IMessageHandler<Probabil
             container.setProbability(message.getValue());
         } else if (action == Action.SET_ALPHA95) {
             container.setAlpha95(message.getValue() != 0.0);
-        } else if (action == Action.ENCODE) {
-            container.encode();
-        } else if (action == Action.CLEAR) {
-            container.clear();
-        } else if (action == Action.NEI_RECIPE) {
-            container.applyNEIRecipe(message.getInputs(), message.getOutput());
         }
 
         return null;

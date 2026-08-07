@@ -14,32 +14,25 @@
  */
 package com.tz.statpatterns.network;
 
-import net.minecraft.item.ItemStack;
-
-import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
  * Client -> server packet for the probability pattern terminal.
  * <p>
- * {@link Action#NEI_RECIPE} carries a 3x3 per-attempt input grid plus one target
- * output, serialised as ItemStacks (may be null).
+ * Carries only the two probability controls; every other terminal action (encode,
+ * clear, tabs, substitute, NEI transfer, stack doubling) is handled by AE2 GTNH's own
+ * mechanisms on the inherited {@code ContainerPatternTerm}.
  */
 public class ProbabilityPatternPacket implements IMessage {
 
     public enum Action {
         SET_PROBABILITY,
-        SET_ALPHA95,
-        ENCODE,
-        CLEAR,
-        NEI_RECIPE
+        SET_ALPHA95
     }
 
     private Action action;
     private double value;
-    private ItemStack[] inputs;
-    private ItemStack output;
 
     public ProbabilityPatternPacket() {
         // required by SimpleNetworkWrapper
@@ -50,12 +43,6 @@ public class ProbabilityPatternPacket implements IMessage {
         this.value = value;
     }
 
-    public ProbabilityPatternPacket(final Action action, final ItemStack[] inputs, final ItemStack output) {
-        this.action = action;
-        this.inputs = inputs;
-        this.output = output;
-    }
-
     public Action getAction() {
         return this.action;
     }
@@ -64,38 +51,15 @@ public class ProbabilityPatternPacket implements IMessage {
         return this.value;
     }
 
-    public ItemStack[] getInputs() {
-        return this.inputs;
-    }
-
-    public ItemStack getOutput() {
-        return this.output;
-    }
-
     @Override
     public void fromBytes(final ByteBuf buf) {
         this.action = Action.values()[buf.readByte()];
-        if (this.action == Action.NEI_RECIPE) {
-            this.inputs = new ItemStack[9];
-            for (int i = 0; i < 9; i++) {
-                this.inputs[i] = ByteBufUtils.readItemStack(buf);
-            }
-            this.output = ByteBufUtils.readItemStack(buf);
-        } else {
-            this.value = buf.readDouble();
-        }
+        this.value = buf.readDouble();
     }
 
     @Override
     public void toBytes(final ByteBuf buf) {
         buf.writeByte(this.action.ordinal());
-        if (this.action == Action.NEI_RECIPE) {
-            for (int i = 0; i < 9; i++) {
-                ByteBufUtils.writeItemStack(buf, this.inputs != null && i < this.inputs.length ? this.inputs[i] : null);
-            }
-            ByteBufUtils.writeItemStack(buf, this.output);
-        } else {
-            buf.writeDouble(this.value);
-        }
+        buf.writeDouble(this.value);
     }
 }
