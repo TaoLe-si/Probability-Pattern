@@ -19,21 +19,25 @@ import java.util.List;
 
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 
-import com.tz.statpatterns.ProbabilityPatternMod;
+import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
-import com.tz.statpatterns.crafting.StatisticalPatternDetails;
 import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
 
 import appeng.api.AEApi;
-import appeng.api.implementations.ICraftingPatternItem;
+import appeng.api.definitions.IDefinitions;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.container.implementations.ContainerPatternTerm;
+import appeng.helpers.PatternHelper;
+import appeng.util.Platform;
 import cpw.mods.fml.common.FMLLog;
 
 /**
@@ -82,9 +86,37 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
     }
 
     /**
-     * Re-encode the pattern as a probability pattern: same inputs/outputs handling as the
-     * vanilla terminal, but the output pattern is a {@link ProbabilityPatternItem} carrying
-     * the per-attempt success probability and the confidence flag.
+     * When an already-encoded probability pattern is loaded into the encoded-pattern slot,
+     * restore its probability parameters into the terminal part.
+     */
+    @Override
+    public void onSlotChange(final Slot s) {
+        super.onSlotChange(s);
+        if (Platform.isServer() && s.inventory == this.getPatternTerminal()
+            .getInventoryByName("pattern") && s.getSlotIndex() == 1) {
+            final ItemStack encoded = s.getStack();
+            if (encoded != null && encoded.getTagCompound() != null
+                && encoded.getTagCompound()
+                    .hasKey(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY)) {
+                this.probabilityPart()
+                    .setProbability(
+                        encoded.getTagCompound()
+                            .getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY));
+                this.probabilityPart()
+                    .setAlpha95(
+                        encoded.getTagCompound()
+                            .getBoolean(EncodedStatisticalPattern.TAG_ALPHA95));
+            }
+        }
+    }
+
+    /**
+     * Faithful port of GTNH AE2 695's {@code ContainerPatternTerm.encode()}: same slot
+     * reads (9 fake crafting inputs incl. nulls, non-null outputs), same
+     * {@code createItemTag} ({@code ItemStack.writeToNBT} then integer {@code Count}), same
+     * tags ({@code in}/{@code out}/{@code crafting}/{@code substitute}/{@code beSubstitute}/
+     * {@code author}), and the same output carrier: the vanilla AE2 encoded pattern. The
+     * only addition is the {@code sp_*} probability tags, which the crafting mixin reads.
      */
     @Override
     public void encode() {
@@ -95,104 +127,129 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
         final IInventory outputInv = this.getPatternTerminal()
             .getInventoryByName("output");
 
-        final ItemStack existingEncoded = patternInv.getStackInSlot(1);
-        if (existingEncoded != null && !(existingEncoded.getItem() instanceof ProbabilityPatternItem)) {
-            FMLLog.info("[ProbabilityPattern] encode: encoded slot holds a foreign item, aborting");
-            return;
-        }
+        ItemStack output = patternInv.getStackInSlot(1);
 
-        // Per-attempt inputs (fake slots may report stackSize 0; normalise to 1).
-        final List<ItemStack> inputs = new ArrayList<ItemStack>();
-        for (int i = 0; i < craftingInv.getSizeInventory(); i++) {
-            final ItemStack s = craftingInv.getStackInSlot(i);
-            if (s != null) {
-                if (s.stackSize <= 0) {
-                    s.stackSize = 1;
-                }
-                inputs.add(s);
+        // 9 fake crafting inputs, null = empty (vanilla getInputs()).
+        final ItemStack[] in = new ItemStack[9];
+        boolean hasInput = false;
+        for (int i = 0; i < 9; i++) {
+            in[i] = craftingInv.getStackInSlot(i);
+            if (in[i] != null) {
+                hasInput = true;
             }
         }
-        if (inputs.isEmpty()) {
-            FMLLog.info("[ProbabilityPattern] encode: no crafting inputs");
+        if (!hasInput) {
             return;
         }
 
-        ItemStack output = null;
+        final List<ItemStack> out = new ArrayList<ItemStack>();
         for (int i = 0; i < outputInv.getSizeInventory(); i++) {
             final ItemStack s = outputInv.getStackInSlot(i);
             if (s != null) {
-                if (s.stackSize <= 0) {
-                    s.stackSize = 1;
-                }
-                output = s;
-                break;
+                out.add(s);
             }
         }
-        if (output == null) {
-            FMLLog.info("[ProbabilityPattern] encode: no target output");
+        if (out.isEmpty()) {
             return;
         }
 
-        if (existingEncoded == null) {
+        if (output != null && !this.isPattern(output)) {
+            return;
+        }
+
+        if (output == null) {
             final ItemStack blank = patternInv.getStackInSlot(0);
-            if (blank == null) {
-                FMLLog.info("[ProbabilityPattern] encode: no blank pattern in slot");
-                return;
-            }
-            final boolean isAE2Blank = AEApi.instance()
-                .definitions()
-                .materials()
-                .blankPattern()
-                .isSameAs(blank);
-            final boolean isOurBlank = blank.getItem() instanceof ProbabilityPatternItem;
-            if (!isAE2Blank && !isOurBlank) {
-                FMLLog.info("[ProbabilityPattern] encode: blank slot holds %s, not a blank pattern", blank);
+            if (blank == null || !this.isPattern(blank)) {
                 return;
             }
             blank.stackSize--;
             if (blank.stackSize <= 0) {
                 patternInv.setInventorySlotContents(0, null);
             }
+            output = AEApi.instance()
+                .definitions()
+                .items()
+                .encodedPattern()
+                .maybeStack(1)
+                .orNull();
+            if (output == null) {
+                return;
+            }
         }
 
-        final double probability = this.getProbability();
-        final boolean alpha95 = this.isAlpha95();
-        final double alpha = alpha95 ? 0.05 : 0.01;
-        final ItemStack encoded = StatisticalPatternDetails.encode(inputs, output, probability, alpha, alpha95);
-        patternInv.setInventorySlotContents(1, encoded);
+        final NBTTagCompound encodedValue = new NBTTagCompound();
+        final NBTTagList tagIn = new NBTTagList();
+        for (final ItemStack i : in) {
+            tagIn.appendTag(createItemTag(i));
+        }
+        final NBTTagList tagOut = new NBTTagList();
+        for (final ItemStack i : out) {
+            tagOut.appendTag(createItemTag(i));
+        }
+        encodedValue.setTag(EncodedStatisticalPattern.TAG_INPUTS, tagIn);
+        encodedValue.setTag(EncodedStatisticalPattern.TAG_OUTPUT, tagOut);
+        encodedValue.setBoolean(EncodedStatisticalPattern.TAG_CRAFTING, this.craftingMode);
+        encodedValue.setBoolean(EncodedStatisticalPattern.TAG_SUBSTITUTE, this.substitute);
+        encodedValue.setBoolean("beSubstitute", this.beSubstitute);
+        encodedValue.setString("author", this.getPlayerInv().player.getCommandSenderName());
+
+        encodedValue.setDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY, this.getProbability());
+        encodedValue.setDouble(EncodedStatisticalPattern.TAG_ALPHA, this.isAlpha95() ? 0.05 : 0.01);
+        encodedValue.setBoolean(EncodedStatisticalPattern.TAG_ALPHA95, this.isAlpha95());
+
+        output.setTagCompound(encodedValue);
+        patternInv.setInventorySlotContents(1, output);
         this.saveChanges();
         this.detectAndSendChanges();
 
-        // Diagnostic: verify the freshly encoded pattern decodes through AE2's pattern path.
+        // Diagnostic: verify the freshly encoded pattern decodes through AE2's own
+        // PatternHelper (the pattern is now a vanilla encoded pattern).
         try {
             final World w = this.getPatternTerminal()
                 .getTile()
                 .getWorldObj();
-            final ICraftingPatternDetails d = ((ICraftingPatternItem) ProbabilityPatternMod.probabilityPatternItem)
-                .getPatternForItem(encoded, w);
-            if (d == null) {
-                FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
-            } else {
-                final IAEItemStack[] outs = d.getOutputs();
-                long nbtOutCnt = -1L;
-                try {
-                    final NBTTagList outTag = encoded.getTagCompound()
-                        .getTagList("out", 10);
-                    if (outTag.tagCount() > 0) {
-                        nbtOutCnt = outTag.getCompoundTagAt(0)
-                            .getLong("Cnt");
-                    }
-                } catch (final Throwable ignored) {}
-                FMLLog.info(
-                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d nbtOutCnt=%d craftable=%s",
-                    d.getInputs().length,
-                    outs.length,
-                    outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
-                    nbtOutCnt,
-                    d.isCraftable());
-            }
+            final ICraftingPatternDetails d = new PatternHelper(output, w);
+            final IAEItemStack[] outs = d.getOutputs();
+            FMLLog.info(
+                "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d p=%.3f alpha=%.3f craftable=%s",
+                d.getInputs().length,
+                outs.length,
+                outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
+                this.getProbability(),
+                this.isAlpha95() ? 0.05 : 0.01,
+                d.isCraftable());
         } catch (final Throwable t) {
             FMLLog.info("[ProbabilityPattern] encode: decode threw: %s", t.toString());
         }
+    }
+
+    private boolean isPattern(final ItemStack is) {
+        if (is == null) {
+            return false;
+        }
+        final IDefinitions definitions = AEApi.instance()
+            .definitions();
+        boolean isPattern = definitions.items()
+            .encodedPattern()
+            .isSameAs(is);
+        isPattern |= definitions.materials()
+            .blankPattern()
+            .isSameAs(is);
+        // keep accepting already-encoded probability patterns
+        isPattern |= is.getItem() instanceof ProbabilityPatternItem;
+        return isPattern;
+    }
+
+    /**
+     * Exactly GTNH 695's {@code ContainerPatternTerm.createItemTag}: write the stack, then
+     * store the amount as an integer {@code Count} (read by
+     * {@code Platform.loadItemStackFromNBT}). Empty slots become empty tags.
+     */
+    private static NBTBase createItemTag(final ItemStack i) {
+        final NBTTagCompound c = new NBTTagCompound();
+        if (i != null) {
+            Platform.writeItemStackToNBT(i, c);
+        }
+        return c;
     }
 }

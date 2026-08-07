@@ -14,13 +14,17 @@
  */
 package com.tz.statpatterns.mixin;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.tz.statpatterns.crafting.StatisticalPatternDetails;
+import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
+import com.tz.statpatterns.math.ProbabilitySizing;
 
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.crafting.CraftingTreeProcess;
@@ -77,25 +81,29 @@ public abstract class CraftingTreeProcessMixin {
         if (this.limitQty || this.fullSimulation) {
             return;
         }
-        if (this.details instanceof StatisticalPatternDetails) {
-            final StatisticalPatternDetails spd = (StatisticalPatternDetails) this.details;
-            if (spd.isProbabilityPattern()) {
+        if (this.details != null) {
+            final ItemStack pattern = this.details.getPattern();
+            final NBTTagCompound tag = pattern == null ? null : pattern.getTagCompound();
+            if (tag != null && tag.hasKey(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY)) {
                 // 695's CraftingTreeProcess.getTimes(remaining, stackSize) is called with
                 // remaining = target output amount and stackSize = output per attempt, and
                 // returns ceil(remaining / stackSize) = how many successful attempts we need.
                 // Plan for that many successes (not the raw output amount), otherwise every
                 // attempt that yields > 1 output would over-plan and the requested quantity
                 // would be wrong.
+                final double p = tag.getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
+                final double alpha = tag.getDouble(EncodedStatisticalPattern.TAG_ALPHA);
                 final long requiredSuccesses = remaining <= 0 ? 1L : (remaining + stackSize - 1) / stackSize;
-                final long times = spd.plannedAttempts(requiredSuccesses);
+                final long times = ProbabilitySizing.planAttempts(requiredSuccesses, p, alpha, 30)
+                    .attempts();
                 FMLLog.info(
                     "[ProbabilityPattern] CraftingTreeProcess.getTimes intercepted: remaining=%d stackSize=%d success=%d times=%d p=%.3f alpha=%.3f",
                     remaining,
                     stackSize,
                     requiredSuccesses,
                     times,
-                    spd.successProbability(),
-                    spd.alpha());
+                    p,
+                    alpha);
                 cir.setReturnValue(times);
             }
         }
