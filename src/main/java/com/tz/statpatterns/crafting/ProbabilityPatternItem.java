@@ -32,6 +32,7 @@ import com.tz.statpatterns.ProbabilityPatternMod;
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEItemStack;
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -59,11 +60,16 @@ public class ProbabilityPatternItem extends Item implements ICraftingPatternItem
         if (is == null || is.getItem() != this
             || !is.hasTagCompound()
             || !EncodedStatisticalPattern.isProbabilityPattern(is.getTagCompound())) {
+            if (is != null && is.getItem() == this && is.hasTagCompound()) {
+                // encoded probability item that failed the probability-key check
+                FMLLog.info("[ProbabilityPattern] getPatternForItem rejected, tag=%s", is.getTagCompound());
+            }
             return null; // blank or invalid
         }
         try {
             return new StatisticalPatternDetails(is, w);
         } catch (final Throwable t) {
+            FMLLog.info("[ProbabilityPattern] getPatternForItem threw: %s", t.toString());
             return null;
         }
     }
