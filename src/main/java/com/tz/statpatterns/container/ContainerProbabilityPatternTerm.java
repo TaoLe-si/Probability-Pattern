@@ -139,6 +139,7 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
                 hasInput = true;
             }
         }
+        FMLLog.info("[ProbabilityPattern] encode: hasInput=%s encodedSlot=%s", hasInput, output);
         if (!hasInput) {
             return;
         }
@@ -150,17 +151,20 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
                 out.add(s);
             }
         }
+        FMLLog.info("[ProbabilityPattern] encode: outputs=%d", out.size());
         if (out.isEmpty()) {
             return;
         }
 
         if (output != null && !this.isPattern(output)) {
+            FMLLog.info("[ProbabilityPattern] encode: encoded slot holds foreign %s, aborting", output);
             return;
         }
 
         if (output == null) {
             final ItemStack blank = patternInv.getStackInSlot(0);
             if (blank == null || !this.isPattern(blank)) {
+                FMLLog.info("[ProbabilityPattern] encode: blank slot holds %s, not a blank pattern", blank);
                 return;
             }
             blank.stackSize--;
@@ -209,10 +213,12 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
                 FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
             } else {
                 final IAEItemStack[] outs = d.getOutputs();
+                final IAEItemStack[] ins = d.getInputs();
                 FMLLog.info(
-                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d p=%.3f alpha=%.3f craftable=%s",
-                    d.getInputs().length,
+                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d inStack=%d outStack=%d p=%.3f alpha=%.3f craftable=%s",
+                    ins.length,
                     outs.length,
+                    ins.length > 0 && ins[0] != null ? ins[0].getStackSize() : -1L,
                     outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
                     this.getProbability(),
                     this.isAlpha95() ? 0.05 : 0.01,
