@@ -14,7 +14,6 @@
  */
 package com.tz.statpatterns;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -44,8 +43,8 @@ public class LateMixinLoader implements ILateMixinLoader {
 
     @Override
     public List<String> getMixins(final Set<String> loadedMods) {
-        // Simple name relative to this config's "package" (com.tz.statpatterns.mixin).
+        // Simple names relative to this config's "package" (com.tz.statpatterns.mixin).
         // UniMixins joins package + entry to form the fully-qualified mixin class.
-        return Collections.singletonList("CraftingTreeProcessMixin");
+        return java.util.Arrays.asList("CraftingTreeProcessMixin", "ItemEncodedPatternMixin");
     }
 }
