@@ -23,6 +23,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import appeng.api.AEApi;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.util.Platform;
 
 /**
@@ -130,17 +132,40 @@ public final class EncodedStatisticalPattern {
     }
 
     /**
-     * Write the stack using AE2's canonical pattern NBT encoding
-     * ({@link appeng.util.Platform#writeItemStackToNBT}). {@code PatternHelper} decodes
-     * pattern slots through {@code Platform.loadItemStackFromNBT}, which overwrites
-     * {@code stackSize} from the integer {@code Count} tag. Plain
-     * {@code ItemStack.writeToNBT} stores {@code Count} as a byte, so the decoded amount
-     * would be 0 and the pattern would be rejected as "No pattern here!".
+     * Write a single pattern slot using the exact encoding GTNH's AE2 produces in
+     * {@code appeng.helpers.PatternEncodingHelper.encode}: the stack is written through
+     * {@code IAEItemStack.writeToNBT} (GTNH's {@code AEItemStack} writes {@code id},
+     * {@code Count}=0, {@code Damage} and stores the real amount in the long {@code Cnt}
+     * tag).
+     * <p>
+     * This matters because GTNH's {@code PatternHelper} and
+     * {@code AEItemStack.loadItemStackFromNBT} recover the amount from {@code Cnt}. Writing
+     * a plain non-zero integer {@code Count} (as {@code Platform.writeItemStackToNBT} does)
+     * makes every GTNH reader that uses {@code Cnt} decode the amount as 0, so the encoded
+     * pattern is not recognised as a valid/craftable pattern.
      */
     private static NBTBase createItemTag(final ItemStack i) {
         final NBTTagCompound c = new NBTTagCompound();
-        Platform.writeItemStackToNBT(i, c);
+        final IAEItemStack ae = AEApi.instance()
+            .storage()
+            .createItemStack(i);
+        if (ae != null) {
+            ae.writeToNBT(c);
+        }
         return c;
+    }
+
+    /**
+     * Decode a single pattern slot the same way GTNH's {@code PatternHelper} does: the
+     * encoded {@code Count} is 0 (AE2 keeps the amount in the long {@code Cnt} tag), so
+     * restore the amount from {@code Cnt} when needed.
+     */
+    private static ItemStack loadStackFromNBT(final NBTTagCompound tag) {
+        final ItemStack gs = Platform.loadItemStackFromNBT(tag);
+        if (gs != null && gs.stackSize == 0 && tag.hasKey("Cnt")) {
+            gs.stackSize = (int) tag.getLong("Cnt");
+        }
+        return gs;
     }
 
     /**
@@ -154,7 +179,7 @@ public final class EncodedStatisticalPattern {
         final List<ItemStack> inputs = new ArrayList<ItemStack>();
         final NBTTagList inTag = tag.getTagList(TAG_INPUTS, 10);
         for (int x = 0; x < inTag.tagCount(); x++) {
-            final ItemStack gs = Platform.loadItemStackFromNBT(inTag.getCompoundTagAt(x));
+            final ItemStack gs = loadStackFromNBT(inTag.getCompoundTagAt(x));
             if (gs != null) {
                 inputs.add(gs);
             }
@@ -163,7 +188,7 @@ public final class EncodedStatisticalPattern {
         ItemStack output = null;
         final NBTTagList outTag = tag.getTagList(TAG_OUTPUT, 10);
         for (int x = 0; x < outTag.tagCount(); x++) {
-            final ItemStack gs = Platform.loadItemStackFromNBT(outTag.getCompoundTagAt(x));
+            final ItemStack gs = loadStackFromNBT(outTag.getCompoundTagAt(x));
             if (gs != null) {
                 output = gs;
                 break;
