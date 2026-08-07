@@ -26,17 +26,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 
+import com.tz.statpatterns.ProbabilityPatternMod;
 import com.tz.statpatterns.crafting.EncodedStatisticalPattern;
 import com.tz.statpatterns.crafting.ProbabilityPatternItem;
 import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
 
 import appeng.api.AEApi;
 import appeng.api.definitions.IDefinitions;
+import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.container.implementations.ContainerPatternTerm;
-import appeng.helpers.PatternHelper;
 import appeng.util.Platform;
 import cpw.mods.fml.common.FMLLog;
 
@@ -166,15 +167,9 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
             if (blank.stackSize <= 0) {
                 patternInv.setInventorySlotContents(0, null);
             }
-            output = AEApi.instance()
-                .definitions()
-                .items()
-                .encodedPattern()
-                .maybeStack(1)
-                .orNull();
-            if (output == null) {
-                return;
-            }
+            // Our own probability pattern item carries the same NBT as the vanilla encoded
+            // pattern (written with the vanilla logic below), plus the sp_* tags.
+            output = new ItemStack(ProbabilityPatternMod.probabilityPatternItem);
         }
 
         final NBTTagCompound encodedValue = new NBTTagCompound();
@@ -202,22 +197,27 @@ public class ContainerProbabilityPatternTerm extends ContainerPatternTerm {
         this.saveChanges();
         this.detectAndSendChanges();
 
-        // Diagnostic: verify the freshly encoded pattern decodes through AE2's own
-        // PatternHelper (the pattern is now a vanilla encoded pattern).
+        // Diagnostic: verify the freshly encoded pattern decodes through our own
+        // getPatternForItem (StatisticalPatternDetails).
         try {
             final World w = this.getPatternTerminal()
                 .getTile()
                 .getWorldObj();
-            final ICraftingPatternDetails d = new PatternHelper(output, w);
-            final IAEItemStack[] outs = d.getOutputs();
-            FMLLog.info(
-                "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d p=%.3f alpha=%.3f craftable=%s",
-                d.getInputs().length,
-                outs.length,
-                outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
-                this.getProbability(),
-                this.isAlpha95() ? 0.05 : 0.01,
-                d.isCraftable());
+            final ICraftingPatternDetails d = ((ICraftingPatternItem) ProbabilityPatternMod.probabilityPatternItem)
+                .getPatternForItem(output, w);
+            if (d == null) {
+                FMLLog.info("[ProbabilityPattern] encode: RESULT INVALID (getPatternForItem returned null)");
+            } else {
+                final IAEItemStack[] outs = d.getOutputs();
+                FMLLog.info(
+                    "[ProbabilityPattern] encode: OK inputs=%d outputs=%d outStackSize=%d p=%.3f alpha=%.3f craftable=%s",
+                    d.getInputs().length,
+                    outs.length,
+                    outs.length > 0 && outs[0] != null ? outs[0].getStackSize() : -1L,
+                    this.getProbability(),
+                    this.isAlpha95() ? 0.05 : 0.01,
+                    d.isCraftable());
+            }
         } catch (final Throwable t) {
             FMLLog.info("[ProbabilityPattern] encode: decode threw: %s", t.toString());
         }
