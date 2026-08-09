@@ -21,8 +21,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
-import com.zincglux.statpatterns.math.ProbabilitySizing;
-
 import appeng.api.AEApi;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.util.Platform;
@@ -191,11 +189,5 @@ public final class EncodedStatisticalPattern {
 
     private static double clampProbability(final double p) {
         return Math.max(0.01, Math.min(0.9999, p));
-    }
-
-    /** Exposed for tests / diagnostics: the sizing algorithm behind plannedAttempts. */
-    public static long planAttempts(final long requiredSuccesses, final double p, final double alpha) {
-        return ProbabilitySizing.planAttempts(requiredSuccesses, p, alpha, DEFAULT_SMALL_SAMPLE_LIMIT)
-            .attempts();
     }
 }

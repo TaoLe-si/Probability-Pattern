@@ -58,7 +58,6 @@ public class StatisticalPatternDetails implements ICraftingPatternDetails {
     private final boolean canBeSubstitute;
     private final double successProbability;
     private final double alpha;
-    private final boolean isAlpha95;
     private final int smallSampleLimit;
     private int priority = 0;
 
@@ -74,7 +73,6 @@ public class StatisticalPatternDetails implements ICraftingPatternDetails {
         this.canBeSubstitute = tag.getBoolean(EncodedStatisticalPattern.TAG_BE_SUBSTITUTE);
         this.successProbability = tag.getDouble(EncodedStatisticalPattern.TAG_SUCCESS_PROBABILITY);
         this.alpha = tag.getDouble(EncodedStatisticalPattern.TAG_ALPHA);
-        this.isAlpha95 = tag.getBoolean(EncodedStatisticalPattern.TAG_ALPHA95);
         this.smallSampleLimit = tag.hasKey(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
             ? tag.getInteger(EncodedStatisticalPattern.TAG_SMALL_SAMPLE_LIMIT)
             : EncodedStatisticalPattern.DEFAULT_SMALL_SAMPLE_LIMIT;
@@ -125,18 +123,6 @@ public class StatisticalPatternDetails implements ICraftingPatternDetails {
      */
     public boolean isProbabilityPattern() {
         return true;
-    }
-
-    public double successProbability() {
-        return this.successProbability;
-    }
-
-    public double alpha() {
-        return this.alpha;
-    }
-
-    public boolean isAlpha95() {
-        return this.isAlpha95;
     }
 
     /**

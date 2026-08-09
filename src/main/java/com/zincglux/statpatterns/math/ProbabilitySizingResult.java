@@ -15,63 +15,20 @@
 package com.zincglux.statpatterns.math;
 
 /**
- * Result of a probability sizing calculation.
- * <p>
- * Spec v2.0 4.6: carries the target number of successes, the computed number of
- * attempts, the single-attempt success probability, the significance level, the
- * algorithm used and the actual underproduction risk P(X &lt; k).
+ * Result of a probability sizing calculation (Spec v2.0 4.6): the computed number
+ * of attempts {@code n} such that {@code P(X >= k) >= 1 - alpha} for a binomial
+ * process with {@code k} required successes.
  */
 public final class ProbabilitySizingResult {
-
-    /** Target number of successes k (requested output / output per attempt). */
-    private final long targetSuccesses;
 
     /** Computed number of attempts n. */
     private final long attempts;
 
-    /** Single-attempt success probability p. */
-    private final double successProbability;
-
-    /** Significance level alpha. */
-    private final double alpha;
-
-    /** Algorithm used (BINOMIAL or NORMAL_APPROXIMATION). */
-    private final DistributionMode mode;
-
-    /** Actual underproduction risk P(X &lt; k) for the returned attempt count. */
-    private final double actualRisk;
-
-    public ProbabilitySizingResult(final long targetSuccesses, final long attempts, final double successProbability,
-        final double alpha, final DistributionMode mode, final double actualRisk) {
-        this.targetSuccesses = targetSuccesses;
+    public ProbabilitySizingResult(final long attempts) {
         this.attempts = attempts;
-        this.successProbability = successProbability;
-        this.alpha = alpha;
-        this.mode = mode;
-        this.actualRisk = actualRisk;
-    }
-
-    public long targetSuccesses() {
-        return this.targetSuccesses;
     }
 
     public long attempts() {
         return this.attempts;
-    }
-
-    public double successProbability() {
-        return this.successProbability;
-    }
-
-    public double alpha() {
-        return this.alpha;
-    }
-
-    public DistributionMode mode() {
-        return this.mode;
-    }
-
-    public double actualRisk() {
-        return this.actualRisk;
     }
 }

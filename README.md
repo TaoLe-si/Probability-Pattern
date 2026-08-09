@@ -1,69 +1,114 @@
-# Probability Pattern for AE2 — 1.7.10 移植版
+# Probability Pattern for AE2 — 1.7.10（GTNH）
 
-本分支（`1.7.10`）是 [Probability Pattern for AE2](https://github.com/zincglux/Probability-Pattern)（Minecraft 1.21.1 / NeoForge）向 **Minecraft 1.7.10 / Forge / Applied Energistics 2 (rv3)** 的移植。
+为 **Applied Energistics 2 (rv3, GTNH 分支)** 增加「概率合成样板」的模组。
+
+- **modid**: `statpatterns`
+- **根包**: `com.zincglux.statpatterns`
+- **当前版本**: `v1.0.0`（由 git tag 派生）
+- **作者**: zincglux
+- **依赖**: Forge 10.13.4.1614 / AE2 rv3-beta-695-GTNH / UniMixins（运行时 Mixin）
+
+概率样板编码「每次尝试的输入」「目标产物」与「单次成功概率 p」，并保证「总产出 ≥ 目标数量」的置信度 ≥ 1 − α。当 ME 合成树请求 N 个产物时，合成拦截使机器按二项 / 正态模型运行足够多次，从而保证成功率。
+
+---
 
 ## 功能
 
-- **概率样板（Processing Pattern (Probability)）**：为 AE2 增加概率合成样板。样板编码「每次尝试的输入」「目标产物」与「单次成功概率 p」，并保证「总产出 ≥ 目标」的置信度 ≥ 1 − α。
-  - 小批量（N ≤ 30）：精确二项分布左尾概率，逐次累加。
-  - 大批量（N > 30）：正态近似 N(np, np(1−p))，单尾 z 检验。
-- **ME 概率样板编码终端（part）**：贴附在 ME 线缆上的终端，用于编码 / 管理概率样板，带概率输入框与 95% / 99% 置信度切换。
-- **合成拦截（UniMixins 晚相位 Mixin）**：向 `appeng.crafting.CraftingTreeProcess.getTimes` 注入概率规模计算，使合成树在请求 N 个产物时按二项 / 正态模型运行足够次数。与 1.21.1 版一样使用 Mixin；AE2 是普通 mod，因此走 GTNHMixins 的 late 相位（由 UniMixins 提供）。
+- **概率样板物品（Encoded Probability Pattern）**
+  - 继承 AE2 的 `ItemEncodedPattern`，复用其渲染（Shift 显示成品）、Shift 右键清空等机制。
+  - 概率参数（p、α、95%/99% 置信度）以 `sp_*` NBT 键随样板保存，与原版 `in/out` 编码格式兼容。
+- **ME 概率样板编码终端（part）**
+  - 贴附在 ME 线缆上的终端部件，带概率输入框与 95% / 99% 置信度切换按钮。
+  - 固定为处理模式（processing pattern），不提供合成模式。
+  - 中键（或左键点击缺失可合成物品）调整编码格 / 存储区物品数量、打开原版合成数量 GUI。
+- **合成概率放大（UniMixins late-phase Mixin）**
+  - 只保留 **`CraftableItemResolverMixin`**：GTNH 695 默认使用 v2 合成计算器（`AEConfig.craftingCalculatorVersion == 2`），该 Mixin 重定向 `CraftableItemResolver$CraftFromPatternTask.calculateOneStep` 的 `Platform.ceilDiv`，对概率样板返回 `plannedAttempts(k)`，并修正计划显示的成品数量。
+  - 概率规模算法见 `math/ProbabilitySizing`：小样本（k ≤ 30）精确二项分布左尾；大样本正态近似单尾 z 检验。
+- **NEI / NEE 配方填充**
+  - 终端 GUI 上的 NEI "?" 按钮由 **NEE（NotEnoughEnergistics）** 的 `NEEPatternTerminalHandler` 提供填充（处理配方、GT 机器配方等），按模组 `IRecipeProcessor` 解析输入与产物，绕开 AE 原生 `findMatchingRecipe` 校验。NEE 为可选依赖（未安装时仅无处理配方填充）。
 
-## 目录
-
-- `src/main/java/com/zincglux/statpatterns/` — 模组源码
-  - `math/` — 概率规模计算（二项分布 / 正态近似）
-  - `crafting/` — `ProbabilityPatternItem`、`StatisticalPatternDetails`、`EncodedStatisticalPattern`
-  - `mixin/` — `CraftingTreeProcessMixin` + `LateMixinLoader`（合成拦截）
-  - `part/` — `ProbabilityPatternTerminalPart`
-  - `container/` — `ContainerProbabilityPatternTerm`
-  - `client/gui/` — `GuiProbabilityPatternTerm`
-  - `network/` — 客户端 → 服务器报文
-- `src/main/resources/` — 语言、贴图、元数据
+---
 
 ## 构建
 
-> ⚠️ 1.7.10 的 ForgeGradle 1.2 / MCP 工具链需要 **JDK 8**，较新 JDK 无法工作。
-> 本工程使用 GTNH 维护的 ForgeGradle 1.2 fork（`com.github.GTNewHorizons:ForgeGradle:1.2.11`，JitPack 分发），因为上游 ForgeGradle 1.2 已从官方 maven 下线。
+本项目使用 GTNH 构建约定：
 
-1. 安装 JDK 8，并确保 `JAVA_HOME` 指向它。
-2. 将编译好的 AE2 rv3（1.7.10）jar 放入 `libs/`（例如 `libs/appliedenergistics2-rv3.jar`）。
-3. 执行：
-
-```bash
-gradlew setupDecompWorkspace --refresh-dependencies
-gradlew build
-```
-
-产物位于 `build/libs/probabilitypattern-<version>.jar`。
-
-### 运行游戏（Mixin 运行时依赖）
-
-概率样板的合成拦截是 **late-phase Mixin**，依赖 **UniMixins**（1.7.10 的 Mixin 加载器）。运行 / 分发时需在 `mods/` 目录放入：
-
-- `+unimixins-all-1.7.10-0.3.1.jar`（Modrinth：`https://modrinth.com/mod/unimixins`，注意 `+` 前缀保证加载排序靠前）
-
-### 开发运行
+- `com.gtnewhorizons.gtnhconvention` / `gtnhsettingsconvention` **2.0.27**
+- **Gradle 9.3.1**，需要 **JDK 25**（见 `gradle.properties` 的 `org.gradle.java.home`）
+- 代理 `127.0.0.1:7890`（见 `gradle.properties` 的 `systemProp.*`）
 
 ```bash
-gradlew setupDecompWorkspace
-gradlew eclipse   # 或 gradlew idea
-gradlew runClient
+gradlew clean spotlessApply build
 ```
 
-## 与 1.21.1 版的差异（移植说明）
+产物位于 `build/libs/statpatterns-<version>.jar`（发布版 reobf jar，部署用非 `-dev` / `-sources`）。
 
-| 1.21.1 (NeoForge) | 1.7.10 (Forge) |
-| --- | --- |
-| Mixin 注入 `CraftingTreeNode`（NeoForge 自带 Mixin） | UniMixins late 相位 Mixin 注入 `CraftingTreeProcess.getTimes`（1.7.10 的 Mixin 需额外库） |
-| `IPatternDetails` + DataComponent/Codec | `ICraftingPatternDetails` + ItemStack NBT |
-| `EncodedPatternItem` | `ProbabilityPatternItem implements ICraftingPatternItem` |
-| `PatternEncodingTermMenu/Screen` | 基于 `ContainerMEMonitorable` / `GuiMEMonitorable` 重实现 |
-| 无线终端（依赖 ae2wtlib） | 未移植（1.7.10 无 ae2wtlib） |
-| GuideME 手册 | 未移植 |
-| JEI / EMI / REI 集成 | 未移植 |
+> **版本号由 git tag 派生**：`modVersion` 仅作记录。发布时打 tag：
+> ```bash
+> git tag v1.0.0
+> gradlew build        # 产出 statpatterns-v1.0.0.jar
+> ```
+
+### 依赖
+
+| 依赖 | 用途 | 版本 |
+| --- | --- | --- |
+| Applied Energistics 2 | 必选（`required-after:appliedenergistics2`） | rv3-beta-695-GTNH（`libs/appliedenergistics2-rv3-beta-695-GTNH-dev.jar` 编译） |
+| UniMixins | 运行时必选（late-phase Mixin 加载器） | GTNH 实例自带 |
+| NotEnoughItems | 运行时（NEI "?" 按钮） | 2.8.44-GTNH（编译 2.7.91-GTNH） |
+| NotEnoughEnergistics | 可选（推荐，处理配方填充） | 1.7.14 |
+
+---
+
+## 部署到 GTNH 实例（PrismLauncher）
+
+实例 mods 目录：
+
+```
+<PrismLauncher>/instances/GT_New_Horizons_2.8.4_Java_17-25/.minecraft/mods/
+```
+
+把 `build/libs/statpatterns-v1.0.0.jar` 复制进去（删除旧版本 jar），启动游戏即可。游戏日志在 `...\.minecraft\logs\fml-client-latest.log`。
+
+---
+
+## 目录结构
+
+```
+src/main/java/
+  com/zincglux/statpatterns/
+    ProbabilityPatternMod.java        # @Mod 主类：注册、NEI/NEE 集成
+    LateMixinLoader.java              # UniMixins 晚相位加载器（仅 CraftableItemResolverMixin）
+    container/                        # ContainerProbabilityPatternTerm（编码逻辑）、数量容器
+    crafting/                         # ProbabilityPatternItem、StatisticalPatternDetails、EncodedStatisticalPattern
+    handler/                          # ProbabilityPatternGuiHandler
+    item/                             # ItemProbabilityPatternTerminal
+    math/                             # ProbabilitySizing / ProbabilitySizingResult（概率规模算法）
+    mixin/                            # CraftableItemResolverMixin（v2 概率放大）
+    network/                          # SimpleNetworkWrapper 报文（概率设置、数量调整、自动合成）
+    part/                             # ProbabilityPatternTerminalPart（终端部件，概率状态持久化）
+  appeng/client/gui/implementations/  # GuiProbabilityPatternTerm / GuiProbabilityPatternValueAmount（复刻 AE2 包）
+src/main/resources/
+  assets/statpatterns/                # lang / 贴图（textures/blocks、guis、items）
+  mixins.statpatterns(.late).json     # Mixin 配置
+  mcmod.info / pack.mcmeta
+tools/SimulateCrafting.java           # 概率规模的独立命令行模拟工具
+```
+
+> 本地 `decompiled/`、根目录 `appeng/` 为 AE2 反编译参考源码（Vineflower），仅供调试查阅，**不纳入 git 跟踪**（已在 `.gitignore`）。
+
+---
+
+## 使用
+
+1. 把概率样板终端（ME Probability Pattern Terminal）贴到 ME 线缆上，放入物品与流体/输入配方。
+2. 在终端里输入单次成功概率 p（如 0.8），选择置信度 95%（α=0.05）或 99%（α=0.01），点击编码。
+3. 编码后的概率样板放入样板供应器 / 接口，ME 合成请求 N 个产物时，合成树会自动放大运行次数。
+4. 中键点击编码格物品可调整输入数量；NEI 配方页点击 "?"（NEE 提供）可一键填充。
+
+---
 
 ## 许可证
 
-LGPL-3.0（与 AE2 rv3 一致）。见 `LICENSE`。
+LGPL-3.0（与 AE2 rv3 一致），见 `LICENSE`。
+

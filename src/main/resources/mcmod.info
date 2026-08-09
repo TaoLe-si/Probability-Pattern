@@ -6,7 +6,7 @@
 		"description": "Probability-based ME pattern encoding terminal for AE2 rv3 (1.7.10).",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
-		"url": "https://github.com/zincglux/Probability-Pattern",
+		"url": "https://github.com/TaoLe-si/Probability-Pattern",
 		"updateUrl": "",
 		"authorList": ["zincglux"],
 		"credits": "",

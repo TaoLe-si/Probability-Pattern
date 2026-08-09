@@ -34,5 +34,12 @@ public final class ProbabilityPatternNetwork {
             ProbabilityPatternValueSetPacket.class,
             1,
             Side.SERVER);
+        // Middle/left-click auto-craft on storage items: bridge to AE2's craft-amount GUI.
+        CHANNEL.registerMessage(
+            PacketProbabilityPatternAutoCraftHandler.class,
+            PacketProbabilityPatternAutoCraft.class,
+            2,
+            Side.SERVER);
+        ProbabilityPatternServerTaskQueue.init();
     }
 }

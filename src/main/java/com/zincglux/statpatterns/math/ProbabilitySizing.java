@@ -46,13 +46,7 @@ public final class ProbabilitySizing {
 
         // Deterministic machine: every attempt succeeds, so n = k (Spec v2.0 4.7).
         if (successProbability == 1.0) {
-            return new ProbabilitySizingResult(
-                targetSuccesses,
-                targetSuccesses,
-                successProbability,
-                alpha,
-                DistributionMode.BINOMIAL,
-                0.0);
+            return new ProbabilitySizingResult(targetSuccesses);
         }
 
         if (targetSuccesses <= smallSampleLimit) {
@@ -72,13 +66,7 @@ public final class ProbabilitySizing {
         while (binomialLowerTail(attempts, p, targetSuccesses - 1) > alpha) {
             attempts++;
         }
-        return new ProbabilitySizingResult(
-            targetSuccesses,
-            attempts,
-            p,
-            alpha,
-            DistributionMode.BINOMIAL,
-            binomialLowerTail(attempts, p, targetSuccesses - 1));
+        return new ProbabilitySizingResult(attempts);
     }
 
     /**
@@ -91,13 +79,7 @@ public final class ProbabilitySizing {
         while (normalZ(targetSuccesses, attempts, p) < z) {
             attempts++;
         }
-        return new ProbabilitySizingResult(
-            targetSuccesses,
-            attempts,
-            p,
-            alpha,
-            DistributionMode.NORMAL_APPROXIMATION,
-            normalUnderproductionRisk(targetSuccesses, attempts, p));
+        return new ProbabilitySizingResult(attempts);
     }
 
     /**
@@ -125,35 +107,11 @@ public final class ProbabilitySizing {
         return Math.min(1.0, sum);
     }
 
-    /** P(X &lt; k) under the normal approximation = Phi(-z). */
-    private static double normalUnderproductionRisk(final long targetSuccesses, final long attempts, final double p) {
-        return normalCdf(-normalZ(targetSuccesses, attempts, p));
-    }
-
     /** z-score of k successes after {@code attempts} trials: (mu - k) / sigma. */
     private static double normalZ(final long targetSuccesses, final long attempts, final double p) {
         final double mean = attempts * p;
         final double variance = attempts * p * (1.0 - p);
         return (mean - targetSuccesses) / Math.sqrt(variance);
-    }
-
-    /** Standard normal CDF Phi(x) = 0.5 * (1 + erf(x / sqrt(2))). */
-    private static double normalCdf(final double x) {
-        return 0.5 * (1.0 + erf(x / Math.sqrt(2.0)));
-    }
-
-    /**
-     * Error function erf(x) via the Abramowitz &amp; Stegun 7.1.26 approximation
-     * (maximum error 1.5e-7), as required by Spec v2.0 4.4.
-     */
-    private static double erf(final double x) {
-        final double sign = Math.signum(x);
-        final double ax = Math.abs(x);
-        final double t = 1.0 / (1.0 + 0.3275911 * ax);
-        final double y = 1.0
-            - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t
-                * Math.exp(-ax * ax);
-        return sign * y;
     }
 
     /**

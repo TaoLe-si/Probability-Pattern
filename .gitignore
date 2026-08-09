@@ -12,6 +12,7 @@ decompiled/
 tools-out/
 # AE2 jar extraction residue (never commit)
 /assets/
+/appeng/
 /META-INF/
 /mcmod.info
 /pack.mcmeta

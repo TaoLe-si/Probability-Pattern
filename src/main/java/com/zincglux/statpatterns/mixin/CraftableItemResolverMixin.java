@@ -55,9 +55,6 @@ public abstract class CraftableItemResolverMixin {
     public boolean isComplex;
 
     @Shadow
-    protected IAEItemStack matchingOutput;
-
-    @Shadow
     protected long fulfilledAmount;
 
     /**
