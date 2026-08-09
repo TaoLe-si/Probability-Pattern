@@ -9,6 +9,7 @@ eclipse/
 run/
 libs/
 decompiled/
+tools/
 tools-out/
 # AE2 jar extraction residue (never commit)
 /assets/
