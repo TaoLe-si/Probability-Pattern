@@ -114,21 +114,17 @@ public final class ProbabilityPatternMod {
             .patternTerminal()
             .maybeStack(1)
             .orNull();
-        final ItemStack calcProcessor = AEApi.instance()
+        final ItemStack engProcessor = AEApi.instance()
             .definitions()
             .materials()
-            .calcProcessor()
+            .engProcessor()
             .maybeStack(1)
             .orNull();
 
-        if (patternTerminal != null && calcProcessor != null) {
-            GameRegistry.addRecipe(
-                new ItemStack(probabilityPatternTerminalItem),
-                "PC",
-                'P',
-                patternTerminal,
-                'C',
-                calcProcessor);
+        // Sole recipe: shapeless vanilla Pattern Terminal + Engineering Processor.
+        if (patternTerminal != null && engProcessor != null) {
+            GameRegistry
+                .addShapelessRecipe(new ItemStack(probabilityPatternTerminalItem), patternTerminal, engProcessor);
         }
 
         // Encoding consumes the vanilla AE2 blank pattern directly (1.7.10 GTNH behaviour);

@@ -60,7 +60,7 @@ AE2 是普通 mod，加载晚于 Mixin 早期相位，故经 `LateMixinLoader` �
 
 ### 1. 获取终端
 
-用 **ME 样板终端**（Pattern Terminal）与 **运算处理器**（Calculation Processor）合成 **ME 概率样板终端**，贴附到 ME 线缆上并打开。
+用 **ME 样板终端**（Pattern Terminal）与 **工程处理器**（Engineering Processor）**无序合成** **ME 概率样板终端**，贴附到 ME 线缆上并打开。
 
 ### 2. 编码样板
 
