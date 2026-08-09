@@ -60,44 +60,6 @@ gradlew clean spotlessApply build
 
 ---
 
-## 部署到 GTNH 实例（PrismLauncher）
-
-实例 mods 目录：
-
-```
-<PrismLauncher>/instances/GT_New_Horizons_2.8.4_Java_17-25/.minecraft/mods/
-```
-
-把 `build/libs/statpatterns-v1.0.0.jar` 复制进去（删除旧版本 jar），启动游戏即可。游戏日志在 `...\.minecraft\logs\fml-client-latest.log`。
-
----
-
-## 目录结构
-
-```
-src/main/java/
-  com/zincglux/statpatterns/
-    ProbabilityPatternMod.java        # @Mod 主类：注册、NEI/NEE 集成
-    LateMixinLoader.java              # UniMixins 晚相位加载器（仅 CraftableItemResolverMixin）
-    container/                        # ContainerProbabilityPatternTerm（编码逻辑）、数量容器
-    crafting/                         # ProbabilityPatternItem、StatisticalPatternDetails、EncodedStatisticalPattern
-    handler/                          # ProbabilityPatternGuiHandler
-    item/                             # ItemProbabilityPatternTerminal
-    math/                             # ProbabilitySizing / ProbabilitySizingResult（概率规模算法）
-    mixin/                            # CraftableItemResolverMixin（v2 概率放大）
-    network/                          # SimpleNetworkWrapper 报文（概率设置、数量调整、自动合成）
-    part/                             # ProbabilityPatternTerminalPart（终端部件，概率状态持久化）
-  appeng/client/gui/implementations/  # GuiProbabilityPatternTerm / GuiProbabilityPatternValueAmount（复刻 AE2 包）
-src/main/resources/
-  assets/statpatterns/                # lang / 贴图（textures/blocks、guis、items）
-  mixins.statpatterns(.late).json     # Mixin 配置
-  mcmod.info / pack.mcmeta
-tools/SimulateCrafting.java           # 概率规模的独立命令行模拟工具
-```
-
-> 本地 `decompiled/`、根目录 `appeng/` 为 AE2 反编译参考源码（Vineflower），仅供调试查阅，**不纳入 git 跟踪**（已在 `.gitignore`）。
-
----
 
 ## 使用
 
@@ -110,5 +72,5 @@ tools/SimulateCrafting.java           # 概率规模的独立命令行模拟工�
 
 ## 许可证
 
-LGPL-3.0（与 AE2 rv3 一致），见 `LICENSE`。
+LGPL-3.0，见 `LICENSE`。
 
