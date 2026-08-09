@@ -46,9 +46,9 @@ public class LateMixinLoader implements ILateMixinLoader {
     public List<String> getMixins(final Set<String> loadedMods) {
         // Simple name relative to this config's "package" (com.zincglux.statpatterns.mixin).
         // UniMixins joins package + entry to form the fully-qualified mixin class.
-        // Only the v2 probability-amplification mixin is active: GTNH 695 defaults to the
-        // v2 crafting calculator (AEConfig.craftingCalculatorVersion == 2), so the v1
-        // CraftingTreeProcess path is never used.
-        return Arrays.asList("CraftableItemResolverMixin");
+        // CraftableItemResolverMixin: v2 probability amplification (GTNH 695 defaults to
+        // the v2 crafting calculator, so the v1 CraftingTreeProcess path is never used).
+        // PartDisplayTextureMixin: swap the in-world part front-face to our own textures.
+        return Arrays.asList("CraftableItemResolverMixin", "PartDisplayTextureMixin");
     }
 }

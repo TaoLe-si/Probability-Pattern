@@ -24,7 +24,9 @@ import java.util.Set;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 
+import com.zincglux.statpatterns.client.ClientProbabilityPatternTextures;
 import com.zincglux.statpatterns.crafting.ProbabilityPatternItem;
 import com.zincglux.statpatterns.handler.ProbabilityPatternGuiHandler;
 import com.zincglux.statpatterns.item.ItemProbabilityPatternTerminal;
@@ -141,6 +143,8 @@ public final class ProbabilityPatternMod {
         // postInit guarantees AE2's NEI module has already registered the vanilla classes.
         if (event.getSide()
             .isClient()) {
+            // Register the in-world part front-face textures into the block atlas.
+            MinecraftForge.EVENT_BUS.register(new ClientProbabilityPatternTextures());
             this.registerNEI();
         }
     }
