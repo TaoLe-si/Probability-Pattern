@@ -8,5 +8,10 @@ eclipse/
 .gradle/
 run/
 libs/
-decompiled/cfr-0.152.jar
+decompiled/
 tools-out/
+# AE2 jar extraction residue (never commit)
+/assets/
+/META-INF/
+/mcmod.info
+/pack.mcmeta

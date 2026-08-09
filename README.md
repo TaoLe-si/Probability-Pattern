@@ -1,6 +1,6 @@
 # Probability Pattern for AE2 — 1.7.10 移植版
 
-本分支（`1.7.10`）是 [Probability Pattern for AE2](https://github.com/TaoLe-si/Probability-Pattern)（Minecraft 1.21.1 / NeoForge）向 **Minecraft 1.7.10 / Forge / Applied Energistics 2 (rv3)** 的移植。
+本分支（`1.7.10`）是 [Probability Pattern for AE2](https://github.com/zincglux/Probability-Pattern)（Minecraft 1.21.1 / NeoForge）向 **Minecraft 1.7.10 / Forge / Applied Energistics 2 (rv3)** 的移植。
 
 ## 功能
 
@@ -12,7 +12,7 @@
 
 ## 目录
 
-- `src/main/java/com/tz/statpatterns/` — 模组源码
+- `src/main/java/com/zincglux/statpatterns/` — 模组源码
   - `math/` — 概率规模计算（二项分布 / 正态近似）
   - `crafting/` — `ProbabilityPatternItem`、`StatisticalPatternDetails`、`EncodedStatisticalPattern`
   - `mixin/` — `CraftingTreeProcessMixin` + `LateMixinLoader`（合成拦截）

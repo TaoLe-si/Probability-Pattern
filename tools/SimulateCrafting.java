@@ -14,14 +14,14 @@
  *                           how often production >= N (should be ~= 1 - alpha for the plan)
  *
  * Build/run:
- *   javac -encoding UTF-8 -d tools-out tools/SimulateCrafting.java src/main/java/com/tz/statpatterns/math/*.java
+ *   javac -encoding UTF-8 -d tools-out tools/SimulateCrafting.java src/main/java/com/zincglux/statpatterns/math/*.java
  *   java -cp tools-out SimulateCrafting
  */
 import java.util.Random;
 import java.util.Scanner;
 
-import com.tz.statpatterns.math.ProbabilitySizing;
-import com.tz.statpatterns.math.ProbabilitySizingResult;
+import com.zincglux.statpatterns.math.ProbabilitySizing;
+import com.zincglux.statpatterns.math.ProbabilitySizingResult;
 
 public class SimulateCrafting {
 
@@ -78,7 +78,7 @@ public class SimulateCrafting {
     private static void step2Recognize(final double p, final double alpha, final long requiredSuccesses,
         final long inputPer, final long outputPer) {
         System.out.println("\n[2] 样板识别  (ProbabilityPatternItem.getPatternForItem)");
-        System.out.println("    -> StatisticalPatternDetails extends PatternHelper");
+        System.out.println("    -> StatisticalPatternDetails implements ICraftingPatternDetails");
         System.out.printf("       p=%.3f alpha=%.3f isProbabilityPattern=%s%n", p, alpha, p < 1.0);
         System.out.printf("       outputs[产物 x%d]  inputs[每次%d]%n", outputPer, inputPer);
         System.out.println("    结果: 识别成功（非 null）");

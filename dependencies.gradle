@@ -12,7 +12,8 @@ dependencies {
     // Applied Energistics 2 rv3 (1.7.10) - GTNH fork.
     // Use the DEV (deobfuscated, MCP-named) jar; the release jar references SRG
     // fields and fails in a deobfuscated dev runtime (NoSuchFieldError field_xxx).
-    // Version matches the user's GTNH instance: rv3-beta-695-GTNH.
+    // Version matches the user's GTNH instance: rv3-beta-695-GTNH (has CraftingTreeProcess;
+    // newer 1027+ refactored to crafting/v2 and has no CraftingTreeProcess to mix into).
     devOnlyNonPublishable(files("libs/appliedenergistics2-rv3-beta-695-GTNH-dev.jar"))
 
     // AE2 (GTNH 695) dev deps (from its dependencies.gradle)
