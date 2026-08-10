@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "statpatterns:block/probability_pattern_terminal"
+    }
+  }
+}

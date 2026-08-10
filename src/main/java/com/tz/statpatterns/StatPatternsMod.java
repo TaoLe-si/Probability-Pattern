@@ -42,7 +42,7 @@ import appeng.items.tools.powered.WirelessTerminalItem;
 
 @Mod(StatPatternsMod.MOD_ID)
 public final class StatPatternsMod {
-    public static final String MOD_ID = "probabilitypattern";
+    public static final String MOD_ID = "statpatterns";
 
     public StatPatternsMod(IEventBus modEventBus) {
         PartModels.registerModels(List.of(id("part/probability_pattern_terminal_off"), id("part/probability_pattern_terminal_on")));

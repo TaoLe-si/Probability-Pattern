@@ -1,9 +1,0 @@
-{
-  "parent": "ae2:item/display_base",
-  "textures": {
-    "front": "ae2:part/pattern_encoding_terminal",
-    "front_bright": "probabilitypattern:part/terminal_bright",
-    "front_medium": "probabilitypattern:part/terminal_medium",
-    "front_dark": "probabilitypattern:part/terminal_dark"
-  }
-}

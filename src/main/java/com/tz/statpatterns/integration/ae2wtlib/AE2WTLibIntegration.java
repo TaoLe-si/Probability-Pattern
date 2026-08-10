@@ -55,7 +55,7 @@ public final class AE2WTLibIntegration {
         if (probabilityPatternIcon == null) {
             probabilityPatternIcon = new Icon(
                     0, 0, 16, 16,
-                    new Icon.Texture(ResourceLocation.fromNamespaceAndPath("probabilitypattern", "textures/gui/icons.png"), 16, 16)
+                    new Icon.Texture(ResourceLocation.fromNamespaceAndPath("statpatterns", "textures/gui/icons.png"), 16, 16)
             );
         }
         return probabilityPatternIcon;

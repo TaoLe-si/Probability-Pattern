@@ -47,7 +47,7 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
         probabilityField.setHeight(FIELD_HEIGHT);
         probabilityField.setWidth(PROBABILITY_FIELD_WIDTH);
         probabilityField.setMaxLength(8);
-        probabilityField.setMessage(Component.translatable("gui.probabilitypattern.probability"));
+        probabilityField.setMessage(Component.translatable("gui.statpatterns.probability"));
         probabilityField.setValue(formatProbability(menu.getProbability()));
         probabilityField.setResponder(value -> {
             var parsed = parseProbability(value);
@@ -58,7 +58,7 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
         probabilityField.setX(probabilityFieldX());
         probabilityField.setY(fieldY());
 
-        this.alpha95 = widgets.addCheckbox("alpha", Component.translatable("gui.probabilitypattern.alpha95"), this::save);
+        this.alpha95 = widgets.addCheckbox("alpha", Component.translatable("gui.statpatterns.alpha95"), this::save);
         this.alpha95.setWidth(100);
 
         updateState();
@@ -66,7 +66,7 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
 
     private void updateState() {
         alpha95.setSelected(getMenu().isAlpha95());
-        alpha95.setMessage(getMenu().isAlpha95() ? Component.translatable("gui.probabilitypattern.alpha95") : Component.translatable("gui.probabilitypattern.alpha99"));
+        alpha95.setMessage(getMenu().isAlpha95() ? Component.translatable("gui.statpatterns.alpha95") : Component.translatable("gui.statpatterns.alpha99"));
     }
 
     private void save() {
@@ -78,7 +78,7 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        var probabilityLabel = Component.translatable("gui.probabilitypattern.probability");
+        var probabilityLabel = Component.translatable("gui.statpatterns.probability");
         guiGraphics.drawString(font, probabilityLabel, probabilityLabelX(), labelY() + 1, 0x404040, false);
 
         probabilityField.render(guiGraphics, mouseX, mouseY, partialTick);
@@ -100,7 +100,7 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
     }
 
     private int probabilityFieldX() {
-        var label = Component.translatable("gui.probabilitypattern.probability");
+        var label = Component.translatable("gui.statpatterns.probability");
         return probabilityLabelX() + font.width(label) + LABEL_TO_FIELD_GAP;
     }
 

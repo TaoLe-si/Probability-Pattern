@@ -53,7 +53,7 @@ Two mixins intercept AE2''s crafting calculation:
 
 - **EncodedStatisticalPattern** — Persistent data component (`inputsPerAttempt`, `output`, `successProbability`, `alpha`, `smallSampleLimit`), serialized via Codec for NBT and network sync
 - **StatisticalPatternDetails** — Extends `AEProcessingPattern`; scales inputs by total computed attempts in `getInputs()`; `forRequest(total)` creates per-request instances
-- **ProbabilityPatternItem** — Custom `EncodedPatternItem`; blank patterns suppress invalid pattern tooltips
+- **StatPatternsItem** — Custom `EncodedPatternItem`; blank patterns suppress invalid pattern tooltips
 
 ---
 
@@ -81,9 +81,9 @@ Drag recipes directly from JEI into the terminal. If the recipe class has a `suc
 
 | Item | Value |
 |------|-------|
-| Mod ID | `probabilitypattern` |
+| Mod ID | `statpatterns` |
 | Name | Probability Pattern for AE2 |
-| Version | 0.1.0 |
+| Version | 1.0.0 |
 | Package | `com.tz.statpatterns` |
 
 ### Dependencies
@@ -154,7 +154,7 @@ Requires **Java 21**.
 .\gradlew.bat build
 ```
 
-Output: `build/libs/probabilitypattern-0.1.0.jar`.
+Output: `build/libs/statpatterns-1.0.0.jar`.
 
 ---
 

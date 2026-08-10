@@ -38,7 +38,7 @@ public final class StatPatternsClient {
     }
 
     static {
-        // Register the GuideME guide book (content lives in assets/probabilitypattern/ae2guide)
+        // Register the GuideME guide book (content lives in assets/statpatterns/ae2guide)
         Guide.builder(StatPatternsMod.id("guide"))
                 .folder("ae2guide")
                 .build();

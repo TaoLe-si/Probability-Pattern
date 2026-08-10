@@ -155,8 +155,8 @@ public final class StatPatternsDetails implements IPatternDetails {
         }
         tooltip.addOutput(encoded.output());
         if (encoded.successProbability() < 1.0) {
-            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.success_probability"), Component.literal("%.0f%%".formatted(encoded.successProbability() * 100.0)));
-            tooltip.addProperty(Component.translatable("probabilitypattern.tooltip.isalpha95"), Component.literal("%.0f%%".formatted((1.0 - encoded.alpha()) * 100.0)));
+            tooltip.addProperty(Component.translatable("statpatterns.tooltip.success_probability"), Component.literal("%.0f%%".formatted(encoded.successProbability() * 100.0)));
+            tooltip.addProperty(Component.translatable("statpatterns.tooltip.isalpha95"), Component.literal("%.0f%%".formatted((1.0 - encoded.alpha()) * 100.0)));
         }
         return tooltip;
     }

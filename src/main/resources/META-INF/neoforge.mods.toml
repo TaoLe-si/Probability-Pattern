@@ -17,7 +17,7 @@ Features:
 
 Designed for complex automation scenarios where crafting outcomes are uncertain, such as ore processing, recycling, or any process with variable yields.
 '''
-logoFile="assets/probabilitypattern/textures/item/probability_pattern.png"
+logoFile="assets/statpatterns/textures/logo/probability_pattern_logo.png"
 
 [[mixins]]
 config="${mod_id}.mixins.json"

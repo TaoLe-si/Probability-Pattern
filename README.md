@@ -53,7 +53,7 @@
 
 - **EncodedStatisticalPattern** — 持久化数据组件（`inputsPerAttempt`、`output`、`successProbability`、`alpha`、`smallSampleLimit`），通过 Codec 支持 NBT 序列化与网络同步
 - **StatisticalPatternDetails** — 继承 `AEProcessingPattern`，在 `getInputs()` 时按概率计算后的总尝试次数缩放输入量；`forRequest(total)` 创建指定请求量的实例
-- **ProbabilityPatternItem** — 自定义 `EncodedPatternItem`，空白样板不显示无效的 pattern tooltip
+- **StatPatternsItem** — 自定义 `EncodedPatternItem`，空白样板不显示无效的 pattern tooltip
 
 ---
 
@@ -81,9 +81,9 @@
 
 | 项目 | 值 |
 |------|-----|
-| Mod ID | `probabilitypattern` |
+| Mod ID | `statpatterns` |
 | 名称 | Probability Pattern for AE2 |
-| 版本 | 0.1.0 |
+| 版本 | 1.0.0 |
 | 包名 | `com.tz.statpatterns` |
 
 ### 依赖
