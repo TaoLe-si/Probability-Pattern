@@ -65,11 +65,6 @@ public class StatPatternsTerminalMenu extends PatternEncodingTermMenu {
         }
     }
 
-    @Override
-    public void onServerDataSync() {
-        super.onServerDataSync();
-    }
-
     public double getProbability() {
         return probability;
     }

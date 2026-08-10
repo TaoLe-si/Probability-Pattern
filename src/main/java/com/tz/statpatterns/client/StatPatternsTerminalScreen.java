@@ -75,8 +75,8 @@ public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> exte
         probabilityField.setX(probabilityFieldX());
         // Probability input field shifted 3 units down.
         probabilityField.setY(fieldY() + 3);
-        // Checkbox shifted 1 unit to the right.
-        alpha95.setX(probabilityFieldX() + PROBABILITY_FIELD_WIDTH + 7);
+        // Checkbox shifted right of the input field.
+        alpha95.setX(probabilityFieldX() + PROBABILITY_FIELD_WIDTH + 9);
         alpha95.setY(fieldY());
     }
 
