@@ -9,7 +9,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "probabilitypattern-${minecraft_version}"
+    archivesName = "statpatterns-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
@@ -59,6 +59,14 @@ repositories {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
+    maven {
+        name = 'TerraformersMC'
+        url = 'https://maven.terraformersmc.com/'
+    }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+    }
 }
 
 dependencies {
@@ -69,6 +77,12 @@ dependencies {
 
     compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+
+    // EMI (optional recipe viewer — integration lives in integration/emi, loaded only when EMI is installed)
+    compileOnly "dev.emi:emi-forge:${emi_version}:api"
+
+    // Roughly Enough Items (optional recipe viewer — integration lives in integration/rei, loaded only when REI is installed)
+    compileOnly "me.shedaniel:RoughlyEnoughItems-forge:${rei_version}"
 
     compileOnly "appeng:appliedenergistics2-forge:${ae2_version}"
 
@@ -81,15 +95,14 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.named('compileJava', JavaCompile) {
-    options.compilerArgs += [
-        '-Amixin.refmap=probabilitypattern.refmap.json'
-    ]
+    // NOTE: All mixins use remap=false (targeting AE2 SRG names directly),
+    // so no refmap is generated or needed.
 }
 
 tasks.named('jar', Jar) {
     manifest {
         attributes([
-            'MixinConfigs': 'probabilitypattern.mixins.json'
+            'MixinConfigs': 'statpatterns.mixins.json'
         ])
     }
 }

@@ -1,0 +1,7 @@
+{
+  "type": "ae2wtlib:upgrade",
+  "terminal": {
+    "item": "statpatterns:wireless_stat_pattern_terminal"
+  },
+  "terminalName": "stat_pattern"
+}

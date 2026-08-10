@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "probabilitypattern:block/probability_pattern_terminal"
+      "model": "statpatterns:block/stat_pattern_terminal"
     }
   }
 }

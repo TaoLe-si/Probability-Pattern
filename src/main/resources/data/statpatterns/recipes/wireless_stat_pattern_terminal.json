@@ -11,13 +11,13 @@
       "item": "ae2:wireless_receiver"
     },
     "T": {
-      "item": "probabilitypattern:probability_pattern_terminal"
+      "item": "statpatterns:stat_pattern_terminal"
     },
     "E": {
       "item": "ae2:dense_energy_cell"
     }
   },
   "result": {
-    "item": "probabilitypattern:wireless_probability_pattern_terminal"
+    "item": "statpatterns:wireless_stat_pattern_terminal"
   }
 }

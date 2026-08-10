@@ -47,4 +47,4 @@ Designed for complex automation scenarios where crafting outcomes are uncertain,
     side="BOTH"
 
 [[mixins]]
-    config="probabilitypattern.mixins.json"
+    config="statpatterns.mixins.json"

@@ -1,3 +1,21 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.tz.statpatterns.mixin;
 
 import appeng.api.networking.IGrid;
@@ -8,7 +26,7 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.crafting.CraftingCalculation;
 import appeng.me.service.CraftingService;
-import com.tz.statpatterns.crafting.PCraftingCalculation;
+import com.tz.statpatterns.crafting.StatPatternsCraftingCalculation;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -25,8 +43,8 @@ public abstract class CraftingServiceMixin {
     private static ExecutorService CRAFTING_POOL;
 
     /**
-     * @author ProbabilityPattern
-     * @reason Replace CraftingCalculation with PCraftingCalculation that tracks overall success probability
+     * @author statpatterns
+     * @reason Replace CraftingCalculation with StatPatternsCraftingCalculation that tracks overall success probability
      */
     @Overwrite(remap = false)
     public Future<ICraftingPlan> beginCraftingCalculation(Level level, ICraftingSimulationRequester simRequester,
@@ -34,7 +52,7 @@ public abstract class CraftingServiceMixin {
         if (level == null || simRequester == null) {
             throw new IllegalArgumentException("Invalid Crafting Job Request");
         }
-        final PCraftingCalculation job = new PCraftingCalculation(level, this.grid, simRequester,
+        final StatPatternsCraftingCalculation job = new StatPatternsCraftingCalculation(level, this.grid, simRequester,
                 new GenericStack(what, amount), strategy);
         return CRAFTING_POOL.submit(job::run);
     }

@@ -1,0 +1,152 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.tz.statpatterns.client;
+
+import appeng.client.gui.widgets.*;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+
+import appeng.client.gui.me.items.PatternEncodingTermScreen;
+import appeng.client.gui.style.ScreenStyle;
+
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
+
+public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> extends PatternEncodingTermScreen<P> {
+    private static final int PROBABILITY_FIELD_WIDTH = 40;
+    private static final int FIELD_HEIGHT = 14;
+    private static final int TITLE_TO_PROBABILITY_GAP = 10;
+    private static final int LABEL_TO_FIELD_GAP = 4;
+    private static final int INVENTORY_TITLE_GAP = 12;
+
+    private final Inventory playerInventory;
+    private final AETextField probabilityField;
+    private final AECheckbox alpha95;
+
+    public StatPatternsTerminalScreen(P menu, Inventory playerInventory, Component title, ScreenStyle style) {
+        super(menu, playerInventory, title, style);
+        this.playerInventory = playerInventory;
+        this.probabilityField = widgets.addTextField("probability");
+        probabilityField.setHeight(FIELD_HEIGHT);
+        probabilityField.setWidth(PROBABILITY_FIELD_WIDTH);
+        probabilityField.setMaxLength(8);
+        probabilityField.setMessage(Component.translatable("gui.statpatterns.probability"));
+        probabilityField.setValue(formatProbability(menu.getProbability()));
+        probabilityField.setResponder(value -> {
+            var parsed = parseProbability(value);
+            if (parsed != null) {
+                menu.setProbability(parsed);
+            }
+        });
+
+        // NOTE: positions are not set here - WidgetContainer.populateScreen()
+        // (called from super.init()) overrides widget positions from the screen
+        // JSON. The actual layout is (re-)applied in init() after that.
+
+        this.alpha95 = widgets.addCheckbox("alpha", Component.translatable("gui.statpatterns.alpha95"), this::save);
+        this.alpha95.setWidth(100);
+        updateState();
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        // super.init() -> WidgetContainer.populateScreen() positions these widgets
+        // from the screen JSON (left/bottom). Re-apply our layout anchored to the
+        // player inventory row so the probability label, input field, checkbox and
+        // its 95%/99% label stay aligned, non-overlapping and inside the UI bounds:
+        //   [概率 label] [probabilityField] [checkbox] [95%/99% text]
+        probabilityField.setX(probabilityFieldX());
+        // Probability input field shifted 3 units down.
+        probabilityField.setY(fieldY() + 3);
+        // Checkbox shifted 1 unit to the right.
+        alpha95.setX(probabilityFieldX() + PROBABILITY_FIELD_WIDTH + 7);
+        alpha95.setY(fieldY());
+    }
+
+    private void updateState() {
+        alpha95.setSelected(getMenu().isAlpha95());
+        alpha95.setMessage(getMenu().isAlpha95() ? Component.translatable("gui.statpatterns.alpha95") : Component.translatable("gui.statpatterns.alpha99"));
+    }
+
+    private void save() {
+        getMenu().setAlpha95(alpha95.isSelected());
+        updateState();
+    }
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        var probabilityLabel = Component.translatable("gui.statpatterns.probability");
+        guiGraphics.drawString(font, probabilityLabel, probabilityLabelX(), labelY() + 1, 0x404040, false);
+    }
+
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        if (!probabilityField.isFocused()) {
+            var current = formatProbability(menu.getProbability());
+            if (!current.equals(probabilityField.getValue())) {
+                probabilityField.setValue(current);
+            }
+        }
+    }
+
+    private int probabilityLabelX() {
+        // -8 + 8 = 0: shifts the whole probability section
+        // (label, probability field, alpha checkbox) 4 more units right.
+        return leftPos + playerInventoryLeftX() + font.width(playerInventoryTitle) + TITLE_TO_PROBABILITY_GAP;
+    }
+
+    private int probabilityFieldX() {
+        var label = Component.translatable("gui.statpatterns.probability");
+        return probabilityLabelX() + font.width(label) + LABEL_TO_FIELD_GAP;
+    }
+
+    private int fieldY() { return labelY() - 3; }
+    private int labelY() { return topPos + playerInventoryTopY() - INVENTORY_TITLE_GAP; }
+
+    private int playerInventoryLeftX() {
+        var minX = Integer.MAX_VALUE;
+        for (var slot : menu.slots) {
+            if (slot.container == playerInventory) minX = Math.min(minX, slot.x);
+        }
+        return minX == Integer.MAX_VALUE ? inventoryLabelX : minX;
+    }
+
+    private int playerInventoryTopY() {
+        var minY = Integer.MAX_VALUE;
+        for (var slot : menu.slots) {
+            if (slot.container == playerInventory) minY = Math.min(minY, slot.y);
+        }
+        return minY == Integer.MAX_VALUE ? inventoryLabelY + 12 : minY;
+    }
+
+    private static String formatProbability(double probability) {
+        return "%.4f".formatted(probability);
+    }
+
+    private static Double parseProbability(String value) {
+        try {
+            var parsed = Double.parseDouble(value.trim());
+            if (parsed > 0.0 && parsed <= 1.0) return parsed;
+        } catch (NumberFormatException ignored) {}
+        return null;
+    }
+}

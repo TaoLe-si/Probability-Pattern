@@ -1,10 +1,28 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.tz.statpatterns.crafting;
 
 import java.util.List;
 import java.util.Objects;
 
 import com.tz.statpatterns.api.ids.Components;
-import com.tz.statpatterns.core.definition.SPItems;
+import com.tz.statpatterns.core.definition.StatPatternsItems;
 import com.tz.statpatterns.math.ProbabilitySizing;
 import com.tz.statpatterns.math.ProbabilitySizingResult;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +73,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
 
     @Nullable
     public static StatisticalPatternDetails decode(AEItemKey what, Level level) {
-        if (what == null || what.getItem() != SPItems.PROBABILITY_PATTERN.stack().getItem()) {
+        if (what == null || what.getItem() != StatPatternsItems.STAT_PATTERN.stack().getItem()) {
             return null;
         }
         CompoundTag tag = what.getTag();
@@ -74,7 +92,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         if (!tag.contains("sp_statistical_pattern")) {
             return null;
         }
-        ItemStack tempStack = new ItemStack(SPItems.PROBABILITY_PATTERN.stack().getItem());
+        ItemStack tempStack = new ItemStack(StatPatternsItems.STAT_PATTERN.stack().getItem());
         tempStack.setTag(tag);
         return Components.readStatisticalPattern(tempStack);
     }
@@ -86,7 +104,7 @@ public final class StatisticalPatternDetails implements IPatternDetails {
             throw new IllegalArgumentException("At least one input is required.");
         }
 
-        var stack = new ItemStack(SPItems.PROBABILITY_PATTERN.stack().getItem());
+        var stack = new ItemStack(StatPatternsItems.STAT_PATTERN.stack().getItem());
         Components.writeStatisticalPattern(stack, new EncodedStatisticalPattern(compactInputs, output, successProbability, alpha, 30, alpha95));
         return stack;
     }

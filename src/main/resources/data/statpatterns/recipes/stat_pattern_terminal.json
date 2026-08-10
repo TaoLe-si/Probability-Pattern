@@ -13,6 +13,6 @@
     }
   },
   "result": {
-    "item": "probabilitypattern:probability_pattern_terminal"
+    "item": "statpatterns:stat_pattern_terminal"
   }
 }

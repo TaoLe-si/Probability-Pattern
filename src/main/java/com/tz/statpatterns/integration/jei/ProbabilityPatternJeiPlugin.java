@@ -1,3 +1,21 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.tz.statpatterns.integration.jei;
 
 import java.lang.reflect.Field;
@@ -8,15 +26,16 @@ import java.util.Locale;
 import java.util.Optional;
 
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
-import com.tz.statpatterns.ProbabilityPatternMod;
-import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.StatPatternsMod;
+import com.tz.statpatterns.client.StatPatternsTerminalScreen;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.fml.ModList;
 
 import mezz.jei.api.IModPlugin;
@@ -36,7 +55,7 @@ import appeng.integration.modules.jeirei.EncodingHelper;
 
 @JeiPlugin
 public class ProbabilityPatternJeiPlugin implements IModPlugin {
-    private static final ResourceLocation ID = ProbabilityPatternMod.id("jei");
+    private static final ResourceLocation ID = StatPatternsMod.id("jei");
 
     @Override
     public ResourceLocation getPluginUid() { return ID; }
@@ -44,51 +63,65 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         var ghostHandler = new PatternTerminalGhostHandler();
-        registration.addGhostIngredientHandler(ProbabilityPatternTerminalScreen.class, ghostHandler);
+        registration.addGhostIngredientHandler(StatPatternsTerminalScreen.class, ghostHandler);
         if (ModList.get().isLoaded("ae2wtlib")) {
             @SuppressWarnings({"unchecked", "rawtypes"})
             var rawHandler = (IGhostIngredientHandler) ghostHandler;
             registration.addGhostIngredientHandler(
-                    com.tz.statpatterns.client.WirelessProbabilityPatternTerminalScreen.class, rawHandler);
+                    com.tz.statpatterns.client.WirelessStatPatternsTerminalScreen.class, rawHandler);
         }
     }
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
-                ProbabilityPatternTerminalMenu.class, SPMenus.PROBABILITY_PATTERN_TERMINAL));
+                StatPatternsTerminalMenu.class, StatPatternsMenus.STAT_PATTERN_TERMINAL));
         if (ModList.get().isLoaded("ae2wtlib")) {
             registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
-                    com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu.class,
-                    SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL));
+                    com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu.class,
+                    StatPatternsMenus.WIRELESS_STAT_PATTERN_TERMINAL));
         }
     }
 
-    private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {
-        private final Class<? extends ProbabilityPatternTerminalMenu> containerClass;
+    private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<StatPatternsTerminalMenu> {
+        private final Class<? extends StatPatternsTerminalMenu> containerClass;
         private final MenuType<?> menuType;
 
-        PatternTerminalTransferHandler(Class<? extends ProbabilityPatternTerminalMenu> containerClass, MenuType<?> menuType) {
+        PatternTerminalTransferHandler(Class<? extends StatPatternsTerminalMenu> containerClass, MenuType<?> menuType) {
             this.containerClass = containerClass;
             this.menuType = menuType;
         }
 
-        @Override public Class<? extends ProbabilityPatternTerminalMenu> getContainerClass() { return containerClass; }
+        @Override public Class<? extends StatPatternsTerminalMenu> getContainerClass() { return containerClass; }
 
         @Override
-        public Optional<MenuType<ProbabilityPatternTerminalMenu>> getMenuType() {
-            return Optional.of((MenuType<ProbabilityPatternTerminalMenu>) menuType);
+        public Optional<MenuType<StatPatternsTerminalMenu>> getMenuType() {
+            return Optional.of((MenuType<StatPatternsTerminalMenu>) menuType);
         }
 
         @Override
-        public IRecipeTransferError transferRecipe(ProbabilityPatternTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+        public IRecipeTransferError transferRecipe(StatPatternsTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+            var vanillaRecipe = recipe instanceof Recipe<?> r ? r : null;
+
             var inputs = collectInputs(recipeSlots);
             var outputs = collectOutputs(recipeSlots);
             if (inputs.isEmpty() || outputs.isEmpty()) return null;
 
+            // Auto-select the pattern type just like vanilla AE2: crafting recipes
+            // that fit the 3x3 grid become crafting patterns, everything else becomes
+            // a processing (probability) pattern.
+            boolean craftingRecipe = EncodingHelper.isSupportedCraftingRecipe(vanillaRecipe);
+            if (craftingRecipe && vanillaRecipe != null && !vanillaRecipe.canCraftInDimensions(3, 3)) {
+                return null; // too large for the 3x3 crafting grid
+            }
+
             if (doTransfer) {
-                extractProbability(recipe).ifPresent(menu::setProbability);
-                EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
+                if (craftingRecipe && vanillaRecipe != null) {
+                    EncodingHelper.encodeCraftingRecipe(menu, vanillaRecipe, inputs, stack -> true);
+                } else {
+                    extractProbability(recipe).ifPresent(menu::setProbability);
+                    EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
+                }
                 menu.encode();
             }
             return null;
@@ -169,9 +202,9 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final class PatternTerminalGhostHandler implements IGhostIngredientHandler<ProbabilityPatternTerminalScreen> {
+    private static final class PatternTerminalGhostHandler implements IGhostIngredientHandler<StatPatternsTerminalScreen> {
         @Override
-        public <I> List<Target<I>> getTargetsTyped(ProbabilityPatternTerminalScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
+        public <I> List<Target<I>> getTargetsTyped(StatPatternsTerminalScreen screen, ITypedIngredient<I> ingredient, boolean doStart) {
             // TODO: 1.20.1 AE2 does not have DropTargets - return empty targets for now
             return List.of();
         }

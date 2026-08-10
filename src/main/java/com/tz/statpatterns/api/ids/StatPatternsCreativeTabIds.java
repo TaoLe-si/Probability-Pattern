@@ -16,19 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tz.statpatterns.math;
+package com.tz.statpatterns.api.ids;
 
-public enum DistributionMode {
-    BINOMIAL("binomial"),
-    NORMAL_APPROXIMATION("normal_approximation");
+import com.tz.statpatterns.core.StatPatterns;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.CreativeModeTab;
 
-    private final String serializedName;
-
-    DistributionMode(String serializedName) {
-        this.serializedName = serializedName;
+public final class StatPatternsCreativeTabIds {
+    private StatPatternsCreativeTabIds() {
     }
 
-    public String serializedName() {
-        return serializedName;
+    public static final ResourceKey<CreativeModeTab> MAIN = create("main");
+
+    private static ResourceKey<CreativeModeTab> create(String path) {
+        return ResourceKey.create(Registries.CREATIVE_MODE_TAB, StatPatterns.makeId(path));
     }
 }

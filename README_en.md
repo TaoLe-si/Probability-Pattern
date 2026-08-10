@@ -37,23 +37,23 @@ Probability patterns support chain crafting — intermediate product quantities 
 
 ### Mixin Injection Layer
 
-Two mixins intercept AE2''s crafting calculation:
+A mixin intercepts AE2's crafting calculation:
 
 | Mixin | Role |
 |-------|------|
-| `CraftingServiceMixin` | Wraps `IGrid` as `PGrid` during `beginCraftingCalculation`, so `getCraftingService()` returns `PCraftingService` |
-| `CraftingTreeNodeMixin` | Captures the actual requested amount at each tree node, injects `forRequest(total)` into `StatisticalPatternDetails` for per-level probability sizing |
+| `CraftingServiceMixin` | `@Overwrite beginCraftingCalculation` to replace AE2's `CraftingCalculation` with `StatPatternsCraftingCalculation` |
 
-### Proxy Layer
+### Crafting Tree
 
-- **PGrid** — Wraps AE2''s `IGrid`, intercepts `getService(ICraftingService.class)` to return `PCraftingService`
-- **PCraftingService** — Delegating wrapper around `ICraftingService`, transparent to AE2''s crafting system
+- **StatPatternsCraftingCalculation** — Extends AE2 `CraftingCalculation`, tracks overall success probability during calculation
+- **StatPatternsCraftingTreeNode** — Tree node; scales probability sizing per request via `StatisticalPatternDetails.forRequest()`
+- **StatPatternsCraftingTreeProcess** — Tree process node; aggregates child success probabilities
 
 ### Pattern System
 
-- **EncodedStatisticalPattern** — Persistent data component (`inputsPerAttempt`, `output`, `successProbability`, `alpha`, `smallSampleLimit`), serialized via Codec for NBT and network sync
-- **StatisticalPatternDetails** — Extends `AEProcessingPattern`; scales inputs by total computed attempts in `getInputs()`; `forRequest(total)` creates per-request instances
-- **ProbabilityPatternItem** — Custom `EncodedPatternItem`; blank patterns suppress invalid pattern tooltips
+- **EncodedStatisticalPattern** — Persistent data record (`inputsPerAttempt`, `output`, `successProbability`, `alpha`, `smallSampleLimit`), serialized to NBT via `Components` (no DataComponent/Codec in Forge 1.20.1)
+- **StatisticalPatternDetails** — Implements AE2 `IPatternDetails`; scales inputs by total computed attempts in `getInputs()`; `forRequest(total)` creates per-request instances
+- **StatPatternsPatternItem** — Custom `EncodedPatternItem`; blank patterns suppress invalid pattern tooltips
 
 ---
 
@@ -67,7 +67,7 @@ Take the **Probability Pattern Encoding Terminal** from the "AE2 Probability Pat
 
 1. Place **per-attempt** input samples in the input grid
 2. Place the target output in the output slot
-3. Insert a blank `probability_pattern`
+3. Insert a blank `stat_pattern`
 4. Set the success probability in the probability field (e.g. `0.8` for 80%)
 5. Press the encode button
 
@@ -81,19 +81,19 @@ Drag recipes directly from JEI into the terminal. If the recipe class has a `suc
 
 | Item | Value |
 |------|-------|
-| Mod ID | `probabilitypattern` |
+| Mod ID | `statpatterns` |
 | Name | Probability Pattern for AE2 |
-| Version | 0.1.0 |
+| Version | 0.4.5 |
 | Package | `com.tz.statpatterns` |
 
 ### Dependencies
 
 | Dependency | Version |
 |------------|---------|
-| Minecraft | 1.21.1 |
-| NeoForge | ≥ 21.1.169 |
-| Applied Energistics 2 | ≥ 19.2.17 |
-| JEI (optional) | ≥ 19.27 |
+| Minecraft | 1.20.1 |
+| Forge / NeoForge | ≥ 47 |
+| Applied Energistics 2 | ≥ 15 |
+| JEI (optional) | ≥ 15.20 |
 
 ---
 
@@ -101,47 +101,49 @@ Drag recipes directly from JEI into the terminal. If the recipe class has a `suc
 
 ```
 src/main/java/com/tz/statpatterns/
-├── ProbabilityPatternMod.java          # Mod entry point
-├── SPCreativeTabs.java                 # Creative tab
+├── StatPatternsMod.java                  # Mod entry point
+├── StatPatternsCreativeTabs.java         # Creative tab
 ├── api/ids/
-│   ├── BlockIds.java                   # Block IDs
-│   ├── Components.java                 # Data component registration
-│   ├── ItemIds.java                    # Item IDs
-│   └── SPCreativeTabIds.java           # Tab IDs
+│   ├── Components.java                   # NBT serialization helpers
+│   ├── ItemIds.java                      # Item/part IDs
+│   └── StatPatternsCreativeTabIds.java   # Tab IDs
 ├── client/
-│   ├── ProbabilityPatternClient.java   # Client registration
-│   └── ProbabilityPatternTerminalScreen.java  # Encoding UI with probability field
+│   ├── StatPatternsClient.java           # Client registration
+│   ├── StatPatternsTerminalScreen.java   # Encoding UI with probability field
+│   └── WirelessStatPatternsTerminalScreen.java  # Wireless terminal UI
 ├── core/
-│   └── SP.java                         # Core constants
+│   └── StatPatterns.java                 # Core helpers (ResourceLocation)
 ├── core/definition/
-│   ├── SPBlockEntities.java            # Block entity registration
-│   ├── SPBlocks.java                   # Block registration
-│   ├── SPItems.java                    # Item registration
-│   ├── SPMenus.java                    # Menu registration
-│   └── SPParts.java                    # Cable part registration
+│   ├── StatPatternsItems.java            # Item registration
+│   ├── StatPatternsMenus.java            # Menu registration
+│   └── StatPatternsParts.java            # Cable part registration
 ├── crafting/
-│   ├── EncodedStatisticalPattern.java  # Probability pattern data component
-│   ├── ProbabilityPatternItem.java     # Probability pattern item
-│   └── StatisticalPatternDetails.java  # AE2 pattern details with probability scaling
-├── init/
-│   └── InitCapabilityProviders.java    # Capability registration
-├── integration/jei/
-│   └── ProbabilityPatternJeiPlugin.java  # JEI integration (drag & auto-extract probability)
+│   ├── EncodedStatisticalPattern.java    # Probability pattern data record
+│   ├── StatPatternsCraftingCalculation.java  # Crafting calculation (probability tracking)
+│   ├── StatPatternsCraftingTreeNode.java     # Crafting tree node
+│   ├── StatPatternsCraftingTreeProcess.java  # Crafting tree process
+│   ├── StatPatternsPatternDecoder.java   # Pattern decoder
+│   ├── StatPatternsPatternItem.java      # Probability pattern item
+│   └── StatisticalPatternDetails.java    # AE2 pattern details with probability scaling
+├── integration/
+│   ├── ae2wtlib/AE2WTLibIntegration.java # ae2wtlib integration (upgrade cards / quantum bridge)
+│   └── jei/ProbabilityPatternJeiPlugin.java  # JEI integration (drag & auto-extract probability)
+├── item/
+│   └── StatPatternsTerminalItem.java     # Handheld wireless terminal item
 ├── math/
-│   ├── DistributionMode.java           # Distribution mode enum
-│   ├── ProbabilitySizing.java          # Core algorithm (binomial & normal approximation)
-│   └── ProbabilitySizingResult.java    # Computation result
+│   ├── DistributionMode.java             # Distribution mode enum
+│   ├── ProbabilitySizing.java            # Core algorithm (binomial & normal approximation)
+│   └── ProbabilitySizingResult.java      # Computation result
 ├── mixin/
-│   ├── CraftingServiceMixin.java       # Intercepts beginCraftingCalculation, injects PGrid
-│   └── CraftingTreeNodeMixin.java      # Intercepts tree nodes, injects forRequest total
-├── network/
-│   ├── PCraftingService.java           # ICraftingService proxy
-│   ├── PGrid.java                      # IGrid proxy
-│   └── PGridNode.java                  # IGridNode proxy
+│   ├── CraftingServiceMixin.java         # Intercepts beginCraftingCalculation
+│   └── CraftingTreeNodeMixin.java        # Placeholder (replaced by StatPatternsCraftingTree*)
 ├── part/
-│   └── ProbabilityPatternTerminalPart.java  # Cable-attached terminal part
+│   ├── StatPatternsEncodingLogic.java    # Encoding logic (probability / alpha)
+│   └── StatPatternsTerminalPart.java     # Cable-attached terminal part
 └── terminal/
-    └── ProbabilityPatternTerminalMenu.java  # Terminal menu logic (encode & probability sync)
+    ├── StatPatternsTerminalMenu.java     # Terminal menu logic (encode & probability sync)
+    ├── StatPatternsTerminalMenuHost.java # Menu host (quantum bridge support)
+    └── WirelessStatPatternsTerminalMenu.java # Wireless terminal menu
 ```
 
 ---
@@ -154,7 +156,7 @@ Requires **Java 21**.
 .\gradlew.bat build
 ```
 
-Output: `build/libs/probabilitypattern-0.1.0.jar`.
+Output: `build/libs/statpatterns-0.1.0.jar`.
 
 ---
 

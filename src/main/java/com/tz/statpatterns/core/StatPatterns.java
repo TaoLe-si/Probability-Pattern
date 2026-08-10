@@ -16,19 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tz.statpatterns.math;
+package com.tz.statpatterns.core;
 
-public enum DistributionMode {
-    BINOMIAL("binomial"),
-    NORMAL_APPROXIMATION("normal_approximation");
+import net.minecraft.resources.ResourceLocation;
 
-    private final String serializedName;
+import static com.tz.statpatterns.StatPatternsMod.MOD_ID;
 
-    DistributionMode(String serializedName) {
-        this.serializedName = serializedName;
-    }
-
-    public String serializedName() {
-        return serializedName;
+public interface StatPatterns {
+    static ResourceLocation makeId(String id) {
+        return new ResourceLocation(MOD_ID, id);
     }
 }

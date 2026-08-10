@@ -1,1 +1,1 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"probabilitypattern:item/wireless_probability_pattern_terminal"}}
+{"parent":"minecraft:item/generated","textures":{"layer0":"statpatterns:item/wireless_stat_pattern_terminal"}}

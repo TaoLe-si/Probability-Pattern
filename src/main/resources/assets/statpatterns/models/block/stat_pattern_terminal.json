@@ -5,9 +5,9 @@
     "back": "ae2:part/monitor_back_no_status",
     "side": "ae2:part/monitor_sides",
     "front": "ae2:part/pattern_encoding_terminal",
-    "front_bright": "probabilitypattern:part/terminal_bright",
-    "front_medium": "probabilitypattern:part/terminal_medium",
-    "front_dark": "probabilitypattern:part/terminal_dark"
+    "front_bright": "statpatterns:part/terminal_bright",
+    "front_medium": "statpatterns:part/terminal_medium",
+    "front_dark": "statpatterns:part/terminal_dark"
   },
   "elements": [
     {

@@ -37,23 +37,23 @@
 
 ### Mixin 注入层
 
-通过两个 Mixin 在 AE2 合成计算期间介入：
+通过 Mixin 在 AE2 合成计算期间介入：
 
 | Mixin | 作用 |
 |-------|------|
-| `CraftingServiceMixin` | 在 `beginCraftingCalculation` 时将 `IGrid` 包装为 `PGrid`，使 `getCraftingService()` 返回 `PCraftingService` |
-| `CraftingTreeNodeMixin` | 在合成树的每个节点捕获实际请求量，为 `StatisticalPatternDetails` 注入 `forRequest(total)`，使每层独立计算概率规模 |
+| `CraftingServiceMixin` | `@Overwrite beginCraftingCalculation`，将 AE2 的 `CraftingCalculation` 替换为 `StatPatternsCraftingCalculation` |
 
-### 代理层
+### 合成树
 
-- **PGrid** — 包装 AE2 的 `IGrid`，拦截 `getService(ICraftingService.class)` 返回 `PCraftingService`
-- **PCraftingService** — 委托模式包装 `ICraftingService`，保持与 AE2 合成系统的透明对接
+- **StatPatternsCraftingCalculation** — 继承 AE2 `CraftingCalculation`，在合成计算期间跟踪整体成功概率
+- **StatPatternsCraftingTreeNode** — 合成树节点，通过 `StatisticalPatternDetails.forRequest()` 按请求量缩放概率规模
+- **StatPatternsCraftingTreeProcess** — 合成树节点处理，汇总各子层成功概率
 
 ### 样板系统
 
-- **EncodedStatisticalPattern** — 持久化数据组件（`inputsPerAttempt`、`output`、`successProbability`、`alpha`、`smallSampleLimit`），通过 Codec 支持 NBT 序列化与网络同步
-- **StatisticalPatternDetails** — 继承 `AEProcessingPattern`，在 `getInputs()` 时按概率计算后的总尝试次数缩放输入量；`forRequest(total)` 创建指定请求量的实例
-- **ProbabilityPatternItem** — 自定义 `EncodedPatternItem`，空白样板不显示无效的 pattern tooltip
+- **EncodedStatisticalPattern** — 持久化数据记录（`inputsPerAttempt`、`output`、`successProbability`、`alpha`、`smallSampleLimit`），通过 `Components` 以 NBT 序列化（1.20.1 Forge 无 DataComponent/Codec）
+- **StatisticalPatternDetails** — 实现 AE2 `IPatternDetails`，在 `getInputs()` 时按概率计算后的总尝试次数缩放输入量；`forRequest(total)` 创建指定请求量的实例
+- **StatPatternsPatternItem** — 自定义 `EncodedPatternItem`，空白样板不显示无效的 pattern tooltip
 
 ---
 
@@ -67,7 +67,7 @@
 
 1. 将**单次尝试**的输入样本放入输入格
 2. 将目标产物放入输出槽
-3. 放入空白 `probability_pattern`
+3. 放入空白 `stat_pattern`
 4. 在终端的概率输入框中设置成功率（如 `0.8` 即 80%）
 5. 点击编码按钮
 
@@ -81,19 +81,19 @@
 
 | 项目 | 值 |
 |------|-----|
-| Mod ID | `probabilitypattern` |
+| Mod ID | `statpatterns` |
 | 名称 | Probability Pattern for AE2 |
-| 版本 | 0.1.0 |
+| 版本 | 0.4.5 |
 | 包名 | `com.tz.statpatterns` |
 
 ### 依赖
 
 | 依赖 | 版本 |
 |------|------|
-| Minecraft | 1.21.1 |
-| NeoForge | ≥ 21.1.169 |
-| Applied Energistics 2 | ≥ 19.2.17 |
-| JEI（可选） | ≥ 19.27 |
+| Minecraft | 1.20.1 |
+| Forge / NeoForge | ≥ 47 |
+| Applied Energistics 2 | ≥ 15 |
+| JEI（可选） | ≥ 15.20 |
 
 ---
 
@@ -101,47 +101,49 @@
 
 ```
 src/main/java/com/tz/statpatterns/
-├── ProbabilityPatternMod.java          # Mod 入口
-├── SPCreativeTabs.java                 # 创造模式标签页
+├── StatPatternsMod.java                  # Mod 入口
+├── StatPatternsCreativeTabs.java         # 创造模式标签页
 ├── api/ids/
-│   ├── BlockIds.java                   # 方块 ID
-│   ├── Components.java                 # 数据组件注册
-│   ├── ItemIds.java                    # 物品 ID
-│   └── SPCreativeTabIds.java           # 标签页 ID
+│   ├── Components.java                   # NBT 序列化助手
+│   ├── ItemIds.java                      # 物品/部件 ID
+│   └── StatPatternsCreativeTabIds.java   # 标签页 ID
 ├── client/
-│   ├── ProbabilityPatternClient.java   # 客户端注册
-│   └── ProbabilityPatternTerminalScreen.java  # 编码界面（含概率输入框）
+│   ├── StatPatternsClient.java           # 客户端注册
+│   ├── StatPatternsTerminalScreen.java   # 编码界面（含概率输入框）
+│   └── WirelessStatPatternsTerminalScreen.java  # 无线终端界面
 ├── core/
-│   └── SP.java                         # 核心常量
+│   └── StatPatterns.java                 # 核心工具（ResourceLocation 构造）
 ├── core/definition/
-│   ├── SPBlockEntities.java            # 方块实体注册
-│   ├── SPBlocks.java                   # 方块注册
-│   ├── SPItems.java                    # 物品注册
-│   ├── SPMenus.java                    # 菜单注册
-│   └── SPParts.java                    # 线缆部件注册
+│   ├── StatPatternsItems.java            # 物品注册
+│   ├── StatPatternsMenus.java            # 菜单注册
+│   └── StatPatternsParts.java            # 线缆部件注册
 ├── crafting/
-│   ├── EncodedStatisticalPattern.java  # 概率样板数据组件
-│   ├── ProbabilityPatternItem.java     # 概率样板物品
-│   └── StatisticalPatternDetails.java  # AE2 样板详情（概率缩放）
-├── init/
-│   └── InitCapabilityProviders.java    # Capability 注册
-├── integration/jei/
-│   └── ProbabilityPatternJeiPlugin.java  # JEI 集成（配方拖拽 & 概率自动提取）
+│   ├── EncodedStatisticalPattern.java    # 概率样板数据记录
+│   ├── StatPatternsCraftingCalculation.java  # 合成计算（概率跟踪）
+│   ├── StatPatternsCraftingTreeNode.java     # 合成树节点
+│   ├── StatPatternsCraftingTreeProcess.java  # 合成树处理
+│   ├── StatPatternsPatternDecoder.java   # 样板解码器
+│   ├── StatPatternsPatternItem.java      # 概率样板物品
+│   └── StatisticalPatternDetails.java    # AE2 样板详情（概率缩放）
+├── integration/
+│   ├── ae2wtlib/AE2WTLibIntegration.java # ae2wtlib 联动（升级卡 / 量子桥）
+│   └── jei/ProbabilityPatternJeiPlugin.java  # JEI 集成（配方拖拽 & 概率自动提取）
+├── item/
+│   └── StatPatternsTerminalItem.java     # 手持无线终端物品
 ├── math/
-│   ├── DistributionMode.java           # 分布模式枚举
-│   ├── ProbabilitySizing.java          # 核心算法（二项分布 & 正态近似）
-│   └── ProbabilitySizingResult.java    # 计算结果
+│   ├── DistributionMode.java             # 分布模式枚举
+│   ├── ProbabilitySizing.java            # 核心算法（二项分布 & 正态近似）
+│   └── ProbabilitySizingResult.java      # 计算结果
 ├── mixin/
-│   ├── CraftingServiceMixin.java       # 拦截 beginCraftingCalculation，注入 PGrid
-│   └── CraftingTreeNodeMixin.java      # 拦截合成树节点，注入 forRequest 总量
-├── network/
-│   ├── PCraftingService.java           # ICraftingService 代理
-│   ├── PGrid.java                      # IGrid 代理
-│   └── PGridNode.java                  # IGridNode 代理
+│   ├── CraftingServiceMixin.java         # 拦截 beginCraftingCalculation，注入 StatPatterns 计算
+│   └── CraftingTreeNodeMixin.java        # 占位（已被 StatPatternsCraftingTree* 替代）
 ├── part/
-│   └── ProbabilityPatternTerminalPart.java  # 线缆附着终端部件
+│   ├── StatPatternsEncodingLogic.java    # 编码逻辑（概率 / alpha 参数）
+│   └── StatPatternsTerminalPart.java     # 线缆附着终端部件
 └── terminal/
-    └── ProbabilityPatternTerminalMenu.java  # 终端菜单逻辑（编码 & 概率同步）
+    ├── StatPatternsTerminalMenu.java     # 终端菜单逻辑（编码 & 概率同步）
+    ├── StatPatternsTerminalMenuHost.java # 菜单宿主（量子桥支持）
+    └── WirelessStatPatternsTerminalMenu.java # 无线终端菜单
 ```
 
 ---
