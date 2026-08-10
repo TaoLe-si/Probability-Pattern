@@ -17,14 +17,10 @@
  */
 package com.tz.statpatterns.integration.rei;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +41,9 @@ import dev.architectury.hooks.fluid.forge.FluidStackHooksForge;
 import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.itemlists.EncodingHelper;
 
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
+
+import com.tz.statpatterns.util.StatPatternsExtractor;
 
 /**
  * Lets REI recipes be pulled into the probability pattern terminal.
@@ -55,7 +53,7 @@ import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
  * auto-selects the pattern type: crafting recipes that fit the 3x3 grid become
  * crafting patterns, everything else becomes a processing (probability) pattern.
  */
-public class ProbabilityPatternTransferHandler<T extends ProbabilityPatternTerminalMenu>
+public class ProbabilityPatternTransferHandler<T extends StatPatternsTerminalMenu>
         implements TransferHandler {
 
     private static final CategoryIdentifier<?> CRAFTING = CategoryIdentifier.of("minecraft", "plugins/crafting");
@@ -95,7 +93,8 @@ public class ProbabilityPatternTransferHandler<T extends ProbabilityPatternTermi
             if (craftingRecipe && holder != null) {
                 EncodingHelper.encodeCraftingRecipe(menu, holder, getGuiIngredientsForCrafting(display), stack -> true);
             } else {
-                extractProbability(display).ifPresent(menu::setProbability);
+                StatPatternsExtractor.extract(DisplayRegistry.getInstance().getDisplayOrigin(display))
+                        .ifPresent(menu::setProbability);
                 EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
             }
             menu.encode();
@@ -177,88 +176,5 @@ public class ProbabilityPatternTransferHandler<T extends ProbabilityPatternTermi
             return GenericStack.fromFluidStack(FluidStackHooksForge.toForge(fluidStack));
         }
         return null;
-    }
-
-    private static Optional<Double> extractProbability(Display display) {
-        return extractProbability(DisplayRegistry.getInstance().getDisplayOrigin(display), 0);
-    }
-
-    private static Optional<Double> extractProbability(Object value, int depth) {
-        if (value == null || depth > 2) {
-            return Optional.empty();
-        }
-        if (value instanceof RecipeHolder<?> holder) {
-            return extractProbability(holder.value(), depth + 1);
-        }
-        if (value instanceof Number number) {
-            return normalizeProbability(number.doubleValue());
-        }
-
-        for (var methodName : List.of("successProbability", "getSuccessProbability", "probability",
-                "getProbability", "chance", "getChance")) {
-            try {
-                Method method = value.getClass().getMethod(methodName);
-                if (method.getParameterCount() == 0 && Number.class.isAssignableFrom(wrap(method.getReturnType()))) {
-                    return normalizeProbability(((Number) method.invoke(value)).doubleValue());
-                }
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-            }
-        }
-
-        for (var field : value.getClass().getDeclaredFields()) {
-            var name = field.getName().toLowerCase(Locale.ROOT);
-            if (name.contains("probability") || name.contains("chance")) {
-                var found = readProbabilityField(value, field, depth);
-                if (found.isPresent()) {
-                    return found;
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    private static Optional<Double> readProbabilityField(Object owner, Field field, int depth) {
-        try {
-            field.setAccessible(true);
-            var fieldValue = field.get(owner);
-            return extractProbability(fieldValue, depth + 1);
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-            return Optional.empty();
-        }
-    }
-
-    private static Optional<Double> normalizeProbability(double probability) {
-        if (probability > 1.0 && probability <= 100.0) {
-            probability /= 100.0;
-        }
-        if (probability > 0.0 && probability <= 1.0) {
-            return Optional.of(probability);
-        }
-        return Optional.empty();
-    }
-
-    private static Class<?> wrap(Class<?> type) {
-        if (!type.isPrimitive()) {
-            return type;
-        }
-        if (type == double.class) {
-            return Double.class;
-        }
-        if (type == float.class) {
-            return Float.class;
-        }
-        if (type == int.class) {
-            return Integer.class;
-        }
-        if (type == long.class) {
-            return Long.class;
-        }
-        if (type == short.class) {
-            return Short.class;
-        }
-        if (type == byte.class) {
-            return Byte.class;
-        }
-        return type;
     }
 }

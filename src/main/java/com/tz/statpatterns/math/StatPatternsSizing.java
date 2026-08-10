@@ -18,17 +18,16 @@
  */
 package com.tz.statpatterns.math;
 
-public final class ProbabilitySizing {
-    private ProbabilitySizing() {
+public final class StatPatternsSizing {
+    private StatPatternsSizing() {
     }
 
-    public static ProbabilitySizingResult planAttempts(long targetSuccesses, double successProbability,
+    public static StatPatternsSizingResult planAttempts(long targetSuccesses, double successProbability,
             double alpha, int smallSampleLimit) {
         validate(targetSuccesses, successProbability, alpha);
 
         if (successProbability == 1.0) {
-            return new ProbabilitySizingResult(targetSuccesses, targetSuccesses, successProbability, alpha,
-                    DistributionMode.BINOMIAL, 0.0);
+            return new StatPatternsSizingResult(targetSuccesses, targetSuccesses);
         }
 
         if (targetSuccesses <= smallSampleLimit) {
@@ -38,24 +37,21 @@ public final class ProbabilitySizing {
         return normalApproximationPlan(targetSuccesses, successProbability, alpha);
     }
 
-    private static ProbabilitySizingResult exactBinomialPlan(long targetSuccesses, double p, double alpha) {
+    private static StatPatternsSizingResult exactBinomialPlan(long targetSuccesses, double p, double alpha) {
         var attempts = Math.max(targetSuccesses, (long) Math.ceil(targetSuccesses / p));
         while (binomialLowerTail(attempts, p, targetSuccesses - 1) > alpha) {
             attempts++;
         }
-        return new ProbabilitySizingResult(targetSuccesses, attempts, p, alpha, DistributionMode.BINOMIAL,
-                binomialLowerTail(attempts, p, targetSuccesses - 1));
+        return new StatPatternsSizingResult(targetSuccesses, attempts);
     }
 
-    private static ProbabilitySizingResult normalApproximationPlan(long targetSuccesses, double p, double alpha) {
+    private static StatPatternsSizingResult normalApproximationPlan(long targetSuccesses, double p, double alpha) {
         var z = inverseStandardNormal(1.0 - alpha);
         var attempts = Math.max(targetSuccesses, (long) Math.ceil(targetSuccesses / p));
         while (normalZ(targetSuccesses, attempts, p) < z) {
             attempts++;
         }
-        return new ProbabilitySizingResult(targetSuccesses, attempts, p, alpha,
-                DistributionMode.NORMAL_APPROXIMATION,
-                normalUnderproductionRisk(targetSuccesses, attempts, p));
+        return new StatPatternsSizingResult(targetSuccesses, attempts);
     }
 
     private static double binomialLowerTail(long attempts, double p, long maxSuccesses) {
@@ -79,27 +75,10 @@ public final class ProbabilitySizing {
         return Math.min(1.0, sum);
     }
 
-    private static double normalUnderproductionRisk(long targetSuccesses, long attempts, double p) {
-        return normalCdf(-normalZ(targetSuccesses, attempts, p));
-    }
-
     private static double normalZ(long targetSuccesses, long attempts, double p) {
         var mean = attempts * p;
         var variance = attempts * p * (1.0 - p);
         return (mean - targetSuccesses) / Math.sqrt(variance);
-    }
-
-    private static double normalCdf(double x) {
-        return 0.5 * (1.0 + erf(x / Math.sqrt(2.0)));
-    }
-
-    private static double erf(double x) {
-        var sign = Math.signum(x);
-        var ax = Math.abs(x);
-        var t = 1.0 / (1.0 + 0.3275911 * ax);
-        var y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t
-                - 0.284496736) * t + 0.254829592) * t * Math.exp(-ax * ax);
-        return sign * y;
     }
 
     private static double inverseStandardNormal(double probability) {

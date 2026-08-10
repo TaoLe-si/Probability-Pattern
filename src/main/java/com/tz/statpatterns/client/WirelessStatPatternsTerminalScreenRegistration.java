@@ -21,33 +21,33 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 import appeng.client.gui.style.StyleManager;
 
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu;
 
 /**
  * Registers the wireless probability pattern terminal screen.
  * <p>
  * This deliberately lives in its own class that is <b>not</b> annotated with
  * {@code @EventBusSubscriber}: NeoForge reflects over subscriber classes during mod
- * construction, and a lambda here would put {@link WirelessProbabilityPatternTerminalMenu}
- * / {@link WirelessProbabilityPatternTerminalScreen} into a synthetic method signature,
+ * construction, and a lambda here would put {@link WirelessStatPatternsTerminalMenu}
+ * / {@link WirelessStatPatternsTerminalScreen} into a synthetic method signature,
  * forcing ae2wtlib classes to load even when ae2wtlib is absent.
  * <p>
  * This class is only loaded when {@link #register(RegisterMenuScreensEvent)} is actually
  * invoked, which only happens when ae2wtlib is present — keeping the mod loadable without it.
  */
-public final class WirelessProbabilityPatternTerminalScreenRegistration {
-    private WirelessProbabilityPatternTerminalScreenRegistration() {
+public final class WirelessStatPatternsTerminalScreenRegistration {
+    private WirelessStatPatternsTerminalScreenRegistration() {
     }
 
     public static void register(RegisterMenuScreensEvent event) {
-        var wirelessMenuType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+        var wirelessMenuType = StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
         if (wirelessMenuType == null) {
             return;
         }
-        event.<WirelessProbabilityPatternTerminalMenu, WirelessProbabilityPatternTerminalScreen>register(
+        event.<WirelessStatPatternsTerminalMenu, WirelessStatPatternsTerminalScreen>register(
                 wirelessMenuType.get(),
-                (menu, playerInventory, title) -> new WirelessProbabilityPatternTerminalScreen(
+                (menu, playerInventory, title) -> new WirelessStatPatternsTerminalScreen(
                         menu,
                         playerInventory,
                         title,

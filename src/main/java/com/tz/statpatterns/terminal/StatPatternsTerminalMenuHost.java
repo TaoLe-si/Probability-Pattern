@@ -19,12 +19,10 @@ package com.tz.statpatterns.terminal;
 
 import java.util.function.BiConsumer;
 
-import appeng.parts.encoding.EncodingMode;
-import com.tz.statpatterns.part.ProbabilityPatternEncodingLogic;
+import com.tz.statpatterns.api.ids.StatPatternsComponents;
+import com.tz.statpatterns.part.StatPatternsEncodingLogic;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,8 +34,6 @@ import appeng.menu.ISubMenu;
 import appeng.menu.locator.ItemMenuHostLocator;
 import appeng.parts.encoding.PatternEncodingLogic;
 
-import com.tz.statpatterns.api.ids.Components;
-
 import de.mari_023.ae2wtlib.api.terminal.ItemWT;
 import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
 
@@ -45,30 +41,14 @@ import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
  * Menu host for the handheld probability pattern terminal.
  * Extends WTMenuHost for ae2wtlib Quantum Bridge support.
  */
-public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
-    private final ProbabilityPatternEncodingLogic logic;
+public class StatPatternsTerminalMenuHost extends WTMenuHost implements IPatternTerminalMenuHost, IPatternTerminalLogicHost {
+    private final StatPatternsEncodingLogic logic;
     private boolean isLoading = false;
 
-    public ProbabilityPatternTerminalMenuHost(ItemWT item, Player player, ItemMenuHostLocator locator, BiConsumer<Player, ISubMenu> returnToMainMenu) {
+    public StatPatternsTerminalMenuHost(ItemWT item, Player player, ItemMenuHostLocator locator, BiConsumer<Player, ISubMenu> returnToMainMenu) {
         super(item, player, locator, returnToMainMenu);
-        this.logic = new ProbabilityPatternEncodingLogic(this);
+        this.logic = new StatPatternsEncodingLogic(this);
         loadFromItem();
-    }
-
-    public double getProbability() {
-        return logic.getProbability();
-    }
-
-    public boolean isAlpha95() {
-        return logic.isAlpha95();
-    }
-
-    public void setProbability(double probability) {
-        logic.setProbability(probability);
-    }
-
-    public void setAlpha95(boolean value) {
-        logic.setAlpha95(value);
     }
 
     @Override
@@ -93,7 +73,7 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IP
      */
     private void loadFromItem() {
         ItemStack stack = getItemStack();
-        CompoundTag tag = stack.get(Components.PATTERN_LOGIC_STATE);
+        CompoundTag tag = stack.get(StatPatternsComponents.PATTERN_LOGIC_STATE);
         if (tag != null) {
             isLoading = true;
             try {
@@ -111,7 +91,7 @@ public class ProbabilityPatternTerminalMenuHost extends WTMenuHost implements IP
         ItemStack stack = getItemStack();
         CompoundTag tag = new CompoundTag();
         logic.writeToNBT(tag, getPlayer().level().registryAccess());
-        stack.set(Components.PATTERN_LOGIC_STATE, tag);
+        stack.set(StatPatternsComponents.PATTERN_LOGIC_STATE, tag);
     }
 
     public InternalInventory getSingularityInventory() {

@@ -18,25 +18,19 @@
  */
 package com.tz.statpatterns.integration.jei;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.integration.modules.itemlists.EncodingHelper;
-import appeng.menu.me.items.PatternEncodingTermMenu;
-import com.tz.statpatterns.ProbabilityPatternMod;
-import com.tz.statpatterns.client.ProbabilityPatternTerminalScreen;
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.StatPatternsMod;
+import com.tz.statpatterns.client.StatPatternsTerminalScreen;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -63,13 +57,13 @@ import mezz.jei.api.registration.IRecipeTransferRegistration;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
 import appeng.integration.modules.itemlists.DropTargets;
-import appeng.integration.modules.itemlists.EncodingHelper;
+
+import com.tz.statpatterns.util.StatPatternsExtractor;
 
 
 @JeiPlugin
 public class ProbabilityPatternJeiPlugin implements IModPlugin {
-    private static final ResourceLocation ID = ProbabilityPatternMod.id("jei");
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProbabilityPatternJeiPlugin.class);
+    private static final ResourceLocation ID = StatPatternsMod.id("jei");
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -79,13 +73,13 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         var ghostHandler = new PatternTerminalGhostHandler();
-        registration.addGhostIngredientHandler(ProbabilityPatternTerminalScreen.class, ghostHandler);
+        registration.addGhostIngredientHandler(StatPatternsTerminalScreen.class, ghostHandler);
         // Wireless variant — only available when ae2wtlib is present
         if (ModList.get().isLoaded("ae2wtlib")) {
             @SuppressWarnings({"unchecked", "rawtypes"})
             var rawHandler = (IGhostIngredientHandler) ghostHandler;
             registration.addGhostIngredientHandler(
-                    com.tz.statpatterns.client.WirelessProbabilityPatternTerminalScreen.class,
+                    com.tz.statpatterns.client.WirelessStatPatternsTerminalScreen.class,
                     rawHandler);
         }
     }
@@ -93,12 +87,12 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
-                ProbabilityPatternTerminalMenu.class, SPMenus.PROBABILITY_PATTERN_TERMINAL.get()));
+                StatPatternsTerminalMenu.class, StatPatternsMenus.PROBABILITY_PATTERN_TERMINAL.get()));
         // Wireless variant — only available when ae2wtlib is present
         if (ModList.get().isLoaded("ae2wtlib")) {
             registration.addUniversalRecipeTransferHandler(new PatternTerminalTransferHandler(
-                    com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu.class,
-                    SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get()));
+                    com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu.class,
+                    StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get()));
         }
     }
 
@@ -130,36 +124,32 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
         return null;
     }
 
-    private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<ProbabilityPatternTerminalMenu> {
-        private final Class<? extends ProbabilityPatternTerminalMenu> containerClass;
+    private static final class PatternTerminalTransferHandler implements IUniversalRecipeTransferHandler<StatPatternsTerminalMenu> {
+        private final Class<? extends StatPatternsTerminalMenu> containerClass;
         private final MenuType<?> menuType;
 
-        PatternTerminalTransferHandler(Class<? extends ProbabilityPatternTerminalMenu> containerClass, MenuType<?> menuType) {
+        PatternTerminalTransferHandler(Class<? extends StatPatternsTerminalMenu> containerClass, MenuType<?> menuType) {
             this.containerClass = containerClass;
             this.menuType = menuType;
         }
 
         @Override
-        public Class<? extends ProbabilityPatternTerminalMenu> getContainerClass() {
+        public Class<? extends StatPatternsTerminalMenu> getContainerClass() {
             return containerClass;
         }
 
         @Override
-        public Optional<MenuType<ProbabilityPatternTerminalMenu>> getMenuType() {
-            return Optional.of((MenuType<ProbabilityPatternTerminalMenu>) menuType);
+        public Optional<MenuType<StatPatternsTerminalMenu>> getMenuType() {
+            return Optional.of((MenuType<StatPatternsTerminalMenu>) menuType);
         }
 
         @Override
-        public IRecipeTransferError transferRecipe(ProbabilityPatternTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+        public IRecipeTransferError transferRecipe(StatPatternsTerminalMenu menu, Object recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
             var holder = getRecipeHolder(recipe);
             var vanillaRecipe = holder != null ? holder.value() : getRecipe(recipe);
 
             var inputs = collectInputs(recipeSlots);
             var outputs = collectOutputs(recipeSlots);
-            // TEMP DIAGNOSTIC — to be removed
-            LOGGER.warn("[PP-JEI] transferRecipe doTransfer={} inputs={} outputs={} recipeClass={}",
-                    doTransfer, inputs.size(), outputs.size(),
-                    recipe == null ? "null" : recipe.getClass().getName());
             if (inputs.isEmpty() || outputs.isEmpty()) {
                 return null;
             }
@@ -176,7 +166,7 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
                 if (craftingRecipe && holder != null) {
                     EncodingHelper.encodeCraftingRecipe(menu, holder, inputs, stack -> true);
                 } else {
-                    extractProbability(recipe).ifPresent(menu::setProbability);
+                    StatPatternsExtractor.extract(recipe).ifPresent(menu::setProbability);
                     EncodingHelper.encodeProcessingRecipe(menu, inputs, outputs);
                 }
                 menu.encode();
@@ -198,12 +188,6 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
                 var alternatives = new ArrayList<GenericStack>();
                 for (var ingredient : slot.getAllIngredientsList()) {
                     var stack = toGenericStack(ingredient);
-                    // TEMP DIAGNOSTIC — to be removed
-                    if (stack == null && !(ingredient.getItemStack().isPresent())) {
-                        LOGGER.warn("[PP-JEI] input ingredient unhandled: valueClass={}, typeClass={}",
-                                ingredient.getIngredient() == null ? "null" : ingredient.getIngredient().getClass().getName(),
-                                ingredient.getType() == null ? "null" : ingredient.getType().getIngredientClass().getName());
-                    }
                     if (stack != null) {
                         alternatives.add(stack);
                     }
@@ -241,102 +225,19 @@ public class ProbabilityPatternJeiPlugin implements IModPlugin {
             }
             return result;
         }
-
-        private static Optional<Double> extractProbability(Object recipe) {
-            return extractProbability(recipe, 0);
-        }
-
-        private static Optional<Double> extractProbability(Object value, int depth) {
-            if (value == null || depth > 2) {
-                return Optional.empty();
-            }
-            if (value instanceof RecipeHolder<?> holder) {
-                return extractProbability(holder.value(), depth + 1);
-            }
-            if (value instanceof Number number) {
-                return normalizeProbability(number.doubleValue());
-            }
-
-            for (var methodName : List.of("successProbability", "getSuccessProbability", "probability",
-                    "getProbability", "chance", "getChance")) {
-                try {
-                    Method method = value.getClass().getMethod(methodName);
-                    if (method.getParameterCount() == 0 && Number.class.isAssignableFrom(wrap(method.getReturnType()))) {
-                        return normalizeProbability(((Number) method.invoke(value)).doubleValue());
-                    }
-                } catch (ReflectiveOperationException | RuntimeException ignored) {
-                }
-            }
-
-            for (var field : value.getClass().getDeclaredFields()) {
-                var name = field.getName().toLowerCase(Locale.ROOT);
-                if (name.contains("probability") || name.contains("chance")) {
-                    var found = readProbabilityField(value, field, depth);
-                    if (found.isPresent()) {
-                        return found;
-                    }
-                }
-            }
-            return Optional.empty();
-        }
-
-        private static Optional<Double> readProbabilityField(Object owner, Field field, int depth) {
-            try {
-                field.setAccessible(true);
-                var fieldValue = field.get(owner);
-                return extractProbability(fieldValue, depth + 1);
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-                return Optional.empty();
-            }
-        }
-
-        private static Optional<Double> normalizeProbability(double probability) {
-            if (probability > 1.0 && probability <= 100.0) {
-                probability /= 100.0;
-            }
-            if (probability > 0.0 && probability <= 1.0) {
-                return Optional.of(probability);
-            }
-            return Optional.empty();
-        }
-
-        private static Class<?> wrap(Class<?> type) {
-            if (!type.isPrimitive()) {
-                return type;
-            }
-            if (type == double.class) {
-                return Double.class;
-            }
-            if (type == float.class) {
-                return Float.class;
-            }
-            if (type == int.class) {
-                return Integer.class;
-            }
-            if (type == long.class) {
-                return Long.class;
-            }
-            if (type == short.class) {
-                return Short.class;
-            }
-            if (type == byte.class) {
-                return Byte.class;
-            }
-            return type;
-        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static final class PatternTerminalGhostHandler
-            implements IGhostIngredientHandler<ProbabilityPatternTerminalScreen> {
+            implements IGhostIngredientHandler<StatPatternsTerminalScreen> {
         @Override
         public <I> List<Target<I>> getTargetsTyped(
-                ProbabilityPatternTerminalScreen screen,
+                StatPatternsTerminalScreen screen,
                 ITypedIngredient<I> ingredient,
                 boolean doStart
         ) {
             // 内部强转为带泛型版本调用DropTargets
-            ProbabilityPatternTerminalScreen<?> customScreen = (ProbabilityPatternTerminalScreen<?>) screen;
+            StatPatternsTerminalScreen<?> customScreen = (StatPatternsTerminalScreen<?>) screen;
 
             // 同时支持物品和流体 ghost 拖放
             var genericStack = ProbabilityPatternJeiPlugin.toGenericStack(ingredient);

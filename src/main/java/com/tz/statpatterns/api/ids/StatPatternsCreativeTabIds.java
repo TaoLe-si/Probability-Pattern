@@ -18,16 +18,18 @@
  */
 package com.tz.statpatterns.api.ids;
 
-import net.minecraft.resources.ResourceLocation;
+import com.tz.statpatterns.StatPatternsMod;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
 
-import static com.tz.statpatterns.ProbabilityPatternMod.MOD_ID;
+public final class StatPatternsCreativeTabIds {
+    private StatPatternsCreativeTabIds() {
+    }
 
-public class ItemIds {
-    public static final ResourceLocation PROBABILITY_PATTERN_TERMINAL = id("probability_pattern_terminal");
-    public static final ResourceLocation PROBABILITY_PATTERN = id("probability_pattern");
-    public static final ResourceLocation WIRELESS_PROBABILITY_PATTERN_TERMINAL = id("wireless_probability_pattern_terminal");
+    public static final ResourceKey<CreativeModeTab> MAIN = create("main");
 
-    private static ResourceLocation id(String id) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, id);
+    private static ResourceKey<CreativeModeTab> create(String path) {
+        return ResourceKey.create(Registries.CREATIVE_MODE_TAB, StatPatternsMod.id(path));
     }
 }

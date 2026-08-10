@@ -18,15 +18,14 @@
  */
 package com.tz.statpatterns.crafting;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import appeng.api.crafting.PatternDetailsHelper;
-import com.tz.statpatterns.api.ids.Components;
-import com.tz.statpatterns.core.definition.SPItems;
-import com.tz.statpatterns.math.ProbabilitySizing;
-import com.tz.statpatterns.math.ProbabilitySizingResult;
+import com.tz.statpatterns.api.ids.StatPatternsComponents;
+import com.tz.statpatterns.core.definition.StatPatternsItems;
+import com.tz.statpatterns.math.StatPatternsSizing;
+import com.tz.statpatterns.math.StatPatternsSizingResult;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
@@ -43,18 +42,18 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.crafting.pattern.EncodedProcessingPattern;
 
-public final class StatisticalPatternDetails implements IPatternDetails {
+public final class StatPatternsDetails implements IPatternDetails {
 
     private final AEItemKey definition;
-    private final EncodedStatisticalPattern encoded;
+    private final EncodedStatPatterns encoded;
     @Nullable
     private final Long requestedOutputAmount;
 
-    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded) {
+    private StatPatternsDetails(AEItemKey definition, EncodedStatPatterns encoded) {
         this(definition, encoded, null);
     }
 
-    private StatisticalPatternDetails(AEItemKey definition, EncodedStatisticalPattern encoded, @Nullable Long requestedOutputAmount) {
+    private StatPatternsDetails(AEItemKey definition, EncodedStatPatterns encoded, @Nullable Long requestedOutputAmount) {
         this.definition = Objects.requireNonNull(definition, "definition");
         this.encoded = Objects.requireNonNull(encoded, "encoded");
         this.requestedOutputAmount = requestedOutputAmount;
@@ -73,19 +72,19 @@ public final class StatisticalPatternDetails implements IPatternDetails {
     @Override
     public boolean equals(Object obj) {
         return obj != null && obj.getClass() == getClass()
-                && ((StatisticalPatternDetails) obj).definition.equals(definition);
+                && ((StatPatternsDetails) obj).definition.equals(definition);
     }
 
     @Nullable
-    public static StatisticalPatternDetails decode(AEItemKey what, Level level) {
-        if (what == null || what.getItem() != SPItems.PROBABILITY_PATTERN.get()) {
+    public static StatPatternsDetails decode(AEItemKey what, Level level) {
+        if (what == null || what.getItem() != StatPatternsItems.PROBABILITY_PATTERN.get()) {
             return null;
         }
-        var encoded = what.get(Components.ENCODED_STATISTICAL_PATTERN);
+        var encoded = what.get(StatPatternsComponents.ENCODED_STATISTICAL_PATTERN);
         if (encoded == null) {
             return null;
         }
-        return new StatisticalPatternDetails(what, encoded);
+        return new StatPatternsDetails(what, encoded);
     }
 
     public static ItemStack encode(List<GenericStack> sparseInputs, List<GenericStack> sparseOutputs, double successProbability, double alpha, boolean alpha95) {
@@ -95,15 +94,15 @@ public final class StatisticalPatternDetails implements IPatternDetails {
             throw new IllegalArgumentException("At least one input is required.");
         }
 
-        var stack = new ItemStack(SPItems.PROBABILITY_PATTERN.get());
+        var stack = new ItemStack(StatPatternsItems.PROBABILITY_PATTERN.get());
         stack.set(AEComponents.ENCODED_PROCESSING_PATTERN, new EncodedProcessingPattern(sparseInputs, sparseOutputs));
-        stack.set(Components.ENCODED_STATISTICAL_PATTERN, new EncodedStatisticalPattern(compactInputs, output, successProbability, alpha, 30, alpha95));
+        stack.set(StatPatternsComponents.ENCODED_STATISTICAL_PATTERN, new EncodedStatPatterns(compactInputs, output, successProbability, alpha, 30, alpha95));
         return stack;
     }
 
     public static PatternDetailsTooltip getInvalidPatternTooltip(ItemStack stack, Level level, @Nullable Exception cause, TooltipFlag flags) {
         var tooltip = new PatternDetailsTooltip(PatternDetailsTooltip.OUTPUT_TEXT_PRODUCES);
-        var encoded = stack.get(Components.ENCODED_STATISTICAL_PATTERN);
+        var encoded = stack.get(StatPatternsComponents.ENCODED_STATISTICAL_PATTERN);
         if (encoded != null) {
             encoded.inputsPerAttempt().forEach(tooltip::addInput);
             tooltip.addOutput(encoded.output());
@@ -162,14 +161,14 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         return tooltip;
     }
 
-    public ProbabilitySizingResult sizing() {
+    public StatPatternsSizingResult sizing() {
         var targetOutput = requestedOutputAmount != null ? requestedOutputAmount : encoded.output().amount();
         // Use the actual number of items needed as targetSuccesses so that the binomial model
         // correctly ensures P(total_items_produced >= targetOutput) >= 1 - alpha.
         // Using ceilDiv(targetOutput, output.amount()) would under-count when output.amount() > 1,
         // leading to insufficient confidence for the actual item count needed.
         var successes = Math.max(1, targetOutput);
-        return ProbabilitySizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
+        return StatPatternsSizing.planAttempts(successes, encoded.successProbability(), encoded.alpha(), encoded.smallSampleLimit());
     }
 
     public double successProbability() {
@@ -184,12 +183,8 @@ public final class StatisticalPatternDetails implements IPatternDetails {
         return encoded.alpha();
     }
 
-    public StatisticalPatternDetails forRequest(long requestedOutputAmount) {
-        return new StatisticalPatternDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount));
-    }
-
-    private static long ceilDiv(long numerator, long denominator) {
-        return (numerator + denominator - 1) / denominator;
+    public StatPatternsDetails forRequest(long requestedOutputAmount) {
+        return new StatPatternsDetails((AEItemKey) getDefinition(), encoded, Math.max(1, requestedOutputAmount));
     }
 
     private static final class Input implements IPatternDetails.IInput {

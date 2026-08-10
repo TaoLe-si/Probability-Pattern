@@ -17,9 +17,9 @@
  */
 package com.tz.statpatterns.integration.rei;
 
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu;
 
 import net.neoforged.fml.ModList;
 
@@ -49,13 +49,13 @@ public class ProbabilityPatternReiPlugin implements REIClientPlugin {
 
     @Override
     public void registerTransferHandlers(TransferHandlerRegistry registry) {
-        registry.register(new ProbabilityPatternTransferHandler<>(ProbabilityPatternTerminalMenu.class));
+        registry.register(new ProbabilityPatternTransferHandler<>(StatPatternsTerminalMenu.class));
 
         // Wireless variant — only available when ae2wtlib is present
         if (ModList.get().isLoaded("ae2wtlib")) {
-            var wirelessType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
+            var wirelessType = StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
             if (wirelessType != null) {
-                registry.register(new ProbabilityPatternTransferHandler<>(WirelessProbabilityPatternTerminalMenu.class));
+                registry.register(new ProbabilityPatternTransferHandler<>(WirelessStatPatternsTerminalMenu.class));
             }
         }
     }

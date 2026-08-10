@@ -26,24 +26,24 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
-import com.tz.statpatterns.api.ids.ItemIds;
-import com.tz.statpatterns.core.definition.SPItems;
-import com.tz.statpatterns.item.ProbabilityPatternTerminalItem;
+import com.tz.statpatterns.api.ids.StatPatternsItemIds;
+import com.tz.statpatterns.core.definition.StatPatternsItems;
+import com.tz.statpatterns.item.StatPatternsTerminalItem;
 
 /**
  * Registers the wireless probability pattern terminal ITEM at HIGH priority.
  * <p>
  * This deliberately lives in its own class that is <b>not</b> referenced from
- * {@code ProbabilityPatternMod} except through a {@code ModList.isLoaded} guard:
+ * {@code StatPatternsMod} except through a {@code ModList.isLoaded} guard:
  * the class file of the @Mod class must not contain symbolic references to
- * {@code ProbabilityPatternTerminalItem} (which extends {@code ItemWT} from
+ * {@code StatPatternsTerminalItem} (which extends {@code ItemWT} from
  * ae2wtlib), otherwise the JVM fails to define the class when ae2wtlib is absent.
  * <p>
  * The HIGH priority ensures the item is registered before ae2wtlib_api's NORMAL
  * priority {@code AddTerminalEvent.run()} fires, fixing the NPE caused by
  * accessing an unresolved {@code DeferredHolder}.
  *
- * @see WirelessProbabilityPatternTerminalScreenRegistration
+ * @see WirelessStatPatternsTerminalScreenRegistration
  */
 public final class WirelessTerminalItemRegistrar {
     private WirelessTerminalItemRegistrar() {
@@ -54,13 +54,13 @@ public final class WirelessTerminalItemRegistrar {
             if (!event.getRegistryKey().equals(Registries.ITEM)) {
                 return;
             }
-            var def = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+            var def = StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
             if (def == null) {
                 return;
             }
             event.register(Registries.ITEM,
-                    ItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL,
-                    () -> new ProbabilityPatternTerminalItem(new Item.Properties()));
+                    StatPatternsItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL,
+                    StatPatternsTerminalItem::new);
 
             // Manually bind the DeferredHolder since it's not managed by
             // a DeferredRegister (which would normally call bind() at NORMAL priority).

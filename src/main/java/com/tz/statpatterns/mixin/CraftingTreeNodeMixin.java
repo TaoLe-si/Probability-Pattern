@@ -1,10 +1,27 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.tz.statpatterns.mixin;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.crafting.ICraftingService;
 import appeng.api.stacks.AEKey;
 import appeng.crafting.CraftingTreeNode;
-import com.tz.statpatterns.crafting.StatisticalPatternDetails;
+import com.tz.statpatterns.crafting.StatPatternsDetails;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -50,7 +67,7 @@ public abstract class CraftingTreeNodeMixin {
         }
         var result = new ArrayList<IPatternDetails>(patterns.size());
         for (var p : patterns) {
-            if (p instanceof StatisticalPatternDetails spd) {
+            if (p instanceof StatPatternsDetails spd) {
                 result.add(spd.forRequest(this.probabilityTotalRequested));
             } else {
                 result.add(p);

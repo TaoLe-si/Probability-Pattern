@@ -30,14 +30,14 @@ import net.minecraft.network.codec.StreamCodec;
 
 import appeng.api.stacks.GenericStack;
 
-public record EncodedStatisticalPattern(
+public record EncodedStatPatterns(
         List<GenericStack> inputsPerAttempt,
         GenericStack output,
         double successProbability,
         double alpha,
         int smallSampleLimit,
         boolean isAlpha95) {
-    public EncodedStatisticalPattern {
+    public EncodedStatPatterns {
         inputsPerAttempt = Collections.unmodifiableList(inputsPerAttempt);
         if (inputsPerAttempt.isEmpty()) {
             throw new IllegalArgumentException("At least one input is required.");
@@ -60,34 +60,34 @@ public record EncodedStatisticalPattern(
 
     }
 
-    public static final Codec<EncodedStatisticalPattern> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+    public static final Codec<EncodedStatPatterns> CODEC = RecordCodecBuilder.create(builder -> builder.group(
                     GenericStack.FAULT_TOLERANT_LIST_CODEC.fieldOf("inputsPerAttempt")
-                            .forGetter(EncodedStatisticalPattern::inputsPerAttempt),
+                            .forGetter(EncodedStatPatterns::inputsPerAttempt),
                     GenericStack.CODEC.fieldOf("output")
-                            .forGetter(EncodedStatisticalPattern::output),
+                            .forGetter(EncodedStatPatterns::output),
                     Codec.DOUBLE.fieldOf("successProbability")
-                            .forGetter(EncodedStatisticalPattern::successProbability),
+                            .forGetter(EncodedStatPatterns::successProbability),
                     Codec.DOUBLE.optionalFieldOf("alpha", 0.05)
-                            .forGetter(EncodedStatisticalPattern::alpha),
+                            .forGetter(EncodedStatPatterns::alpha),
                     Codec.INT.optionalFieldOf("smallSampleLimit", 30)
-                            .forGetter(EncodedStatisticalPattern::smallSampleLimit),
+                            .forGetter(EncodedStatPatterns::smallSampleLimit),
                     Codec.BOOL.optionalFieldOf("isAlpha95", true)
-                            .forGetter(EncodedStatisticalPattern::isAlpha95))
-            .apply(builder, EncodedStatisticalPattern::new));
+                            .forGetter(EncodedStatPatterns::isAlpha95))
+            .apply(builder, EncodedStatPatterns::new));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, EncodedStatisticalPattern> STREAM_CODEC = StreamCodec
+    public static final StreamCodec<RegistryFriendlyByteBuf, EncodedStatPatterns> STREAM_CODEC = StreamCodec
             .composite(
                     GenericStack.STREAM_CODEC.apply(ByteBufCodecs.list()),
-                    EncodedStatisticalPattern::inputsPerAttempt,
+                    EncodedStatPatterns::inputsPerAttempt,
                     GenericStack.STREAM_CODEC,
-                    EncodedStatisticalPattern::output,
+                    EncodedStatPatterns::output,
                     ByteBufCodecs.DOUBLE,
-                    EncodedStatisticalPattern::successProbability,
+                    EncodedStatPatterns::successProbability,
                     ByteBufCodecs.DOUBLE,
-                    EncodedStatisticalPattern::alpha,
+                    EncodedStatPatterns::alpha,
                     ByteBufCodecs.VAR_INT,
-                    EncodedStatisticalPattern::smallSampleLimit,
+                    EncodedStatPatterns::smallSampleLimit,
                     ByteBufCodecs.BOOL,
-                    EncodedStatisticalPattern::isAlpha95,
-                    EncodedStatisticalPattern::new);
+                    EncodedStatPatterns::isAlpha95,
+                    EncodedStatPatterns::new);
 }

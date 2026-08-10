@@ -18,8 +18,8 @@
  */
 package com.tz.statpatterns.client;
 
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -30,16 +30,16 @@ import guideme.Guide;
 
 import appeng.client.gui.style.StyleManager;
 
-import com.tz.statpatterns.ProbabilityPatternMod;
+import com.tz.statpatterns.StatPatternsMod;
 
-@EventBusSubscriber(modid = ProbabilityPatternMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-public final class ProbabilityPatternClient {
-    private ProbabilityPatternClient() {
+@EventBusSubscriber(modid = StatPatternsMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public final class StatPatternsClient {
+    private StatPatternsClient() {
     }
 
     static {
         // Register the GuideME guide book (content lives in assets/probabilitypattern/ae2guide)
-        Guide.builder(ProbabilityPatternMod.id("guide"))
+        Guide.builder(StatPatternsMod.id("guide"))
                 .folder("ae2guide")
                 .build();
     }
@@ -47,9 +47,9 @@ public final class ProbabilityPatternClient {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         // Wired terminal (no upgrade slots)
-        event.<ProbabilityPatternTerminalMenu, ProbabilityPatternTerminalScreen<ProbabilityPatternTerminalMenu>>register(
-                SPMenus.PROBABILITY_PATTERN_TERMINAL.get(),
-                (menu, playerInventory, title) -> new ProbabilityPatternTerminalScreen<>(
+        event.<StatPatternsTerminalMenu, StatPatternsTerminalScreen<StatPatternsTerminalMenu>>register(
+                StatPatternsMenus.PROBABILITY_PATTERN_TERMINAL.get(),
+                (menu, playerInventory, title) -> new StatPatternsTerminalScreen<>(
                         menu,
                         playerInventory,
                         title,
@@ -59,7 +59,7 @@ public final class ProbabilityPatternClient {
         // The actual registration lives in a separate class (not an @EventBusSubscriber) so that
         // reflecting this class never loads ae2wtlib classes when ae2wtlib is absent.
         if (ModList.get().isLoaded("ae2wtlib")) {
-            WirelessProbabilityPatternTerminalScreenRegistration.register(event);
+            WirelessStatPatternsTerminalScreenRegistration.register(event);
         }
     }
 }

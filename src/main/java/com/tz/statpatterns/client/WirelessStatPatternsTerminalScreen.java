@@ -24,7 +24,7 @@ import de.mari_023.ae2wtlib.api.terminal.WTMenuHost;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu;
 
 /**
  * Wireless variant of the probability pattern terminal screen.
@@ -33,13 +33,13 @@ import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
  * - Terminal cycle button when part of a WUT
  * - Keyboard shortcuts for terminal switching
  */
-public class WirelessProbabilityPatternTerminalScreen
-        extends ProbabilityPatternTerminalScreen<WirelessProbabilityPatternTerminalMenu>
+public class WirelessStatPatternsTerminalScreen
+        extends StatPatternsTerminalScreen<WirelessStatPatternsTerminalMenu>
         implements IUniversalTerminalCapable {
 
     private final ScrollingUpgradesPanel upgradesPanel;
 
-    public WirelessProbabilityPatternTerminalScreen(WirelessProbabilityPatternTerminalMenu menu,
+    public WirelessStatPatternsTerminalScreen(WirelessStatPatternsTerminalMenu menu,
             Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
         if (getMenu().isWUT()) {

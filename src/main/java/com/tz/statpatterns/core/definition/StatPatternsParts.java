@@ -20,25 +20,23 @@ package com.tz.statpatterns.core.definition;
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.PartModels;
-import appeng.core.definitions.ColoredItemDefinition;
 import appeng.core.definitions.ItemDefinition;
 import appeng.items.parts.PartItem;
 import appeng.items.parts.PartModelsHelper;
-import com.tz.statpatterns.api.ids.ItemIds;
-import com.tz.statpatterns.part.ProbabilityPatternTerminalPart;
+import com.tz.statpatterns.api.ids.StatPatternsItemIds;
+import com.tz.statpatterns.part.StatPatternsTerminalPart;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
-import static com.tz.statpatterns.core.definition.SPItems.item;
+import static com.tz.statpatterns.core.definition.StatPatternsItems.createItem;
 
-public class SPParts {
-    public static final List<ColoredItemDefinition<?>> COLORED_PARTS = new ArrayList<>();
+public final class StatPatternsParts {
+    public static final ItemDefinition<PartItem<StatPatternsTerminalPart>> PROBABILITY_PATTERN_TERMINAL_PART = createPart("Probability Pattern Terminal Part", StatPatternsItemIds.PROBABILITY_PATTERN_TERMINAL, StatPatternsTerminalPart.class, StatPatternsTerminalPart::new);
 
-    public static final ItemDefinition<PartItem<ProbabilityPatternTerminalPart>> ProbabilityPatternTerminalPart = createPart("Probability Pattern Terminal Part", ItemIds.PROBABILITY_PATTERN_TERMINAL, ProbabilityPatternTerminalPart.class, ProbabilityPatternTerminalPart::new);
+    private StatPatternsParts() {
+    }
 
     private static <T extends IPart> ItemDefinition<PartItem<T>> createPart(
             String englishName,
@@ -47,17 +45,7 @@ public class SPParts {
             Function<IPartItem<T>, T> factory) {
 
         PartModels.registerModels(PartModelsHelper.createModels(partClass));
-        return item(englishName, id, props -> new PartItem<>(props, partClass, factory));
-    }
-
-    private static <T extends IPart> ItemDefinition<PartItem<T>> createCustomPartItem(
-            String englishName,
-            ResourceLocation id,
-            Class<T> partClass,
-            Function<Item.Properties, PartItem<T>> factory) {
-
-        PartModels.registerModels(PartModelsHelper.createModels(partClass));
-        return item(englishName, id, factory);
+        return createItem(englishName, id, props -> new PartItem<>(props, partClass, factory));
     }
 
     // Used to control in which order static constructors are called

@@ -22,7 +22,7 @@ import appeng.core.definitions.ItemDefinition;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -30,11 +30,11 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SPCreativeTabs {
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ProbabilityPatternMod.MOD_ID);
+public final class StatPatternsCreativeTabs {
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, StatPatternsMod.MOD_ID);
 
     private static final List<ItemDefinition<?>> itemDefs = new ArrayList<>();
-    private static final List<net.minecraft.world.item.Item> rawItems = new ArrayList<>();
+    private static final List<Item> rawItems = new ArrayList<>();
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_TABS.register("main",
             () -> CreativeModeTab.builder()
@@ -54,10 +54,10 @@ public final class SPCreativeTabs {
         itemDefs.add(itemDef);
     }
 
-    public static void addRaw(net.minecraft.world.item.Item item) {
+    public static void addRaw(Item item) {
         rawItems.add(item);
     }
 
-    private SPCreativeTabs() {
+    private StatPatternsCreativeTabs() {
     }
 }

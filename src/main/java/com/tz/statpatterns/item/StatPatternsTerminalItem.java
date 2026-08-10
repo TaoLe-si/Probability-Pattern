@@ -26,8 +26,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import appeng.helpers.WirelessTerminalMenuHost;
 import appeng.menu.locator.ItemMenuHostLocator;
 
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenuHost;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenuHost;
 
 import de.mari_023.ae2wtlib.api.terminal.ItemWT;
 
@@ -35,21 +35,21 @@ import de.mari_023.ae2wtlib.api.terminal.ItemWT;
  * Handheld probability pattern terminal item.
  * Extends ItemWT for ae2wtlib Universal Terminal compatibility.
  */
-public class ProbabilityPatternTerminalItem extends ItemWT {
+public class StatPatternsTerminalItem extends ItemWT {
 
-    public ProbabilityPatternTerminalItem(Properties props) {
+    public StatPatternsTerminalItem() {
         super();
     }
 
     @Override
     public MenuType<?> getMenuType(ItemMenuHostLocator locator, Player player) {
-        return SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
+        return StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
     }
 
     @Override
     public WirelessTerminalMenuHost<?> getMenuHost(Player player, ItemMenuHostLocator locator,
             @Nullable BlockHitResult hitResult) {
-        return new ProbabilityPatternTerminalMenuHost(this, player, locator,
+        return new StatPatternsTerminalMenuHost(this, player, locator,
                 (p, sm) -> openFromInventory(p, locator, true));
     }
 }

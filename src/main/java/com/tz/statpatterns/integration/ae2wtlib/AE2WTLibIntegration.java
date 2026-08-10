@@ -18,9 +18,9 @@
 package com.tz.statpatterns.integration.ae2wtlib;
 
 import appeng.api.upgrades.Upgrades;
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.core.definition.SPItems;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenuHost;
+import com.tz.statpatterns.core.definition.StatPatternsItems;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenuHost;
 
 import de.mari_023.ae2wtlib.api.gui.Icon;
 import de.mari_023.ae2wtlib.api.registration.AddTerminalEvent;
@@ -51,7 +51,7 @@ public final class AE2WTLibIntegration {
     // Lazy-initialized to avoid loading ae2wtlib classes when the mod is absent
     private static Icon probabilityPatternIcon;
 
-    private static Icon getProbabilityPatternIcon() {
+    private static Icon getStatPatternsIcon() {
         if (probabilityPatternIcon == null) {
             probabilityPatternIcon = new Icon(
                     0, 0, 16, 16,
@@ -82,24 +82,24 @@ public final class AE2WTLibIntegration {
             return;
         }
 
-        var menuType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE;
+        var menuType = StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE;
         if (menuType == null) {
             return;
         }
 
         // Defer reading terminalItem to inside the callback — at construction time
-        // SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL may not be registered yet.
+        // StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL may not be registered yet.
         // The callback fires during AddTerminalEvent.run() (RegisterEvent ITEM phase),
         // by which time all items have been registered.
         AddTerminalEvent.register(event -> {
-            var terminalItem = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+            var terminalItem = StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
             if (terminalItem == null) return;
             event.builder(
                     "probability_pattern",
-                    ProbabilityPatternTerminalMenuHost::new,
+                    StatPatternsTerminalMenuHost::new,
                     menuType,
                     terminalItem.asItem(),
-                    getProbabilityPatternIcon()
+                    getStatPatternsIcon()
             ).addTerminal();
         });
     }
@@ -115,7 +115,7 @@ public final class AE2WTLibIntegration {
             return;
         }
 
-        var terminalItem = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+        var terminalItem = StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
         if (terminalItem == null) {
             return;
         }

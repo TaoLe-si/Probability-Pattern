@@ -26,18 +26,18 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.IPatternDetailsDecoder;
 import appeng.api.stacks.AEItemKey;
 
-public enum ProbabilityPatternDecoder implements IPatternDetailsDecoder {
+public enum StatPatternsDecoder implements IPatternDetailsDecoder {
     INSTANCE;
 
     @Override
     public boolean isEncodedPattern(ItemStack stack) {
-        return stack.getItem() instanceof ProbabilityPatternItem;
+        return stack.getItem() instanceof StatPatternsItem;
     }
 
     @Nullable
     @Override
     public IPatternDetails decodePattern(AEItemKey what, Level level) {
-        if (level == null || what == null || !(what.getItem() instanceof ProbabilityPatternItem item)) {
+        if (level == null || what == null || !(what.getItem() instanceof StatPatternsItem item)) {
             return null;
         }
         return item.decode(what, level);

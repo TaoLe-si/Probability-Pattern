@@ -17,9 +17,9 @@
  */
 package com.tz.statpatterns.integration.emi;
 
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu;
 
 import net.neoforged.fml.ModList;
 
@@ -42,15 +42,15 @@ public class ProbabilityPatternEmiPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
-        registry.addRecipeHandler(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(),
-                new ProbabilityPatternEmiRecipeHandler<>(ProbabilityPatternTerminalMenu.class));
+        registry.addRecipeHandler(StatPatternsMenus.PROBABILITY_PATTERN_TERMINAL.get(),
+                new ProbabilityPatternEmiRecipeHandler<>(StatPatternsTerminalMenu.class));
 
         // Wireless variant — only available when ae2wtlib is present
         if (ModList.get().isLoaded("ae2wtlib")) {
-            var wirelessType = SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
+            var wirelessType = StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get();
             if (wirelessType != null) {
                 registry.addRecipeHandler(wirelessType,
-                        new ProbabilityPatternEmiRecipeHandler<>(WirelessProbabilityPatternTerminalMenu.class));
+                        new ProbabilityPatternEmiRecipeHandler<>(WirelessStatPatternsTerminalMenu.class));
             }
         }
     }

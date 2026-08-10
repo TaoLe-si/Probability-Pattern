@@ -17,10 +17,11 @@
  */
 package com.tz.statpatterns.crafting;
 
-import appeng.api.crafting.*;
-import appeng.api.stacks.AEItemKey;
+import appeng.api.crafting.EncodedPatternDecoder;
+import appeng.api.crafting.InvalidPatternTooltipStrategy;
+import appeng.api.crafting.PatternDetailsHelper;
 import appeng.crafting.pattern.EncodedPatternItem;
-import com.tz.statpatterns.api.ids.Components;
+import com.tz.statpatterns.api.ids.StatPatternsComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -32,18 +33,18 @@ import java.util.List;
 /**
  * Custom EncodedPatternItem that skips pattern tooltip for blank (unencoded) patterns.
  */
-public class ProbabilityPatternItem extends EncodedPatternItem<StatisticalPatternDetails> {
+public class StatPatternsItem extends EncodedPatternItem<StatPatternsDetails> {
 
-    public ProbabilityPatternItem(Properties properties, EncodedPatternDecoder<StatisticalPatternDetails> decoder, @Nullable InvalidPatternTooltipStrategy invalidPatternTooltip) {
+    public StatPatternsItem(Properties properties, EncodedPatternDecoder<StatPatternsDetails> decoder, @Nullable InvalidPatternTooltipStrategy invalidPatternTooltip) {
         super(properties, decoder, invalidPatternTooltip);
-        PatternDetailsHelper.registerDecoder(ProbabilityPatternDecoder.INSTANCE);
+        PatternDetailsHelper.registerDecoder(StatPatternsDecoder.INSTANCE);
         PatternDetailsHelper.encodedPatternItemBuilder(decoder);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flags) {
         // Skip pattern tooltip for blank (unencoded) patterns
-        var encoded = stack.get(Components.ENCODED_STATISTICAL_PATTERN);
+        var encoded = stack.get(StatPatternsComponents.ENCODED_STATISTICAL_PATTERN);
         if (encoded == null) {
             return; // Blank pattern - just show item name, no pattern tooltip
         }

@@ -18,8 +18,8 @@
  */
 package com.tz.statpatterns.client;
 
-import appeng.client.gui.widgets.*;
-import appeng.menu.me.items.PatternEncodingTermMenu;
+import appeng.client.gui.widgets.AECheckbox;
+import appeng.client.gui.widgets.AETextField;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,9 +27,9 @@ import net.minecraft.world.entity.player.Inventory;
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.client.gui.style.ScreenStyle;
 
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
 
-public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTerminalMenu> extends PatternEncodingTermScreen<P> {
+public class StatPatternsTerminalScreen<P extends StatPatternsTerminalMenu> extends PatternEncodingTermScreen<P> {
     private static final int PROBABILITY_FIELD_WIDTH = 40;
     private static final int FIELD_HEIGHT = 14;
     private static final int TITLE_TO_PROBABILITY_GAP = 10;
@@ -40,7 +40,7 @@ public class ProbabilityPatternTerminalScreen<P extends ProbabilityPatternTermin
     private final AETextField probabilityField;
     private final AECheckbox alpha95;
 
-    public ProbabilityPatternTerminalScreen(P menu, Inventory playerInventory, Component title, ScreenStyle style) {
+    public StatPatternsTerminalScreen(P menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
         this.playerInventory = playerInventory;
         this.probabilityField = widgets.addTextField("probability");

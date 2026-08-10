@@ -20,10 +20,10 @@ package com.tz.statpatterns.core.definition;
 
 import appeng.core.definitions.ItemDefinition;
 import com.google.common.base.Preconditions;
-import com.tz.statpatterns.SPCreativeTabs;
-import com.tz.statpatterns.api.ids.ItemIds;
-import com.tz.statpatterns.api.ids.SPCreativeTabIds;
-import com.tz.statpatterns.crafting.ProbabilityPatternItem;
+import com.tz.statpatterns.StatPatternsCreativeTabs;
+import com.tz.statpatterns.api.ids.StatPatternsItemIds;
+import com.tz.statpatterns.api.ids.StatPatternsCreativeTabIds;
+import com.tz.statpatterns.crafting.StatPatternsItem;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -32,77 +32,75 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import com.tz.statpatterns.crafting.StatisticalPatternDetails;
-import com.tz.statpatterns.item.ProbabilityPatternTerminalItem;
+import com.tz.statpatterns.crafting.StatPatternsDetails;
+import com.tz.statpatterns.item.StatPatternsTerminalItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
 
-import static com.tz.statpatterns.ProbabilityPatternMod.MOD_ID;
+import static com.tz.statpatterns.StatPatternsMod.MOD_ID;
 
-public final class SPItems {
+public final class StatPatternsItems {
     public static final DeferredRegister.Items DR = DeferredRegister.createItems(MOD_ID);
 
     private static final List<ItemDefinition<?>> ITEMS = new ArrayList<>();
 
     // Not added to creative tab — blank pattern obtained via terminal mechanics, no standalone recipe
-    public static final ItemDefinition<Item> PROBABILITY_PATTERN = item("Probability Pattern", ItemIds.PROBABILITY_PATTERN, (p) -> new ProbabilityPatternItem(
+    public static final ItemDefinition<Item> PROBABILITY_PATTERN = createItem("Probability Pattern", StatPatternsItemIds.PROBABILITY_PATTERN, (p) -> new StatPatternsItem(
             p.stacksTo(64),
-            StatisticalPatternDetails::decode,
-            StatisticalPatternDetails::getInvalidPatternTooltip), null);
+            StatPatternsDetails::decode,
+            StatPatternsDetails::getInvalidPatternTooltip), null);
 
     // Only initialized when ae2wtlib is present; null otherwise.
     // NOT registered through DR.registerItem() because the DeferredRegister uses NORMAL
     // priority while ae2wtlib_api's AddTerminalEvent.run() also fires at NORMAL priority —
     // but ae2wtlib_api loads first, so its listener fires before ours, causing
     // DeferredHolder.get() to NPE. Instead we use DeferredItem.createItem() and register
-    // the item in a HIGH priority listener in ProbabilityPatternMod.
+    // the item in a HIGH priority listener in StatPatternsMod.
     @Nullable
-    public static final ItemDefinition<ProbabilityPatternTerminalItem> WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+    public static final ItemDefinition<StatPatternsTerminalItem> WIRELESS_PROBABILITY_PATTERN_TERMINAL;
 
     static {
         if (ModList.get().isLoaded("ae2wtlib")) {
-            var deferredItem = DeferredItem.<ProbabilityPatternTerminalItem>createItem(
-                    ItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL);
-            WIRELESS_PROBABILITY_PATTERN_TERMINAL = itemDef(
+            var deferredItem = DeferredItem.<StatPatternsTerminalItem>createItem(
+                    StatPatternsItemIds.WIRELESS_PROBABILITY_PATTERN_TERMINAL);
+            WIRELESS_PROBABILITY_PATTERN_TERMINAL = createItemDefinition(
                     "Wireless Probability Pattern Terminal", deferredItem);
         } else {
             WIRELESS_PROBABILITY_PATTERN_TERMINAL = null;
         }
     }
 
-    private SPItems() {
+    private StatPatternsItems() {
     }
 
     /**
-     * Like {@link #item} but wraps a pre-existing {@link DeferredItem} that was not
+     * Like {@link #createItem} but wraps a pre-existing {@link DeferredItem} that was not
      * created through {@link #DR}. Used for items whose registration must happen at
      * a specific event priority (e.g. HIGH priority to beat ae2wtlib_api's
      * AddTerminalEvent.run()).
      */
-    static <T extends Item> ItemDefinition<T> itemDef(String name, DeferredItem<T> deferredItem) {
+    static <T extends Item> ItemDefinition<T> createItemDefinition(String name, DeferredItem<T> deferredItem) {
         Preconditions.checkArgument(deferredItem.getId().getNamespace().equals(MOD_ID),
-                "Can only register for AE2");
+                "Can only register items for this mod");
         var definition = new ItemDefinition<>(name, deferredItem);
-        SPCreativeTabs.add(definition);
+        StatPatternsCreativeTabs.add(definition);
         ITEMS.add(definition);
         return definition;
     }
 
-    static <T extends Item> ItemDefinition<T> item(String name, ResourceLocation id, Function<Item.Properties, T> factory) {
-        return item(name, id, factory, SPCreativeTabIds.MAIN);
+    static <T extends Item> ItemDefinition<T> createItem(String name, ResourceLocation id, Function<Item.Properties, T> factory) {
+        return createItem(name, id, factory, StatPatternsCreativeTabIds.MAIN);
     }
 
-    static <T extends Item> ItemDefinition<T> item(String name, ResourceLocation id, Function<Item.Properties, T> factory, @Nullable ResourceKey<CreativeModeTab> group) {
+    static <T extends Item> ItemDefinition<T> createItem(String name, ResourceLocation id, Function<Item.Properties, T> factory, @Nullable ResourceKey<CreativeModeTab> group) {
 
-        Item.Properties p = new Item.Properties();
-
-        Preconditions.checkArgument(id.getNamespace().equals(MOD_ID), "Can only register for AE2");
+        Preconditions.checkArgument(id.getNamespace().equals(MOD_ID), "Can only register items for this mod");
         var definition = new ItemDefinition<>(name, DR.registerItem(id.getPath(), factory));
 
         if (group != null) {
-            SPCreativeTabs.add(definition);
+            StatPatternsCreativeTabs.add(definition);
         }
 
         ITEMS.add(definition);

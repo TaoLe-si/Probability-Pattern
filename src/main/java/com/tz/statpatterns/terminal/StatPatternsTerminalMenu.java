@@ -19,27 +19,17 @@
 package com.tz.statpatterns.terminal;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
-import appeng.api.storage.ITerminalHost;
 import appeng.parts.encoding.PatternEncodingLogic;
-import com.tz.statpatterns.api.ids.Components;
-import com.tz.statpatterns.core.definition.SPMenus;
-import com.tz.statpatterns.crafting.StatisticalPatternDetails;
-import it.unimi.dsi.fastutil.shorts.ShortSet;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import com.tz.statpatterns.api.ids.StatPatternsComponents;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
+import com.tz.statpatterns.crafting.StatPatternsDetails;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.stacks.GenericStack;
@@ -47,11 +37,10 @@ import appeng.helpers.IPatternTerminalMenuHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.parts.encoding.EncodingMode;
 
-import com.tz.statpatterns.part.ProbabilityPatternEncodingLogic;
+import com.tz.statpatterns.part.StatPatternsEncodingLogic;
 
 
-public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProbabilityPatternTerminalMenu.class);
+public class StatPatternsTerminalMenu extends PatternEncodingTermMenu {
     private static final String ACTION_SET_PROBABILITY = "setProbability";
     private static final String ACTION_SET_ALPHA95 = "setAlpha95";
 
@@ -59,27 +48,21 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     private boolean alpha95 = true;
     private final PatternEncodingLogic encodingLogic;
 
-    public ProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
-        this(SPMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
+    public StatPatternsTerminalMenu(int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
+        this(StatPatternsMenus.PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
     }
 
-    public ProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
+    public StatPatternsTerminalMenu(MenuType<?> menuType, int containerId, Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         super(menuType, containerId, playerInventory, host, true);
         this.encodingLogic = host.getLogic();
         registerClientAction(ACTION_SET_PROBABILITY, Double.class, this::setProbability);
         registerClientAction(ACTION_SET_ALPHA95, Boolean.class, this::setAlpha95);
 
         // 从编码逻辑中恢复上次保存的概率值
-        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+        if (encodingLogic instanceof StatPatternsEncodingLogic peLogic) {
             this.probability = peLogic.getProbability();
             this.alpha95 = peLogic.isAlpha95();
         }
-    }
-
-    @Override
-    public void onServerDataSync(ShortSet updatedFields) {
-        super.onServerDataSync(updatedFields);
-
     }
 
     public double getProbability() {
@@ -92,7 +75,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
 
     public void setProbability(double probability) {
         this.probability = Math.max(0.01, Math.min(0.9999, probability));
-        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+        if (encodingLogic instanceof StatPatternsEncodingLogic peLogic) {
             peLogic.setProbability(this.probability);
         }
         if (isClientSide()) {
@@ -101,7 +84,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     }
     public void setAlpha95(boolean value) {
         this.alpha95 = value;
-        if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+        if (encodingLogic instanceof StatPatternsEncodingLogic peLogic) {
             peLogic.setAlpha95(value);
         }
         if (isClientSide()) {
@@ -114,11 +97,11 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
     public void onSlotChange(Slot slot) {
         super.onSlotChange(slot);
         var encodedStack = encodingLogic.getEncodedPatternInv().getStackInSlot(0);
-        var encoded = encodedStack.get(Components.ENCODED_STATISTICAL_PATTERN);
+        var encoded = encodedStack.get(StatPatternsComponents.ENCODED_STATISTICAL_PATTERN);
         if (encoded != null) {
             this.probability = encoded.successProbability();
             this.alpha95 = encoded.isAlpha95();
-            if (encodingLogic instanceof ProbabilityPatternEncodingLogic peLogic) {
+            if (encodingLogic instanceof StatPatternsEncodingLogic peLogic) {
                 peLogic.setProbability(this.probability);
                 peLogic.setAlpha95(this.alpha95);
             }
@@ -145,13 +128,6 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
         var inputsInv = logic.getEncodedInputInv();
         var outputsInv = logic.getEncodedOutputInv();
 
-        // TEMP DIAGNOSTIC — to be removed
-        LOGGER.warn("[PP-MENU] encode server-side: mode={}, input0={}, output0={}, prob={}",
-                getMode(),
-                inputsInv.getStack(0),
-                outputsInv.getStack(0),
-                probability);
-
         var sparseInputs = new ArrayList<GenericStack>(inputsInv.size());
         var hasInput = false;
         for (int i = 0; i < inputsInv.size(); i++) {
@@ -175,7 +151,7 @@ public class ProbabilityPatternTerminalMenu extends PatternEncodingTermMenu {
             return;
         }
 
-        var encodedPattern = StatisticalPatternDetails.encode(sparseInputs, sparseOutputs, probability, isAlpha95() ? 0.05 : 0.01, isAlpha95());
+        var encodedPattern = StatPatternsDetails.encode(sparseInputs, sparseOutputs, probability, isAlpha95() ? 0.05 : 0.01, isAlpha95());
 
         var encodedInv = logic.getEncodedPatternInv();
         var blankInv = logic.getBlankPatternInv();

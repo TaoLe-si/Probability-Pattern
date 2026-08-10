@@ -19,11 +19,9 @@ package com.tz.statpatterns;
 
 import java.util.List;
 
-import com.tz.statpatterns.api.ids.Components;
-import appeng.api.crafting.PatternDetailsHelper;
+import com.tz.statpatterns.api.ids.StatPatternsComponents;
 import appeng.core.definitions.AEItems;
 import appeng.api.upgrades.Upgrades;
-import com.tz.statpatterns.crafting.ProbabilityPatternDecoder;
 
 import com.tz.statpatterns.core.definition.*;
 import com.tz.statpatterns.integration.ae2wtlib.AE2WTLibIntegration;
@@ -42,25 +40,25 @@ import appeng.api.features.GridLinkables;
 import appeng.api.parts.PartModels;
 import appeng.items.tools.powered.WirelessTerminalItem;
 
-@Mod(ProbabilityPatternMod.MOD_ID)
-public final class ProbabilityPatternMod {
+@Mod(StatPatternsMod.MOD_ID)
+public final class StatPatternsMod {
     public static final String MOD_ID = "probabilitypattern";
 
-    public ProbabilityPatternMod(IEventBus modEventBus) {
+    public StatPatternsMod(IEventBus modEventBus) {
         PartModels.registerModels(List.of(id("part/probability_pattern_terminal_off"), id("part/probability_pattern_terminal_on")));
 
-        SPParts.init();
-        Components.DR.register(modEventBus);
-        SPItems.DR.register(modEventBus);
-        SPMenus.register(modEventBus);
+        StatPatternsParts.init();
+        StatPatternsComponents.DR.register(modEventBus);
+        StatPatternsItems.DR.register(modEventBus);
+        StatPatternsMenus.register(modEventBus);
 
-        SPCreativeTabs.CREATIVE_TABS.register(modEventBus);
+        StatPatternsCreativeTabs.CREATIVE_TABS.register(modEventBus);
 
         // Register wireless terminal item at HIGH priority so it is available before
         // ae2wtlib_api's AddTerminalEvent.run() fires at NORMAL priority.
         // The actual registration logic lives in WirelessTerminalItemRegistrar — a
         // separate class that is ONLY loaded when ae2wtlib is present, so that
-        // ProbabilityPatternTerminalItem (→ ItemWT) class references never appear
+        // StatPatternsTerminalItem (→ ItemWT) class references never appear
         // in this class's constant pool, avoiding NoClassDefFoundError when
         // ae2wtlib is absent.
         if (ModList.get().isLoaded("ae2wtlib")) {
@@ -72,9 +70,9 @@ public final class ProbabilityPatternMod {
         // listener in WirelessTerminalItemRegistrar, so def.asItem() is safe.
         modEventBus.addListener(RegisterEvent.class, event -> {
             if (event.getRegistryKey().equals(Registries.ITEM)) {
-                var wirelessTerminal = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+                var wirelessTerminal = StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
                 if (wirelessTerminal != null) {
-                    SPCreativeTabs.addRaw(wirelessTerminal.asItem());
+                    StatPatternsCreativeTabs.addRaw(wirelessTerminal.asItem());
                 }
             }
         });
@@ -91,7 +89,7 @@ public final class ProbabilityPatternMod {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
-                var wirelessTerminal = SPItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+                var wirelessTerminal = StatPatternsItems.WIRELESS_PROBABILITY_PATTERN_TERMINAL;
                 if (wirelessTerminal != null) {
                     GridLinkables.register(wirelessTerminal, WirelessTerminalItem.LINKABLE_HANDLER);
                     Upgrades.add(AEItems.ENERGY_CARD, wirelessTerminal, 2);

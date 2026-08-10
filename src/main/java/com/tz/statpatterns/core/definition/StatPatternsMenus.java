@@ -18,9 +18,9 @@
  */
 package com.tz.statpatterns.core.definition;
 
-import com.tz.statpatterns.ProbabilityPatternMod;
-import com.tz.statpatterns.terminal.ProbabilityPatternTerminalMenu;
-import com.tz.statpatterns.terminal.WirelessProbabilityPatternTerminalMenu;
+import com.tz.statpatterns.StatPatternsMod;
+import com.tz.statpatterns.terminal.StatPatternsTerminalMenu;
+import com.tz.statpatterns.terminal.WirelessStatPatternsTerminalMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -34,37 +34,37 @@ import appeng.menu.implementations.MenuTypeBuilder.MenuFactory;
 import org.jetbrains.annotations.Nullable;
 
 
-public final class SPMenus {
+public final class StatPatternsMenus {
     private static boolean registered = false;
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister
-            .create(Registries.MENU, ProbabilityPatternMod.MOD_ID);
+            .create(Registries.MENU, StatPatternsMod.MOD_ID);
 
     // Pre-create the MenuType so it's available for ae2wtlib registration
-    public static final MenuType<ProbabilityPatternTerminalMenu> PROBABILITY_PATTERN_TERMINAL_TYPE =
+    public static final MenuType<StatPatternsTerminalMenu> PROBABILITY_PATTERN_TERMINAL_TYPE =
             MenuTypeBuilder.create(
-                            (containerId, playerInventory, host) -> new ProbabilityPatternTerminalMenu(containerId, playerInventory, host),
+                            (containerId, playerInventory, host) -> new StatPatternsTerminalMenu(containerId, playerInventory, host),
                             IPatternTerminalMenuHost.class
                     )
-                    .buildUnregistered(ProbabilityPatternMod.id("probability_pattern_terminal"));
+                    .buildUnregistered(StatPatternsMod.id("probability_pattern_terminal"));
 
-    public static final DeferredHolder<MenuType<?>, MenuType<ProbabilityPatternTerminalMenu>> PROBABILITY_PATTERN_TERMINAL =
+    public static final DeferredHolder<MenuType<?>, MenuType<StatPatternsTerminalMenu>> PROBABILITY_PATTERN_TERMINAL =
             MENUS.register("probability_pattern_terminal", () -> PROBABILITY_PATTERN_TERMINAL_TYPE);
 
     // Wireless variant — only available when ae2wtlib is present
     @Nullable
-    public static final MenuType<WirelessProbabilityPatternTerminalMenu> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE;
+    public static final MenuType<WirelessStatPatternsTerminalMenu> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE;
 
     @Nullable
-    public static final DeferredHolder<MenuType<?>, MenuType<WirelessProbabilityPatternTerminalMenu>> WIRELESS_PROBABILITY_PATTERN_TERMINAL;
+    public static final DeferredHolder<MenuType<?>, MenuType<WirelessStatPatternsTerminalMenu>> WIRELESS_PROBABILITY_PATTERN_TERMINAL;
 
     static {
         if (ModList.get().isLoaded("ae2wtlib")) {
             WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE =
                     MenuTypeBuilder
-                            .create((MenuFactory<WirelessProbabilityPatternTerminalMenu, IPatternTerminalMenuHost>)
-                                            WirelessProbabilityPatternTerminalMenu::new,
+                            .create((MenuFactory<WirelessStatPatternsTerminalMenu, IPatternTerminalMenuHost>)
+                                            WirelessStatPatternsTerminalMenu::new,
                                     IPatternTerminalMenuHost.class)
-                            .buildUnregistered(ProbabilityPatternMod.id("wireless_probability_pattern_terminal"));
+                            .buildUnregistered(StatPatternsMod.id("wireless_probability_pattern_terminal"));
             WIRELESS_PROBABILITY_PATTERN_TERMINAL =
                     MENUS.register("wireless_probability_pattern_terminal", () -> WIRELESS_PROBABILITY_PATTERN_TERMINAL_TYPE);
         } else {
@@ -73,7 +73,7 @@ public final class SPMenus {
         }
     }
 
-    private SPMenus() {
+    private StatPatternsMenus() {
     }
 
     public static void register(IEventBus modEventBus) {

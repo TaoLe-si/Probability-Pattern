@@ -16,19 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.tz.statpatterns.math;
+package com.tz.statpatterns.api.ids;
 
-public enum DistributionMode {
-    BINOMIAL("binomial"),
-    NORMAL_APPROXIMATION("normal_approximation");
+import net.minecraft.resources.ResourceLocation;
 
-    private final String serializedName;
+import static com.tz.statpatterns.StatPatternsMod.MOD_ID;
 
-    DistributionMode(String serializedName) {
-        this.serializedName = serializedName;
-    }
+public class StatPatternsItemIds {
+    public static final ResourceLocation PROBABILITY_PATTERN_TERMINAL = id("probability_pattern_terminal");
+    public static final ResourceLocation PROBABILITY_PATTERN = id("probability_pattern");
+    public static final ResourceLocation WIRELESS_PROBABILITY_PATTERN_TERMINAL = id("wireless_probability_pattern_terminal");
 
-    public String serializedName() {
-        return serializedName;
+    private static ResourceLocation id(String id) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, id);
     }
 }

@@ -20,7 +20,7 @@ package com.tz.statpatterns.terminal;
 import appeng.api.networking.IGridNode;
 import appeng.core.definitions.AEItems;
 import appeng.menu.slot.RestrictedInputSlot;
-import com.tz.statpatterns.core.definition.SPMenus;
+import com.tz.statpatterns.core.definition.StatPatternsMenus;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -37,21 +37,21 @@ import de.mari_023.ae2wtlib.api.terminal.ItemWUT;
  * Adds a singularity slot for quantum bridge functionality.
  * Follows the same pattern as ae2wtlib's WETMenu.
  */
-public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTerminalMenu {
+public class WirelessStatPatternsTerminalMenu extends StatPatternsTerminalMenu {
 
-    private final ProbabilityPatternTerminalMenuHost wtHost;
+    private final StatPatternsTerminalMenuHost wtHost;
 
-    public WirelessProbabilityPatternTerminalMenu(int containerId, Inventory playerInventory,
+    public WirelessStatPatternsTerminalMenu(int containerId, Inventory playerInventory,
             @Nullable IPatternTerminalMenuHost host) {
-        this(SPMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
+        this(StatPatternsMenus.WIRELESS_PROBABILITY_PATTERN_TERMINAL.get(), containerId, playerInventory, host);
     }
 
-    public WirelessProbabilityPatternTerminalMenu(MenuType<?> menuType, int containerId,
+    public WirelessStatPatternsTerminalMenu(MenuType<?> menuType, int containerId,
             Inventory playerInventory, @Nullable IPatternTerminalMenuHost host) {
         super(menuType, containerId, playerInventory, host);
 
         // Store the wtHost reference for getGridNode()/isWUT()
-        this.wtHost = (ProbabilityPatternTerminalMenuHost) host;
+        this.wtHost = (StatPatternsTerminalMenuHost) host;
 
         // Add singularity slot for quantum bridge card (same as WETMenu)
         this.addSlot(new RestrictedInputSlot(RestrictedInputSlot.PlacableItemType.QE_SINGULARITY, wtHost.getSingularityInventory(), 0), AE2wtlibSlotSemantics.SINGULARITY);
@@ -75,7 +75,7 @@ public class WirelessProbabilityPatternTerminalMenu extends ProbabilityPatternTe
     /**
      * Get the WTMenuHost for IUniversalTerminalCapable.
      */
-    public ProbabilityPatternTerminalMenuHost getWTHost() {
+    public StatPatternsTerminalMenuHost getWTHost() {
         return wtHost;
     }
 

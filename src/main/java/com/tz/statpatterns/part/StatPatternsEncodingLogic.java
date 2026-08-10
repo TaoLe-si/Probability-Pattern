@@ -1,3 +1,20 @@
+/*
+ * Probability Pattern for AE2
+ * Copyright (C) 2026 TaoLe-si
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.tz.statpatterns.part;
 
 import appeng.api.ids.AEComponents;
@@ -5,16 +22,16 @@ import appeng.helpers.IPatternTerminalLogicHost;
 import appeng.parts.encoding.EncodingMode;
 import appeng.parts.encoding.PatternEncodingLogic;
 import appeng.util.inv.AppEngInternalInventory;
-import com.tz.statpatterns.crafting.ProbabilityPatternItem;
+import com.tz.statpatterns.crafting.StatPatternsItem;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 
-public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
+public class StatPatternsEncodingLogic extends PatternEncodingLogic {
     private double probability = 0.8;
     private boolean alpha95 = true;
 
-    public ProbabilityPatternEncodingLogic(IPatternTerminalLogicHost host) {
+    public StatPatternsEncodingLogic(IPatternTerminalLogicHost host) {
         super(host);
     }
 
@@ -42,13 +59,13 @@ public class ProbabilityPatternEncodingLogic extends PatternEncodingLogic {
 
         if (inv == getEncodedPatternInv()) {
             var pattern = getEncodedPatternInv().getStackInSlot(0);
-            if (!pattern.isEmpty() && pattern.getItem() instanceof ProbabilityPatternItem) {
-                loadProbabilityPattern(pattern);
+            if (!pattern.isEmpty() && pattern.getItem() instanceof StatPatternsItem) {
+                loadStatPatterns(pattern);
             }
         }
     }
 
-    private void loadProbabilityPattern(net.minecraft.world.item.ItemStack pattern) {
+    private void loadStatPatterns(net.minecraft.world.item.ItemStack pattern) {
         var encoded = pattern.get(AEComponents.ENCODED_PROCESSING_PATTERN);
         if (encoded != null) {
             setMode(EncodingMode.PROCESSING);

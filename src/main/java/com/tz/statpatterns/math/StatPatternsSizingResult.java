@@ -16,20 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.tz.statpatterns.api.ids;
+package com.tz.statpatterns.math;
 
-import com.tz.statpatterns.core.SP;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.CreativeModeTab;
-
-public final class SPCreativeTabIds {
-    private SPCreativeTabIds() {
-    }
-
-    public static final ResourceKey<CreativeModeTab> MAIN = create("main");
-
-    private static ResourceKey<CreativeModeTab> create(String path) {
-        return ResourceKey.create(Registries.CREATIVE_MODE_TAB, SP.makeId(path));
-    }
+/**
+ * The result of planning how many attempts are needed to reach a target number
+ * of successes with a guaranteed confidence level.
+ *
+ * @param targetSuccesses the number of successful outputs required
+ * @param attempts        the number of attempts that must be planned
+ */
+public record StatPatternsSizingResult(
+        long targetSuccesses,
+        long attempts) {
 }
