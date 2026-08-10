@@ -4,26 +4,26 @@
 
 ## [1.0.0] - 2026-08-10
 
-首个正式发布版本。在历史迭代（0.5.x / 0.6.x）的基础上完成命名统一、代码清理与打包发布。
+首个正式版。整合此前 0.5.x / 0.6.x 的迭代，统一命名、清理代码后正式发布。
 
 ### 新增 (Added)
 
-- **统计处理样板（Statistical Processing Pattern）**：编码「单次尝试」及其「成功率」与「置信度」，模组自动规划足够尝试次数，以选定置信度产出目标数量；合成树支持逐层独立计算（二项分布 + 正态近似）。
-- **有线编码终端**：AE2 线缆附着终端，支持合成 / 切石 / 锻造 / 处理模式；处理模式下编码统计样板。
-- **无线编码终端**（需 [ae2wtlib](https://github.com/Mari023/AE2WirelessTerminalLibrary)）：随身编码与管理统计样板，支持量子桥与万用终端。
-- **升级卡支持**：AE2 能量卡；ae2wtlib 量子桥卡、磁铁卡。
-- **配方查看器集成**：JEI / EMI / REI 一键填充配方并自动提取成功率。
-- **游戏内指南**（GuideME）：英文与简体中文。
+- **统计处理样板**：把「单次尝试」「成功率」和「置信度」一起写进样板，模组会自动算好需要尝试多少次，才能按你指定的置信度凑够目标产出；多层合成链也会逐层独立计算（二项分布 + 正态近似）。
+- **有线编码终端**：挂在 AE2 线缆上的编码终端，支持合成 / 切石 / 锻造 / 处理模式；处理模式下编码的就是统计样板。
+- **无线编码终端**（需安装 [ae2wtlib](https://github.com/Mari023/AE2WirelessTerminalLibrary)）：随身就能编码、管理统计样板，还支持量子桥和万用终端。
+- **升级卡支持**：AE2 能量卡；ae2wtlib 的量子桥卡、磁铁卡。
+- **配方查看器联动**：JEI / EMI / REI 都能一键把配方填进终端，成功率也会自动带出来。
+- **游戏内指南**（GuideME）：英文和简体中文。
 - **多语言**：`en_us` / `zh_cn`。
-- **模组图标**：256×256 模组 logo。
+- **模组图标**：256×256 的模组 Logo。
 
 ### 变更 (Changed)
 
-- 模组 ID 由 `probabilitypattern` 改为 **`statpatterns`**（破坏性变更：旧存档/已编码样板中的物品 ID 将失效）。
-- 显示名保持 **"Probability Pattern for AE2"**。
-- 核心类命名统一为 `StatPatterns` 前缀（与包名 `com.tz.statpatterns` 一致）；与其他模组联动的集成类保留原名（`AE2WTLibIntegration`、`ProbabilityPatternJeiPlugin/EmiPlugin/ReiPlugin` 等）。
-- 代码整体重构：清理死代码（`SP.java`、`DistributionMode` 等）、临时诊断日志、未使用 import，简化结果模型。
-- 抽取共享概率提取工具 `StatPatternsExtractor`，去除 JEI/EMI/REI 三处重复逻辑。
+- 模组 ID 从 `probabilitypattern` 改成 **`statpatterns`**（注意：这是破坏性改动，旧存档和已编码样板里的物品 ID 会失效）。
+- 显示名保持 **"Probability Pattern for AE2"** 不变。
+- 核心类统一改用 `StatPatterns` 前缀（和包名 `com.tz.statpatterns` 保持一致）；跟其他模组联动的集成类保留原名（如 `AE2WTLibIntegration`、`ProbabilityPatternJeiPlugin/EmiPlugin/ReiPlugin`）。
+- 整体做了重构清理：删掉死代码（`SP.java`、`DistributionMode` 等）、临时诊断日志和没用到 import，也简化了结果模型。
+- 把 JEI/EMI/REI 里三份重复的概率提取逻辑抽成共用的 `StatPatternsExtractor`。
 
 ### 依赖 (Dependencies)
 
