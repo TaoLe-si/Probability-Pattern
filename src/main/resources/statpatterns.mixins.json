@@ -4,9 +4,11 @@
     "package": "com.tz.statpatterns.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "CraftingTreeNodeMixin"
+        "CraftingTreeNodeMixin",
+        "CraftingServiceMixin"
     ],
     "injectors": {
         "defaultRequire": 1
-    }
+    },
+    "priority": 500
 }
